@@ -1,6 +1,7 @@
 # Arillso Guide
 
-> The simple, flexible, robust and powerful toolbox for Ansible.<br />It contains roles for managing Linux and Windows devices.
+> The simple, flexible, robust and powerful toolbox for Ansible.
+> It contains roles for managing Linux and Windows devices.
 
 ## Styling Guide
 
@@ -10,4 +11,4 @@ The basis for the syntax can be found under [ansible docs](https://docs.ansible.
 
 ### Visual Studio Code
 
-* [Syntax Highlighter](https://marketplace.visualstudio.com/items?itemName=haaaad.ansible)
+- [Syntax Highlighter](https://marketplace.visualstudio.com/items?itemName=haaaad.ansible)
