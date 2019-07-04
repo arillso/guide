@@ -1,5 +1,3 @@
-# Arillso Guide
-
 - [Arillso Home](https://arillso.io)
 - [Guidelines](/)
 - [Skeleton](/skeleton)
