@@ -8,7 +8,6 @@
   - [ca-certificates](/roles/arillso/ca-certificates)
   - [chocolatey](/roles/arillso/chocolatey)
   - [defaultuser](/roles/arillso/defaultuser)
-  - [defaultuser](/roles/arillso/defaultuser)
   - [fqdn](/roles/arillso/fqdn)
   - [hosts](/roles/arillso/hosts)
   - [localization](/roles/arillso/localization)
