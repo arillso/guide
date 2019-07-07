@@ -2,7 +2,7 @@
 
 There are several variables that are valid for all roles doeses project.
 
-## Proxy
+## Proxy Setttings
 
 We used for internet access a proy this can be deposited in the following variable.
 
