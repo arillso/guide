@@ -4,19 +4,28 @@ version: 2
 updates:
   # Configuration for updating GitHub Actions
   - package-ecosystem: "github-actions"
-    # Specifies that the package ecosystem to be updated is GitHub Actions.
+    # Specifies that GitHub Actions is the package ecosystem to be updated.
     directory: "/"
-    # Specifies the directory within the repository where Dependabot will look for action definitions.
+    # Sets the directory within the repository where Dependabot looks for GitHub Actions definitions.
     # "/" indicates the root directory of the repository.
 
     schedule:
       interval: "weekly"
-      # Sets the update frequency for Dependabot. "weekly" means it will check for updates once a week.
+      # Defines the update frequency. "weekly" means Dependabot checks for updates once a week.
       day: "friday"
-      # Specifies the day of the week when Dependabot should run. Here, it's set to Friday.
+      # Specifies the day of the week when Dependabot should run, set here to Friday.
       time: "13:00"
-      # Specifies the time for Dependabot to run. "13:00" is 1:00 PM UTC, which corresponds to 2:00 PM in Zurich during winter time.
+      # Sets the time for the Dependabot run. "13:00" is 1:00 PM UTC, corresponding to 2:00 PM in Zurich during winter.
 
-    # Optional: Additional settings like ignore conditions or version constraints can be added here.
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+      # Configures the commit message settings for Dependabot.
+      # 'prefix' and 'prefix-development' set a prefix for commit messages.
+      # 'include: "scope"' includes the scope of the dependencies in the commit message.
 
-  # Additional configurations for other dependencies can be added below.
+    assignees:
+      - "sbaerlocher"
+      # Specifies GitHub users to be automatically assigned to Dependabot pull requests.
+      # Here, 'sbaerlocher' is the user who will be assigned to the pull requests.
