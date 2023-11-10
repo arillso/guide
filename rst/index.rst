@@ -23,7 +23,7 @@ This docsite contains documentation of arillso.system.
 
 .. toctree::
    :maxdepth: 2
-   :caption: containers:
+   :caption: Containers:
 
    containers/index
 

@@ -1,0 +1,22 @@
+version: 2
+# Specifies the configuration version for Dependabot. Version 2 is the latest version.
+
+updates:
+  # Configuration for updating GitHub Actions
+  - package-ecosystem: "github-actions"
+    # Specifies that the package ecosystem to be updated is GitHub Actions.
+    directory: "/"
+    # Specifies the directory within the repository where Dependabot will look for action definitions.
+    # "/" indicates the root directory of the repository.
+
+    schedule:
+      interval: "weekly"
+      # Sets the update frequency for Dependabot. "weekly" means it will check for updates once a week.
+      day: "friday"
+      # Specifies the day of the week when Dependabot should run. Here, it's set to Friday.
+      time: "13:00"
+      # Specifies the time for Dependabot to run. "13:00" is 1:00 PM UTC, which corresponds to 2:00 PM in Zurich during winter time.
+
+    # Optional: Additional settings like ignore conditions or version constraints can be added here.
+
+  # Additional configurations for other dependencies can be added below.

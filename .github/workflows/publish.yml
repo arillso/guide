@@ -1,42 +1,56 @@
-name: Build and Upload to GitHub Pages
+name: Deploy Documentation to GitHub Pages
+# A descriptive name for the GitHub Actions workflow, indicating its purpose: deploying documentation to GitHub Pages.
 
 on:
   push:
     branches:
-      - main # Update this to match your main branch
+      - main
+    # Triggers the workflow on any push to the 'main' branch, ensuring that changes to the primary branch initiate the deployment process.
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+  schedule:
+    - cron: "0 12 * * 5" # Every Friday at 12:00 PM UTC
+    # Sets a scheduled trigger, running the workflow at a specific time regardless of code changes.
+    # The cron syntax '0 12 * * 5' means the workflow runs every Friday at 12:00 PM UTC.
+
+  pull_request_target:
+    types: [closed]
+    branches:
+      - main
+    # Activates the workflow when a pull request targeting the 'main' branch is closed.
+    # The 'pull_request_target' event differs from 'pull_request' as it runs in the context of the base repository,
+    # allowing workflows to safely use a write token when working with forked pull requests.
+
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: read # Grants read access to the repository's content.
+  pages: write # Provides write access to GitHub Pages for deployment.
+  id-token: write # Enables the workflow to write ID tokens for authentication purposes.
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: "pages" # Groups workflow runs in the 'pages' concurrency group.
+  cancel-in-progress: false # Ensures that ongoing deployments aren't cancelled by new runs, maintaining deployment integrity.
 
 jobs:
-  build-and-upload:
-    runs-on: ubuntu-latest
+  deploy-guide:
+    runs-on: ubuntu-latest # Utilizes the latest Ubuntu runner for job execution.
 
     steps:
       - uses: actions/checkout@v2
+        # This step checks out the repository code, making it available for the workflow.
 
       - name: Install Dependencies
         run: |
-          pip install -r requirements.txt
+          pip install -r requirements.txt # Installs Python dependencies specified in requirements.txt.
 
       - name: Build Docs
         run: |
-          ./build.sh
+          ./build.sh # Executes the build script to generate the documentation.
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: ./build/html # Update this to match your build directory
+          path: ./build/html # Defines the directory where the built documentation resides.
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
+        # This step handles the deployment of the documentation to GitHub Pages, making it publicly accessible.
