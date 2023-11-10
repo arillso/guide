@@ -46,7 +46,7 @@ jobs:
           ./build.sh # Executes the build script to generate the documentation.
 
       - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v2
         with:
           path: ./build/html # Defines the directory where the built documentation resides.
 
