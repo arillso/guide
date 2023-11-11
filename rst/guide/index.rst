@@ -9,8 +9,12 @@
 Guide Index
 ===========
 
+These are the Guide documented here.
+
+* :doc:`environment`
+
 .. toctree::
     :maxdepth: 1
     :hidden:
 
-    tooling/index
+    environment
