@@ -18,7 +18,7 @@ antsibull-docs \
     --config-file antsibull-docs.cfg \
     collection \
     --dest-dir temp-rst \
-    arillso.system arillso.agents
+    arillso.system arillso.agents arillso.container
 
 # Copy collection documentation into source directory
 rsync -cprv --delete-after temp-rst/collections/ rst/collections/
