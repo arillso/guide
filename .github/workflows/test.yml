@@ -1,0 +1,27 @@
+name: Run Test
+# A descriptive name for the GitHub Actions workflow, indicating its purpose: running tests when a pull request is made.
+
+on:
+  push:
+    # Triggers the workflow on pull requests targeting the 'main' branch, ensuring that tests are run on proposed changes.
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest # Utilizes the latest Ubuntu runner for job execution.
+
+    steps:
+      - uses: actions/checkout@v4
+        # This step checks out the repository code, making it available for the workflow.
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x" # Specify the Python version to use.
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt # Installs Python dependencies specified in requirements.txt.
+
+      - name: Build Docs
+        run: |
+          ./build.sh # Executes the build script to generate the documentation.
