@@ -1,0 +1,24 @@
+version: "3.4" # Minimum docker-compose.yml compatibility
+
+services:
+  arillso-doc-generator:
+    build:
+      context: "." # The context is the directory where the Dockerfile is located, which is the current directory
+      args: # Arguments to pass to the Dockerfile at build-time
+        DDE_UID: ${DDE_UID:-1000} # Pass your UID, defaults to 1000 if not set
+        DDE_GID: ${DDE_GID:-1000} # Pass your GID, defaults to 1000 if not set
+      target: docs # Specifies the target build stage to build, useful for multi-stage builds
+    ports:
+      - "8002:8000" # Maps port 8000 on the container to port 8000 on the host
+    volumes:
+      - .:/docs # Mounts the 'docs' directory from the host to '/docs' in the container
+      - .:/project # Mounts the current directory to '/project' in the container
+    environment:
+      - COLLECTIONS_PATH=/usr/src/collections # Sets the collections path environment variable
+    container_name: arillso-doc-generator # Custom name for the container
+    working_dir: /project # Sets the working directory inside the container
+    command: > # Commands to run in the container
+      bash -c "source /usr/src/antsibull-docs/venv/bin/activate &&
+      pip install -r /docs/requirements.txt && /docs/build.sh &&
+      python -m http.server 8000 --directory /docs/build/html"
+    # Activates Python virtual environment, installs dependencies, builds the docs, and serves them using Python's HTTP server
