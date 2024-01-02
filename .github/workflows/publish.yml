@@ -52,5 +52,5 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
         # This step handles the deployment of the documentation to GitHub Pages, making it publicly accessible.
