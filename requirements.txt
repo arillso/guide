@@ -7,4 +7,4 @@
 antsibull-docs >= 2.0.0, < 3.0.0
 ansible-pygments==0.1.1
 sphinx==7.2.6
-sphinx-ansible-theme==0.10.2
+sphinx-ansible-theme==0.10.3
