@@ -5,6 +5,6 @@
 # Created with antsibull-docs 2.5.0.post0
 
 antsibull-docs >= 2.0.0, < 3.0.0
-ansible-pygments==0.1.1
+ansible-pygments==0.1.2
 sphinx==7.4.7
 sphinx-ansible-theme==0.10.3
