@@ -1,5 +1,3 @@
-version: "3.4" # Minimum docker-compose.yml compatibility
-
 services:
   arillso-doc-generator:
     build:
