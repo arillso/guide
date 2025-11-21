@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest # Utilizes the latest Ubuntu runner for job execution.
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         # This step checks out the repository code, making it available for the workflow.
 
       - name: Install Dependencies
