@@ -13,7 +13,7 @@ trap "{ popd; }" EXIT
 # renovate: datasource=galaxy-collection depName=arillso.system
 ARILLSO_SYSTEM_VERSION="1.0.5"
 # renovate: datasource=galaxy-collection depName=arillso.agent
-ARILLSO_AGENT_VERSION="1.0.0"
+ARILLSO_AGENT_VERSION="1.0.1"
 # renovate: datasource=galaxy-collection depName=arillso.container
 ARILLSO_CONTAINER_VERSION="1.0.2"
 
