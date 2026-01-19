@@ -1,56 +1,42 @@
+---
 name: Deploy Documentation to GitHub Pages
-# A descriptive name for the GitHub Actions workflow, indicating its purpose: deploying documentation to GitHub Pages.
 
 on:
   push:
-    branches:
-      - main
-    # Triggers the workflow on any push to the 'main' branch, ensuring that changes to the primary branch initiate the deployment process.
-
+    branches: [main]
   schedule:
-    - cron: "0 12 * * 5" # Every Friday at 12:00 PM UTC
-    # Sets a scheduled trigger, running the workflow at a specific time regardless of code changes.
-    # The cron syntax '0 12 * * 5' means the workflow runs every Friday at 12:00 PM UTC.
-
+    - cron: "0 12 * * 5"
   pull_request_target:
     types: [closed]
-    branches:
-      - main
-    # Activates the workflow when a pull request targeting the 'main' branch is closed.
-    # The 'pull_request_target' event differs from 'pull_request' as it runs in the context of the base repository,
-    # allowing workflows to safely use a write token when working with forked pull requests.
+    branches: [main]
 
 permissions:
-  contents: read # Grants read access to the repository's content.
-  pages: write # Provides write access to GitHub Pages for deployment.
-  id-token: write # Enables the workflow to write ID tokens for authentication purposes.
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
-  group: "pages" # Groups workflow runs in the 'pages' concurrency group.
-  cancel-in-progress: false # Ensures that ongoing deployments aren't cancelled by new runs, maintaining deployment integrity.
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   deploy-guide:
-    runs-on: ubuntu-latest # Utilizes the latest Ubuntu runner for job execution.
-
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-        # This step checks out the repository code, making it available for the workflow.
+      - name: Checkout Code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
       - name: Install Dependencies
-        run: |
-          pip install -r requirements.txt # Installs Python dependencies specified in requirements.txt.
+        run: pip install -r requirements.txt
 
-      - name: Build Docs
-        run: |
-          ./build.sh # Executes the build script to generate the documentation.
+      - name: Build Documentation
+        run: ./build.sh
 
       - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
-          path: ./build/html # Defines the directory where the built documentation resides.
+          path: ./build/html
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
-        # This step handles the deployment of the documentation to GitHub Pages, making it publicly accessible.
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

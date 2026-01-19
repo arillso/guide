@@ -1,5 +1,5 @@
-# Use the Python 3.9 image as a base
-FROM python:3.9 AS docs
+# Use the Python 3.14 image as a base
+FROM python:3.14 AS docs
 
 # Set the working directory in the container to /usr/src
 WORKDIR /usr/src
