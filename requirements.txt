@@ -4,8 +4,8 @@
 
 # Created with antsibull-docs 2.5.0.post0
 
-antsibull-docs >= 2.0.0, < 3.0.0
+antsibull-docs >=2.24.0, <3.0.0
 ansible-pygments==0.1.2
 sphinx-ansible-theme==0.10.4
 sphinxcontrib-mermaid>=2.0.0
-sphinx-sitemap>=2.6.0
+sphinx-sitemap>=2.9.0
