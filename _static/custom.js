@@ -359,7 +359,6 @@ document.addEventListener("DOMContentLoaded", function () {
   function initMermaidLightTheme() {
     // Wait for mermaid to be available
     if (typeof mermaid !== "undefined") {
-      console.log("Initializing mermaid with light theme");
 
       mermaid.initialize({
         startOnLoad: true,
@@ -417,9 +416,6 @@ document.addEventListener("DOMContentLoaded", function () {
   respectReducedMotion();
   initMermaidLightTheme();
 
-  console.log(
-    "🚀 Arillso Guide: All interactive features loaded successfully!",
-  );
 });
 
 // ============================================
@@ -442,24 +438,18 @@ document.addEventListener("DOMContentLoaded", function () {
   script.setAttribute("data-do-not-track", "true");
 
   document.head.appendChild(script);
-
-  console.log("📊 Umami Analytics: Tracking script loaded");
 })();
 
 // ============================================
 // Umami Custom Event Tracking Helper
 // ============================================
 function trackEvent(eventName, eventData) {
-  // Wait for umami to be available
   if (typeof umami !== "undefined" && umami.track) {
     umami.track(eventName, eventData);
-    console.log("📊 Umami Event:", eventName, eventData);
   } else {
-    // Retry after a short delay if umami isn't loaded yet
     setTimeout(function () {
       if (typeof umami !== "undefined" && umami.track) {
         umami.track(eventName, eventData);
-        console.log("📊 Umami Event:", eventName, eventData);
       }
     }, 1000);
   }

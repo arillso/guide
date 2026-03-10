@@ -1,0 +1,35 @@
+{% extends "!layout.html" %}
+
+{% block extrahead %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<noscript>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+</noscript>
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="Production-ready Ansible collections, container images, and automation tools for modern infrastructure">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ pageurl | e }}">
+<meta property="og:site_name" content="arillso Guide">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{{ title }}">
+<meta name="twitter:description" content="Production-ready Ansible collections, container images, and automation tools for modern infrastructure">
+{{ super() }}
+{% endblock %}
+
+{% block footer %}
+{{ super() }}
+<div class="site-footer">
+  <nav class="site-footer-nav" aria-label="Footer navigation">
+    <a href="{{ pathto('guide/getting-started/quickstart') }}">Quick Start</a>
+    <a href="{{ pathto('collections/index') }}">Collections</a>
+    <a href="{{ pathto('guide/reference/troubleshooting') }}">FAQ</a>
+    <a href="{{ pathto('guide/development/contributing') }}">Contributing</a>
+    <a href="https://github.com/arillso" target="_blank" rel="noopener noreferrer">GitHub</a>
+    <a href="https://galaxy.ansible.com/ui/namespaces/arillso/" target="_blank" rel="noopener noreferrer">Ansible Galaxy</a>
+  </nav>
+</div>
+{% endblock %}

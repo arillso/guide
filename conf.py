@@ -31,6 +31,7 @@ pygments_style = "ansible"
 
 highlight_language = "YAML+Jinja"
 
+templates_path = ["_templates"]
 html_theme = "sphinx_ansible_theme"
 html_show_sphinx = False
 
