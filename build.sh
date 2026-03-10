@@ -10,12 +10,8 @@ set -e
 pushd "$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 trap "{ popd; }" EXIT
 
-# renovate: datasource=galaxy-collection depName=arillso.system
-ARILLSO_SYSTEM_VERSION="1.0.5"
-# renovate: datasource=galaxy-collection depName=arillso.agent
-ARILLSO_AGENT_VERSION="1.0.3"
-# renovate: datasource=galaxy-collection depName=arillso.container
-ARILLSO_CONTAINER_VERSION="1.0.2"
+# shellcheck source=versions.env
+source versions.env
 
 # Install Ansible Collections
 echo "Installing Ansible Collections..."
@@ -54,3 +50,13 @@ done
 
 # Build Sphinx site
 sphinx-build -M html rst build -c . -W --keep-going
+
+# Optimize CSS and JS if postcss is available
+if command -v postcss &> /dev/null && [ -f build/html/_static/custom.css ]; then
+    echo "Optimizing CSS with PostCSS (autoprefixer + cssnano)..."
+    postcss build/html/_static/custom.css \
+        --use autoprefixer --use cssnano \
+        --no-map \
+        -o build/html/_static/custom.css
+    echo "CSS optimization complete."
+fi
