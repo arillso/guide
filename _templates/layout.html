@@ -3,10 +3,16 @@
 {% block extrahead %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<noscript>
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+</noscript>
 <meta property="og:title" content="{{ title }}">
 <meta property="og:description" content="Production-ready Ansible collections, container images, and automation tools for modern infrastructure">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://guide.arillso.io/">
+<meta property="og:url" content="{{ pageurl | e }}">
 <meta property="og:site_name" content="arillso Guide">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="{{ title }}">
@@ -16,7 +22,7 @@
 
 {% block footer %}
 {{ super() }}
-<div class="site-footer" role="contentinfo">
+<div class="site-footer">
   <nav class="site-footer-nav" aria-label="Footer navigation">
     <a href="{{ pathto('guide/getting-started/quickstart') }}">Quick Start</a>
     <a href="{{ pathto('collections/index') }}">Collections</a>
