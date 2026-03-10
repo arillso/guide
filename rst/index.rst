@@ -502,8 +502,7 @@ Copyright (c) 2022-2026, arillso
        <h3>Ready to Get Started?</h3>
        <p>Choose your path and start automating your infrastructure today.</p>
        <div class="cta-buttons">
-         <a href="guide/getting-started/quickstart.html" class="btn-primary-lg">Quick Start Guide</a>
-         <a href="collections/index.html" class="btn-secondary-lg">Browse Collections</a>
+         <a href="collections/index.html" class="btn-primary-lg">Browse Collections</a>
        </div>
      </div>
      <div class="footer-links">
