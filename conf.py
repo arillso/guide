@@ -31,6 +31,7 @@ pygments_style = "ansible"
 
 highlight_language = "YAML+Jinja"
 
+templates_path = ["_templates"]
 html_theme = "sphinx_ansible_theme"
 html_show_sphinx = False
 
@@ -43,7 +44,13 @@ html_copy_source = False
 
 # Static files (CSS, JavaScript, Images)
 html_static_path = ["_static"]
-html_css_files = ["custom.css"]
+html_css_files = [
+    (
+        "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap",
+        {"rel": "preload", "as": "style", "onload": "this.onload=null;this.rel='stylesheet'"},
+    ),
+    "custom.css",
+]
 html_js_files = ["custom.js"]
 
 # Logo and Favicon

@@ -4,65 +4,12 @@
    Inspired by: Stripe, Vercel, Linear
    ============================================ */
 
-/* Google Fonts Import - Modern Stack */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
 :root {
   /* ========================================
-       OPTION 1: Minimal Monochrome (uncomment to use)
-       Professional, subtle, technical
-       Inspired by: GitHub, Tailwind CSS Docs
-       ======================================== */
-  /*
-  --primary-color: #2563eb;
-  --primary-dark: #1e40af;
-  --primary-light: #60a5fa;
-  --primary-extra-light: #eff6ff;
-
-  --secondary-color: #64748b;
-  --secondary-dark: #475569;
-  --secondary-light: #94a3b8;
-  --secondary-extra-light: #f1f5f9;
-
-  --accent-success: #10b981;
-  --accent-warning: #f59e0b;
-  --accent-danger: #ef4444;
-  --accent-info: #06b6d4;
-  --accent-purple: #8b5cf6;
-  --accent-pink: #ec4899;
-  */
-
-  /* ========================================
-       OPTION 2: Professional Blue-Gray (ACTIVE)
-       Balanced, trustworthy, calm
-       Inspired by: Stripe, Kubernetes Docs
-       ======================================== */
-  --primary-color: #3b82f6; /* Moderate Blue */
-  --primary-dark: #2563eb; /* Deep Blue */
-  --primary-light: #60a5fa; /* Light Blue */
-  --primary-extra-light: #dbeafe; /* Very Light Blue */
-
-  --secondary-color: #64748b; /* Professional Slate */
-  --secondary-dark: #475569; /* Deep Slate */
-  --secondary-light: #94a3b8; /* Light Slate */
-  --secondary-extra-light: #f1f5f9; /* Very Light Slate */
-
-  /* ========================================
-       Accent & Status Colors - Muted Palette
-       ======================================== */
-  --accent-success: #10b981; /* Emerald Green */
-  --accent-warning: #f59e0b; /* Amber */
-  --accent-danger: #ef4444; /* Soft Red */
-  --accent-info: #06b6d4; /* Cyan */
-  --accent-purple: #6366f1; /* Muted Indigo */
-  --accent-pink: #ec4899; /* Soft Pink */
-
-  /* ========================================
-       OPTION 3: Subtle Tech (uncomment to use)
+       Color Palette - Subtle Tech
        Modern, clean, minimal color
        Inspired by: Linear, Vercel Docs
        ======================================== */
-
   --primary-color: #0070f3;
   --primary-dark: #0761d1;
   --primary-light: #3291ff;
@@ -73,6 +20,7 @@
   --secondary-light: #9499a1;
   --secondary-extra-light: #f5f5f6;
 
+  /* Accent & Status Colors */
   --accent-success: #0ba95b;
   --accent-warning: #f5a623;
   --accent-danger: #e5484d;
@@ -102,12 +50,6 @@
   --bg-tertiary: #f4f5f7;
   --bg-elevated: #ffffff;
   --bg-overlay: rgba(255, 255, 255, 0.95);
-
-  /* Dark Mode Backgrounds */
-  --bg-dark-primary: #0d1117;
-  --bg-dark-secondary: #161b22;
-  --bg-dark-tertiary: #21262d;
-  --bg-dark-elevated: #1c2128;
 
   /* ========================================
        Text Colors
@@ -298,6 +240,12 @@ h6,
   line-height: var(--leading-tight);
 }
 
+/* Remove excessive top margin on first heading after breadcrumbs */
+.wy-nav-content .section:first-child > h1:first-child,
+.wy-nav-content .section:first-child > h2:first-child {
+  margin-top: var(--space-2);
+}
+
 @keyframes gradientShift {
   0%,
   100% {
@@ -399,13 +347,19 @@ pre,
    Sidebar & Navigation - Glassmorphism Design
    ============================================ */
 
-/* Sidebar - Modern Glass Effect */
+/* Sidebar - Modern Glass Effect with solid fallback */
 .wy-nav-side {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  background: var(--bg-primary);
   border-right: 1px solid var(--border-light);
   box-shadow: var(--shadow-lg);
+}
+
+@supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
+  .wy-nav-side {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+  }
 }
 
 /* Search Box - Elevated Design */
@@ -595,32 +549,6 @@ pre,
   font-size: 0.9rem;
 }
 
-/* Contributing to arillso
-.wy-menu-vertical li.toctree-l3 > a {
-  padding: var(--space-2) var(--space-3);
-  margin: 0 var(--space-2);
-  font-size: 0.85rem;
-  background: transparent;
-  border-radius: 0;
-}
-
-.wy-menu-vertical li.toctree-l3 > a:hover {
-  background: transparent;
-  transform: none;
-}
-
-.wy-menu-vertical li.toctree-l3.current > a {
-  background: transparent !important;
-  box-shadow: none;
-}
-
-.wy-menu-vertical li.toctree-l3.current li.toctree-l4 > a {
-  background: transparent !important;
-}
-
-.wy-menu-vertical li.toctree-l3.current > a::before {
-  display: none;
-}
 
 /* Navigation Icons Enhancement */
 .wy-menu-vertical a .icon {
@@ -688,13 +616,18 @@ pre,
    ============================================ */
 
 .ansibleNav {
-  background: var(--glass-bg) !important;
   background-color: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: var(--glass-blur) !important;
-  -webkit-backdrop-filter: var(--glass-blur) !important;
   border-bottom: 1px solid var(--border-light) !important;
   box-shadow: var(--shadow-md) !important;
   padding: 0 !important;
+}
+
+@supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
+  .ansibleNav {
+    background: var(--glass-bg) !important;
+    backdrop-filter: var(--glass-blur) !important;
+    -webkit-backdrop-filter: var(--glass-blur) !important;
+  }
 }
 
 .ansibleNav ul {
@@ -1236,6 +1169,16 @@ code.literal:hover {
 }
 
 /* ============================================
+   Focus Styles - Keyboard Accessibility
+   ============================================ */
+
+*:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================
    Links - Modern Styling
    ============================================ */
 
@@ -1364,7 +1307,7 @@ a.reference.external:hover::after {
 .wy-nav-content {
   background: var(--bg-primary);
   max-width: 1200px;
-  padding: var(--space-8) var(--space-10);
+  padding: var(--space-4) var(--space-10) var(--space-8);
   border-radius: var(--radius-2xl);
   margin: var(--space-6);
   box-shadow: var(--shadow-sm);
@@ -1436,8 +1379,33 @@ a.btn.btn-neutral:hover {
 }
 
 footer {
-  color: var(--text-medium);
+  color: var(--text-tertiary);
   font-size: 0.9em;
+}
+
+/* Site Footer Navigation */
+.site-footer {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-light);
+}
+
+.site-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  justify-content: center;
+}
+
+.site-footer-nav a {
+  color: var(--text-tertiary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  transition: color var(--transition-fast);
+}
+
+.site-footer-nav a:hover {
+  color: var(--primary-color);
 }
 
 /* ============================================
@@ -1474,26 +1442,138 @@ footer {
    Mobile Responsiveness
    ============================================ */
 
+/* Tablet - max 1024px */
+@media screen and (max-width: 1024px) {
+  .wy-nav-content {
+    padding: var(--space-6) var(--space-6);
+    margin: var(--space-4);
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .doc-hub-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile - max 768px */
 @media screen and (max-width: 768px) {
   .wy-nav-content {
-    padding: 1em;
+    padding: var(--space-4);
+    margin: var(--space-2);
+    border-radius: var(--radius-lg);
   }
 
   .wy-nav-content h1 {
-    font-size: 2em;
+    font-size: var(--text-3xl);
   }
 
   .wy-nav-content h2 {
-    font-size: 1.6em;
+    font-size: var(--text-2xl);
+    padding-left: var(--space-3);
+  }
+
+  .wy-nav-content h3 {
+    font-size: var(--text-xl);
   }
 
   .highlight pre {
     font-size: 0.8em;
-    padding: 1em;
+    padding: var(--space-4);
   }
 
   code.literal {
     font-size: 0.85em;
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .community-links {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-hero {
+    padding: var(--space-8) var(--space-4);
+    margin: var(--space-4) 0;
+  }
+
+  .hero-tagline {
+    font-size: var(--text-2xl);
+  }
+
+  .landing-footer {
+    padding: var(--space-6);
+    margin: var(--space-6) 0;
+  }
+
+  .footer-cta h3 {
+    font-size: var(--text-2xl);
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+  }
+
+  /* Responsive tables: horizontal scroll */
+  .wy-table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .wy-table-responsive table {
+    min-width: 500px;
+  }
+
+  /* Reduce shadow intensity on mobile for performance */
+  .feature-card,
+  .quality-card,
+  .community-card,
+  .doc-hub-section {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .stat-card h3 {
+    font-size: var(--text-3xl);
+  }
+}
+
+/* Small mobile - max 480px */
+@media screen and (max-width: 480px) {
+  .wy-nav-content {
+    padding: var(--space-3);
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+
+  .hero-badges {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .highlight::after {
+    display: none;
+  }
+
+  .highlight::before {
+    height: 8px;
+  }
+
+  .code-copy-button {
+    top: 12px;
+    padding: var(--space-1) var(--space-2);
   }
 }
 
@@ -2457,20 +2537,7 @@ footer {
   letter-spacing: -0.02em !important;
   margin-top: -0.75rem !important;
   padding-bottom: 0.75rem !important;
-}
-
-/* Mobile - Under 768px */
-@media screen and (max-width: 767px) {
-  .DocSiteNav-title {
-    color: var(--gray-900) !important;
-  }
-}
-
-/* Desktop - 768px and up */
-@media screen and (min-width: 768px) {
-  .DocSiteNav-title {
-    color: var(--gray-900) !important;
-  }
+  color: var(--gray-900) !important;
 }
 
 /* ============================================================================
@@ -2611,7 +2678,6 @@ footer {
 }
 
 .support-issues:hover {
-  background: linear-gradient(135deg, #f56565 0%, #ed64a620 100%) !important;
   background: linear-gradient(135deg, #f5656520 0%, #ed64a620 100%) !important;
 }
 
