@@ -4,9 +4,6 @@ name: Continuous Integration
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - "**.md"
-      - ".github/CODEOWNERS"
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -17,6 +14,11 @@ concurrency:
 
 permissions:
   contents: read
+  security-events: write
+  actions: read
+  pull-requests: write
+  issues: read
+  id-token: write
 
 jobs:
   build-docs:
@@ -37,3 +39,9 @@ jobs:
 
       - name: Build Documentation
         run: ./build.sh
+
+  claude-review:
+      uses: arillso/.github/.github/workflows/ai-claude-review.yml@2026-03-09
+      if: github.event_name == 'pull_request' && github.event.action == 'opened'
+      secrets:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
