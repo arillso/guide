@@ -10,14 +10,11 @@ set -e
 pushd "$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 trap "{ popd; }" EXIT
 
-# Load collection versions from versions.env
-SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 # shellcheck source=versions.env
-source "${SCRIPT_DIR}/versions.env"
+source versions.env
 
 # Install Ansible Collections
 echo "Installing Ansible Collections..."
-# echo "Using collections from Galaxy..."
 ansible-galaxy collection install "arillso.system:${ARILLSO_SYSTEM_VERSION}" --force
 ansible-galaxy collection install "arillso.agent:${ARILLSO_AGENT_VERSION}" --force
 ansible-galaxy collection install "arillso.container:${ARILLSO_CONTAINER_VERSION}" --force
@@ -55,7 +52,7 @@ done
 sphinx-build -M html rst build -c . -W --keep-going
 
 # Optimize CSS and JS if postcss is available
-if command -v postcss &> /dev/null; then
+if command -v postcss &> /dev/null && [ -f build/html/_static/custom.css ]; then
     echo "Optimizing CSS with PostCSS (autoprefixer + cssnano)..."
     postcss build/html/_static/custom.css \
         --use autoprefixer --use cssnano \
