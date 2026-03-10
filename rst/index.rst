@@ -28,23 +28,22 @@ Production-ready Ansible collections, container images, and development tools fo
 
 ----
 
+.. _features:
+
 .. raw:: html
 
    <div class="feature-grid">
      <div class="feature-card">
        <h3>🚀 Quick Start in Minutes</h3>
        <p>Get started with arillso in under 5 minutes. Install collections, run your first playbook.</p>
-       <a href="guide/getting-started/quickstart.html" class="btn-primary">Quick Start Guide →</a>
      </div>
      <div class="feature-card">
        <h3>📚 Complete Examples</h3>
        <p>Production-ready playbooks for web stacks, Kubernetes, monitoring, and more.</p>
-       <a href="guide/tutorials/examples.html" class="btn-primary">View Examples →</a>
      </div>
      <div class="feature-card">
        <h3>🔒 Security First</h3>
        <p>Built-in security best practices, hardening guides, and compliance patterns.</p>
-       <a href="guide/best-practices/security.html" class="btn-primary">Security Guide →</a>
      </div>
    </div>
 
@@ -156,6 +155,8 @@ Installation Options
 
 ----
 
+.. _popular-use-cases:
+
 Popular Use Cases
 -----------------
 
@@ -184,6 +185,8 @@ Real-world scenarios with complete, working examples:
 :doc:`View All Use Cases → <guide/tutorials/use-cases>`
 
 ----
+
+.. _platform-components:
 
 Platform Components
 -------------------
@@ -256,6 +259,8 @@ GitHub Actions
 
 ----
 
+.. _landing-architecture:
+
 Architecture & Design
 ---------------------
 
@@ -290,6 +295,8 @@ Architecture & Design
 :doc:`Read Architecture Guide → <guide/getting-started/architecture>`
 
 ----
+
+.. _features-quality:
 
 Features & Quality
 ------------------
@@ -350,75 +357,7 @@ Features & Quality
 
 ----
 
-Documentation Hub
------------------
-
-.. raw:: html
-
-   <div class="doc-hub-grid">
-     <!-- Getting Started Section -->
-     <div class="doc-hub-section">
-       <h3>🚀 Getting Started</h3>
-       <div class="doc-links">
-         <a href="guide/getting-started/quickstart.html" class="doc-link">
-           <span class="doc-title">Quick Start Guide</span>
-           <span class="doc-description">Get up and running in 5 minutes</span>
-         </a>
-         <a href="guide/getting-started/environment.html" class="doc-link">
-           <span class="doc-title">Development Environment</span>
-           <span class="doc-description">Set up your development environment</span>
-         </a>
-         <a href="guide/getting-started/architecture.html" class="doc-link">
-           <span class="doc-title">Platform Architecture</span>
-           <span class="doc-description">Understand the platform design</span>
-         </a>
-       </div>
-     </div>
-
-     <!-- Working with arillso Section -->
-     <div class="doc-hub-section">
-       <h3>📚 Working with arillso</h3>
-       <div class="doc-links">
-         <a href="guide/tutorials/use-cases.html" class="doc-link">
-           <span class="doc-title">Use Cases</span>
-           <span class="doc-description">10+ real-world scenarios</span>
-         </a>
-         <a href="guide/tutorials/examples.html" class="doc-link">
-           <span class="doc-title">Complete Examples</span>
-           <span class="doc-description">Complete playbook examples</span>
-         </a>
-         <a href="guide/best-practices/security.html" class="doc-link">
-           <span class="doc-title">Security Best Practices</span>
-           <span class="doc-description">Security best practices</span>
-         </a>
-       </div>
-     </div>
-
-     <!-- Reference Section -->
-     <div class="doc-hub-section">
-       <h3>📖 Reference</h3>
-       <div class="doc-links">
-         <a href="guide/reference/compatibility.html" class="doc-link">
-           <span class="doc-title">Compatibility Matrix</span>
-           <span class="doc-description">Version compatibility matrix</span>
-         </a>
-         <a href="guide/reference/troubleshooting.html" class="doc-link">
-           <span class="doc-title">Troubleshooting</span>
-           <span class="doc-description">FAQ and debugging guide</span>
-         </a>
-         <a href="guide/best-practices/standards.html" class="doc-link">
-           <span class="doc-title">Repository Standards</span>
-           <span class="doc-description">Repository standards</span>
-         </a>
-         <a href="guide/development/contributing.html" class="doc-link">
-           <span class="doc-title">Contributing Guide</span>
-           <span class="doc-description">Contribution guidelines</span>
-         </a>
-       </div>
-     </div>
-   </div>
-
-----
+.. _community:
 
 Community & Support
 -------------------
@@ -470,39 +409,6 @@ Community & Support
            </span>
          </a>
        </div>
-     </div>
-   </div>
-
-**Get Help:**
-
-* **Documentation Issues?** Open an issue on `guide repository <https://github.com/arillso/guide>`_
-* **Bug Reports?** Use the issue tracker in the respective project repository
-* **Questions?** Check :doc:`guide/reference/troubleshooting` first
-* **Contributing?** Read :doc:`guide/development/contributing`
-
-----
-
-Statistics
-----------
-
-.. raw:: html
-
-   <div class="stats-grid">
-     <div class="stat-card">
-       <h3>24+</h3>
-       <p>Production Roles</p>
-     </div>
-     <div class="stat-card">
-       <h3>10+</h3>
-       <p>Plugins & Filters</p>
-     </div>
-     <div class="stat-card">
-       <h3>80%+</h3>
-       <p>Code Coverage</p>
-     </div>
-     <div class="stat-card">
-       <h3>100%</h3>
-       <p>Open Source</p>
      </div>
    </div>
 
@@ -597,7 +503,6 @@ Copyright (c) 2022-2026, arillso
        <p>Choose your path and start automating your infrastructure today.</p>
        <div class="cta-buttons">
          <a href="guide/getting-started/quickstart.html" class="btn-primary-lg">Quick Start Guide</a>
-         <a href="guide/tutorials/examples.html" class="btn-secondary-lg">View Examples</a>
          <a href="collections/index.html" class="btn-secondary-lg">Browse Collections</a>
        </div>
      </div>
