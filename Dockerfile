@@ -1,5 +1,5 @@
 # Use the Python 3.14 image as a base
-FROM python:3.14@sha256:fe6ffb340c566fe7459832667da8b545896edb30c3dce0c3b1218ab4d377ba7d AS docs
+FROM python:3.14@sha256:89a288a9a9e9141b9f0c51744c358138da6369897792f1af3f5425e407d9529a AS docs
 
 # Set the working directory in the container to /usr/src
 WORKDIR /usr/src
