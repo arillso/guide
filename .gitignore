@@ -17,3 +17,8 @@ _static/custom.js
 
 # Local migration reference snapshot of the legacy monolith (Phase 2 source-of-truth).
 .frontend-snapshot/
+
+# Python bytecode and pytest cache.
+__pycache__/
+*.py[cod]
+.pytest_cache/
