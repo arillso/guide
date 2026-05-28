@@ -1,0 +1,78 @@
+/* ============================================
+   Buttons & Interactive Elements - Modern Design
+   ============================================ */
+
+.btn,
+.wy-btn,
+.btn-primary {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--accent-purple) 100%
+  );
+  border: none;
+  color: var(--text-on-primary);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-primary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none !important;
+  background-size: 200% 200%;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:hover,
+.wy-btn:hover,
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    var(--shadow-xl),
+    0 0 0 4px rgba(0, 102, 255, 0.1);
+  background-position: 100% 0;
+}
+
+.btn:active,
+.wy-btn:active,
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background: var(--bg-primary);
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary:hover {
+  background: var(--primary-extra-light);
+  border-color: var(--primary-dark);
+  color: var(--primary-dark);
+}
+
+/* Button Sizes */
+.btn-lg,
+.btn-primary-lg {
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--text-lg);
+  border-radius: var(--radius-xl);
+}
+
+.btn-sm {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+}
+
+/* Icon Buttons */
+.btn .icon,
+.wy-btn .icon {
+  font-size: 1.2em;
+}

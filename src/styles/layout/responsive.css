@@ -1,0 +1,141 @@
+/* ============================================
+   Cross-Cutting Responsive Media Queries
+   Per design.md §6.9, fine-grained component-local responsive rules
+   should be migrated into their components in Task 4.2.
+   For now, the global top-level media-query blocks live here.
+   ============================================ */
+
+/* Tablet - max 1024px */
+@media screen and (max-width: 1024px) {
+  .wy-nav-content {
+    padding: var(--space-6) var(--space-6);
+    margin: var(--space-4);
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .doc-hub-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile - max 768px */
+@media screen and (max-width: 768px) {
+  .wy-nav-content {
+    padding: var(--space-4);
+    margin: var(--space-2);
+    border-radius: var(--radius-lg);
+  }
+
+  .wy-nav-content h1 {
+    font-size: var(--text-3xl);
+  }
+
+  .wy-nav-content h2 {
+    font-size: var(--text-2xl);
+    padding-left: var(--space-3);
+  }
+
+  .wy-nav-content h3 {
+    font-size: var(--text-xl);
+  }
+
+  .highlight pre {
+    font-size: 0.8em;
+    padding: var(--space-4);
+  }
+
+  code.literal {
+    font-size: 0.85em;
+  }
+
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .community-links {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-hero {
+    padding: var(--space-8) var(--space-4);
+    margin: var(--space-4) 0;
+  }
+
+  .hero-tagline {
+    font-size: var(--text-2xl);
+  }
+
+  .landing-footer {
+    padding: var(--space-6);
+    margin: var(--space-6) 0;
+  }
+
+  .footer-cta h3 {
+    font-size: var(--text-2xl);
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+  }
+
+  /* Responsive tables: horizontal scroll */
+  .wy-table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .wy-table-responsive table {
+    min-width: 500px;
+  }
+
+  /* Reduce shadow intensity on mobile for performance */
+  .feature-card,
+  .quality-card,
+  .community-card,
+  .doc-hub-section {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .stat-card h3 {
+    font-size: var(--text-3xl);
+  }
+}
+
+/* Small mobile - max 480px */
+@media screen and (max-width: 480px) {
+  .wy-nav-content {
+    padding: var(--space-3);
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+
+  .hero-badges {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .highlight::after {
+    display: none;
+  }
+
+  .highlight::before {
+    height: 8px;
+  }
+
+  .code-copy-button {
+    top: 12px;
+    padding: var(--space-1) var(--space-2);
+  }
+}

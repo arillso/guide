@@ -1,0 +1,11 @@
+/* ============================================
+   Breakpoint Tokens
+   Responsive system per design.md §6.9 (mobile-first)
+   ============================================ */
+
+:root {
+  --bp-sm: 480px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1280px;
+}

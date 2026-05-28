@@ -1,0 +1,19 @@
+/* ============================================
+   Global Resets & Box-Sizing
+   ============================================ */
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   Focus Styles - Keyboard Accessibility
+   ============================================ */
+
+/* Outline width literals (2px) preserved from monolith: no border-width token exists in src/styles/tokens/. */
+*:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}

@@ -1,0 +1,13 @@
+/* ============================================
+   Mermaid Diagrams - Minimal Styling
+   ============================================ */
+
+.mermaid {
+  margin: var(--space-8) 0;
+  overflow-x: auto;
+}
+
+/* Fix paragraph text color in Mermaid diagrams */
+.mermaid p {
+  color: var(--text-on-primary) !important;
+}

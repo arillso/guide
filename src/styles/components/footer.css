@@ -1,0 +1,67 @@
+/* ============================================
+   Footer - Site Footer and Previous/Next Buttons
+   ============================================ */
+
+.rst-footer-buttons {
+  margin-top: 3em;
+  padding-top: 2em;
+  border-top: 2px solid var(--border-light);
+}
+
+/* Previous/Next Navigation Buttons */
+.rst-breadcrumbs-buttons .btn.btn-neutral,
+a.btn.btn-neutral {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--accent-purple) 100%
+  ) !important;
+  color: var(--text-on-primary) !important;
+  border: none !important;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-semibold);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-primary);
+}
+
+.rst-breadcrumbs-buttons .btn.btn-neutral:hover,
+a.btn.btn-neutral:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    var(--shadow-xl),
+    0 0 0 4px rgba(0, 102, 255, 0.1) !important;
+}
+
+footer {
+  color: var(--text-tertiary);
+  font-size: 0.9em;
+}
+
+/* ============================================
+   Site Footer Navigation
+   ============================================ */
+
+.site-footer {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-light);
+}
+
+.site-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  justify-content: center;
+}
+
+.site-footer-nav a {
+  color: var(--text-tertiary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  transition: color var(--transition-fast);
+}
+
+.site-footer-nav a:hover {
+  color: var(--primary-color);
+}

@@ -1,0 +1,334 @@
+/* ============================================
+   Sidebar & Navigation - Glassmorphism Design
+   ============================================ */
+
+/* Sidebar - Modern Glass Effect with solid fallback */
+.wy-nav-side {
+  background: var(--bg-primary);
+  border-right: 1px solid var(--border-light);
+  box-shadow: var(--shadow-lg);
+}
+
+@supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
+  .wy-nav-side {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+  }
+}
+
+/* Search Box - Elevated Design */
+.wy-side-nav-search {
+  background: transparent;
+  border-bottom: 1px solid var(--border-light);
+  padding: var(--space-6) var(--space-4);
+}
+
+.wy-side-nav-search > a {
+  color: var(--text-primary);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-extrabold);
+  letter-spacing: -0.03em;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--secondary-color) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Disable hover effect for home link */
+.wy-side-nav-search > a:hover,
+.wy-side-nav-search > a:active,
+.wy-side-nav-search > a:focus,
+.wy-side-nav-search .wy-dropdown > a:hover,
+.wy-side-nav-search .wy-dropdown > a:active,
+.wy-side-nav-search .wy-dropdown > a:focus {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--secondary-color) 100%
+  ) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  border-radius: 0 !important;
+}
+
+/* Search Input - Modern Rounded Style */
+.wy-side-nav-search input[type='text'] {
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border-medium);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+}
+
+.wy-side-nav-search input[type='text']:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-md);
+}
+
+.wy-side-nav-search input[type='text']:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background-color: var(--bg-primary);
+  box-shadow:
+    0 0 0 4px rgba(0, 102, 255, 0.1),
+    var(--shadow-md);
+}
+
+.wy-side-nav-search input[type='text']::placeholder {
+  color: var(--text-tertiary);
+  font-weight: var(--font-normal);
+}
+
+/* Navigation Menu - Clean & Modern */
+.wy-menu-vertical {
+  background: transparent;
+  padding: var(--space-4) 0;
+}
+
+.wy-menu-vertical a {
+  color: var(--text-secondary);
+  padding: var(--space-3) var(--space-4);
+  margin: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  font-weight: var(--font-medium);
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  position: relative;
+  border-left: none;
+}
+
+.wy-menu-vertical a:hover {
+  background-color: var(--primary-extra-light);
+  color: var(--primary-color);
+  transform: translateX(2px);
+  text-decoration: none;
+}
+
+/* Active Navigation - Modern Indicator */
+.wy-menu-vertical li.current {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 102, 255, 0.12) 0%,
+    rgba(0, 102, 255, 0.06) 100%
+  );
+  position: relative;
+  box-shadow: var(--shadow-sm);
+}
+
+.wy-menu-vertical li.current > a {
+  background: transparent;
+  color: var(--primary-color);
+  font-weight: var(--font-semibold);
+  border-left: none;
+}
+
+.wy-menu-vertical li.toctree-l1.current > a {
+  border-top: none !important;
+  border-bottom: none !important;
+}
+
+.wy-menu-vertical li.current::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(
+    180deg,
+    var(--primary-color) 0%,
+    var(--secondary-color) 100%
+  );
+}
+
+.wy-menu-vertical li.current a {
+  border: none;
+}
+
+.wy-menu-vertical li.toctree-l2.current {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 107, 53, 0.12) 0%,
+    rgba(255, 107, 53, 0.06) 100%
+  );
+  position: relative;
+  box-shadow: var(--shadow-sm);
+}
+
+.wy-menu-vertical li.toctree-l2.current > a {
+  background: transparent !important;
+  color: var(--secondary-color);
+  padding: 0.4045em 1.618em;
+}
+
+.wy-menu-vertical li.toctree-l2.current li.toctree-l3 > a {
+  background: transparent !important;
+}
+
+/* Ensure Level 3 and Level 4 navigation items are transparent */
+.wy-menu-vertical li.toctree-l3.current > a,
+.wy-menu-vertical li.toctree-l3.current li.toctree-l4 > a {
+  background: transparent !important;
+}
+
+/* Reduce left padding for Level 4 navigation */
+.wy-menu-vertical li.toctree-l3.current li.toctree-l4 > a {
+  padding-left: 5.12em !important;
+}
+
+.wy-menu-vertical li.toctree-l2.current::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--secondary-color);
+}
+
+/* Nested Navigation - Clean Hierarchy */
+.wy-menu-vertical li.toctree-l2 > a {
+  padding-left: var(--space-4);
+  font-size: 0.9rem;
+}
+
+/* Navigation Icons Enhancement */
+.wy-menu-vertical a .icon {
+  margin-right: var(--space-2);
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+
+.wy-menu-vertical a:hover .icon {
+  opacity: 1;
+}
+
+/* Disable hover effect for home icon */
+.icon-home {
+  opacity: 0.7 !important;
+}
+
+.wy-menu-vertical a:hover .icon-home {
+  opacity: 0.7 !important;
+  transform: none !important;
+}
+
+/* Collapsible Menu Items */
+.wy-menu-vertical li.toctree-l1 > a {
+  margin-top: var(--space-2);
+}
+
+.wy-menu-vertical li.toctree-l1.current > a {
+  margin-bottom: var(--space-1);
+}
+
+/* Expand/Collapse Icons - Add Space */
+.wy-menu-vertical li.toctree-l1 > a .toctree-expand,
+.wy-menu-vertical li.toctree-l2 > a .toctree-expand,
+.wy-menu-vertical span.toctree-expand {
+  margin-right: var(--space-3);
+  opacity: 0.6;
+  transition: all var(--transition-fast);
+  font-size: 0.9em;
+}
+
+.wy-menu-vertical li:hover .toctree-expand {
+  opacity: 1;
+}
+
+/* Alternative: if using .fa icons for expand/collapse */
+.wy-menu-vertical .fa-plus-square,
+.wy-menu-vertical .fa-minus-square,
+.wy-menu-vertical .fa-caret-right,
+.wy-menu-vertical .fa-caret-down {
+  margin-right: var(--space-3);
+  opacity: 0.6;
+  transition: all var(--transition-fast);
+}
+
+.wy-menu-vertical li:hover .fa-plus-square,
+.wy-menu-vertical li:hover .fa-minus-square,
+.wy-menu-vertical li:hover .fa-caret-right,
+.wy-menu-vertical li:hover .fa-caret-down {
+  opacity: 1;
+}
+
+/* ============================================
+   Ansible Top Navigation - Clean Modern Design
+   ============================================ */
+
+.ansibleNav {
+  background-color: var(--bg-overlay) !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  box-shadow: var(--shadow-md) !important;
+  padding: 0 !important;
+}
+
+@supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
+  .ansibleNav {
+    background: var(--glass-bg) !important;
+    backdrop-filter: var(--glass-blur) !important;
+    -webkit-backdrop-filter: var(--glass-blur) !important;
+  }
+}
+
+.ansibleNav ul {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: var(--space-2) !important;
+  list-style: none !important;
+  margin: 0 !important;
+}
+
+.ansibleNav li {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ansibleNav a {
+  color: var(--text-primary) !important;
+  font-family: var(--font-sans) !important;
+  font-size: var(--text-sm) !important;
+  font-weight: var(--font-semibold) !important;
+  text-decoration: none !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  padding: var(--space-2) var(--space-4) !important;
+  border-radius: var(--radius-md) !important;
+  transition: all var(--transition-fast) !important;
+  display: inline-block !important;
+}
+
+.ansibleNav a:hover {
+  color: var(--primary-color) !important;
+  background: var(--primary-extra-light) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* ============================================
+   DocSiteNav Title - Modern Typography
+   ============================================ */
+
+.DocSiteNav-title {
+  font-family: var(--font-sans) !important;
+  font-weight: var(--font-bold) !important;
+  font-size: var(--text-xl) !important;
+  letter-spacing: -0.02em !important;
+  margin-top: -0.75rem !important;
+  padding-bottom: 0.75rem !important;
+  color: var(--gray-900) !important;
+}

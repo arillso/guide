@@ -1,0 +1,167 @@
+/* ============================================
+   Admonitions (Notes, Warnings, etc.) - Modern Cards
+   ============================================ */
+
+.admonition {
+  border-radius: var(--radius-xl);
+  border: none;
+  box-shadow: var(--shadow-lg);
+  margin: var(--space-6) 0;
+  padding: var(--space-5) var(--space-6);
+  border-left: 4px solid;
+  position: relative;
+  overflow: hidden;
+}
+
+.admonition::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  opacity: 0.05;
+  border-radius: 50%;
+  filter: blur(40px);
+}
+
+.admonition-title {
+  font-weight: var(--font-semibold);
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.admonition-title::before {
+  content: '●';
+  font-size: 0.7em;
+}
+
+/* Note - Info Blue */
+.admonition.note {
+  background: linear-gradient(
+    135deg,
+    rgba(78, 205, 196, 0.06) 0%,
+    rgba(78, 205, 196, 0.02) 100%
+  );
+  border-left-color: var(--accent-info);
+}
+
+.admonition.note::before {
+  background: var(--accent-info);
+}
+
+.admonition.note .admonition-title {
+  color: var(--accent-info);
+}
+
+/* Warning - Warm Yellow */
+.admonition.warning {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 176, 32, 0.06) 0%,
+    rgba(255, 176, 32, 0.02) 100%
+  );
+  border-left-color: var(--accent-warning);
+}
+
+.admonition.warning::before {
+  background: var(--accent-warning);
+}
+
+.admonition.warning .admonition-title {
+  color: var(--accent-warning);
+}
+
+/* Danger - Modern Red */
+.admonition.danger {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 71, 87, 0.06) 0%,
+    rgba(255, 71, 87, 0.02) 100%
+  );
+  border-left-color: var(--accent-danger);
+}
+
+.admonition.danger::before {
+  background: var(--accent-danger);
+}
+
+.admonition.danger .admonition-title {
+  color: var(--accent-danger);
+}
+
+/* Tip - Success Green */
+.admonition.tip {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 217, 165, 0.06) 0%,
+    rgba(0, 217, 165, 0.02) 100%
+  );
+  border-left-color: var(--accent-success);
+}
+
+.admonition.tip::before {
+  background: var(--accent-success);
+}
+
+.admonition.tip .admonition-title {
+  color: var(--accent-success);
+}
+
+/* Important - Purple */
+.admonition.important {
+  background: linear-gradient(
+    135deg,
+    rgba(160, 95, 247, 0.06) 0%,
+    rgba(160, 95, 247, 0.02) 100%
+  );
+  border-left-color: var(--accent-purple);
+}
+
+.admonition.important::before {
+  background: var(--accent-purple);
+}
+
+.admonition.important .admonition-title {
+  color: var(--accent-purple);
+}
+
+/* See Also - Modern Minimalist Style */
+.admonition.seealso,
+.admonition.see-also {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 102, 255, 0.04) 0%,
+    rgba(78, 205, 196, 0.02) 100%
+  );
+  border: 2px solid var(--border-light) !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+}
+
+.admonition.seealso::before,
+.admonition.see-also::before {
+  background: var(--primary-color);
+}
+
+.admonition.seealso .admonition-title,
+.admonition.see-also .admonition-title {
+  color: var(--primary-color);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+}
+
+/* Remove any black borders from all admonitions */
+.admonition,
+.admonition * {
+  border-color: transparent !important;
+}
+
+.admonition {
+  border-left: 3px solid !important;
+}

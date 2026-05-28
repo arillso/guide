@@ -1,0 +1,31 @@
+/* ============================================
+   Scrollbar Styling
+   Hex literal #f1f1f1 preserved: webkit-scrollbar track lacks a token equivalent
+   (very close to --gray-100 but historically a distinct shade).
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    var(--primary-color) 0%,
+    var(--secondary-color) 100%
+  );
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    var(--primary-dark) 0%,
+    var(--secondary-dark) 100%
+  );
+}
