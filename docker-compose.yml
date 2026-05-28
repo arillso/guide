@@ -16,7 +16,9 @@ services:
     container_name: arillso-doc-generator # Custom name for the container
     working_dir: /project # Sets the working directory inside the container
     command: > # Commands to run in the container
-      bash -c "source /usr/src/antsibull-docs/venv/bin/activate &&
-      pip install -r /docs/requirements.txt && /docs/build.sh &&
-      python -m http.server 8000 --directory /docs/build/html"
-    # Activates Python virtual environment, installs dependencies, builds the docs, and serves them using Python's HTTP server
+      bash -c "cd /project && ./build.sh &&
+      python -m http.server 8000 --directory build/html"
+    # Builds the docs using the dependencies baked into the image and serves
+    # them using Python's HTTP server. Python and node toolchains come from
+    # the multi-stage Dockerfile (target: docs); no runtime pip install or
+    # venv activation is required.
