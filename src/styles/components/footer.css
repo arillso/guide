@@ -23,6 +23,12 @@ a.btn.btn-neutral {
   font-weight: var(--font-semibold);
   transition: all var(--transition-base);
   box-shadow: var(--shadow-primary);
+  /* WCAG 2.5.5 — minimum 44×44 px touch target. */
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .rst-breadcrumbs-buttons .btn.btn-neutral:hover,
@@ -31,6 +37,18 @@ a.btn.btn-neutral:hover {
   box-shadow:
     var(--shadow-xl),
     0 0 0 4px rgba(0, 102, 255, 0.1) !important;
+}
+
+/* Keyboard focus indicator for prev/next nav buttons.
+   White outline + offset stays visible against the purple/blue gradient
+   (text-on-primary ≥ 7:1 contrast against gradient). */
+.rst-breadcrumbs-buttons .btn.btn-neutral:focus-visible,
+a.btn.btn-neutral:focus-visible {
+  outline: 2px solid var(--text-on-primary) !important;
+  outline-offset: 2px !important;
+  box-shadow:
+    0 0 0 4px var(--primary-color),
+    var(--shadow-xl) !important;
 }
 
 footer {
@@ -60,8 +78,23 @@ footer {
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   transition: color var(--transition-fast);
+  /* WCAG 2.5.5 — inline footer links honour the 44 px touch height
+     via padding (link itself stays inline). */
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
 }
 
 .site-footer-nav a:hover {
   color: var(--primary-color);
+}
+
+/* Keyboard focus indicator for footer links — primary-color outline
+   on light footer background, ≥ 8:1 contrast against bg-primary. */
+.site-footer-nav a:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+  color: var(--primary-color);
+  border-radius: var(--radius-sm);
 }

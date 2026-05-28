@@ -3,6 +3,29 @@
    Per design.md §6.9, fine-grained component-local responsive rules
    should be migrated into their components in Task 4.2.
    For now, the global top-level media-query blocks live here.
+
+   --------------------------------------------------------------
+   Breakpoint Convention (Task 4.2)
+   --------------------------------------------------------------
+   CSS Custom Properties (e.g. var(--bp-md)) CANNOT be used directly
+   inside @media query conditions — the spec requires the condition
+   to resolve at parse time, before custom-property substitution.
+
+   To keep the breakpoint values authoritative in
+   src/styles/tokens/breakpoints.css, we mirror them as literals here
+   and across components/*.css. Any change to a token MUST be
+   reflected in every @media (min-width: …) / (max-width: …) below.
+
+   Token mirror (mobile-first):
+     --bp-sm  =  480px
+     --bp-md  =  768px
+     --bp-lg  = 1024px
+     --bp-xl  = 1280px
+
+   NOTE: The pre-existing rules below use legacy `max-width` queries
+   (desktop-first) and are kept verbatim from the original monolith
+   to avoid layout regression. Full mobile-first refactor is out of
+   scope for Task 4.2; new rules added by 4.2 use `min-width`.
    ============================================ */
 
 /* Tablet - max 1024px */

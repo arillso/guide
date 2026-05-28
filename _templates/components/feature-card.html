@@ -1,0 +1,29 @@
+{#-
+  feature_card — Reusable feature card component.
+
+  Parameters:
+    title (string, required)       — visible heading
+    description (string, required) — body text
+    link (string, required)        — internal path or external URL
+    icon (string, optional)        — visual marker (e.g. emoji, SVG fragment)
+
+  Slots:
+    None — content is fully parameter-driven. For richer markup, compose
+    multiple feature_card invocations inside a wrapper layout.
+
+  A11y:
+    - Wraps content in <article role="article"> for landmark navigation.
+    - Icon is decorative (aria-hidden="true"); title is the actionable element.
+    - Link is keyboard-reachable via the title anchor.
+
+  Example:
+    {% from "components/feature-card.html" import feature_card %}
+    {{ feature_card("Quickstart", "Install in 5 minutes.", "/quickstart/", "🚀") }}
+-#}
+{% macro feature_card(title, description, link, icon=None) %}
+<article class="feature-card" role="article">
+  {% if icon %}<span class="feature-card__icon" aria-hidden="true">{{ icon }}</span>{% endif %}
+  <h3 class="feature-card__title"><a href="{{ link }}">{{ title }}</a></h3>
+  <p class="feature-card__description">{{ description }}</p>
+</article>
+{% endmacro %}

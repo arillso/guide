@@ -261,10 +261,26 @@ code.literal:hover {
   z-index: 100;
   opacity: 0;
   font-family: var(--font-sans);
+  /* WCAG 2.5.5 — minimum 44×44 px touch target. */
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .highlight:hover .code-copy-button {
   opacity: 1;
+}
+
+/* Reveal the copy button for keyboard users (focus-visible).
+   Without this rule the button is opacity:0 unless the user hovers
+   the .highlight container, which is unreachable via keyboard. */
+.code-copy-button:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--accent-info);
+  outline-offset: 2px;
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .code-copy-button:hover {

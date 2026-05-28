@@ -1,0 +1,31 @@
+{#-
+  code_block — Reusable code-block container with copy-button hook.
+
+  Parameters:
+    code (string, required)     — code content (will be HTML-escaped)
+    language (string, optional) — language hint (e.g. "bash", "yaml");
+                                  falls back to "plaintext" when omitted
+    filename (string, optional) — visible header rendered in <figcaption>
+
+  Slots:
+    None — `code` is the single content channel. Multi-file examples
+    should invoke code_block multiple times.
+
+  A11y:
+    - Wrapped in <figure> with optional <figcaption> for filename.
+    - Copy button has aria-label and is keyboard-reachable.
+    - Code itself is inside <pre><code> for semantic correctness.
+    - Language class follows the `language-<lang>` convention so screen
+      readers and syntax highlighters can identify the snippet kind.
+
+  Example:
+    {% from "components/code-block.html" import code_block %}
+    {{ code_block("ansible-galaxy collection install arillso.system", "bash") }}
+-#}
+{% macro code_block(code, language=None, filename=None) %}
+<figure class="code-block-figure">
+  {% if filename %}<figcaption class="code-block-filename">{{ filename }}</figcaption>{% endif %}
+  <pre class="highlight code-block"><code class="language-{{ language or 'plaintext' }}">{{ code | e }}</code></pre>
+  <button class="code-copy-button" type="button" aria-label="Copy code to clipboard" data-language="{{ language or '' }}">Copy</button>
+</figure>
+{% endmacro %}

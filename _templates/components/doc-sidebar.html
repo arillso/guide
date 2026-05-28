@@ -1,0 +1,54 @@
+{#-
+  doc_sidebar — Reusable documentation sidebar with nested navigation.
+
+  Parameters:
+    items (list of dict, required) — navigation items. Each item:
+        {
+          "label":    str,          # required, visible link text
+          "link":     str,          # required, href target
+          "children": list[dict]?   # optional, one level of nesting
+        }
+    aria_label (string, optional)  — accessible name for the <nav> landmark
+                                     (default: "Documentation navigation")
+
+  Slots:
+    None — structure is fully data-driven via `items`. Collapsible group
+    behaviour is layered on client-side via `aria-expanded` toggles in
+    `src/scripts/features/`.
+
+  A11y:
+    - Wraps in <nav aria-label="..."> for landmark navigation.
+    - Uses <ul>/<li> structure for screen reader semantics.
+    - Each link is keyboard-focusable through native <a> elements.
+    - Nested groups expose `aria-expanded="false"` as a hook for client-side
+      progressive enhancement; the closed default is conservative so that
+      JS-disabled visitors still see every link.
+
+  Example:
+    {% from "components/doc-sidebar.html" import doc_sidebar %}
+    {{ doc_sidebar([
+      {"label": "Guide", "link": "/guide/", "children": [
+        {"label": "Quickstart", "link": "/guide/quickstart/"},
+      ]},
+    ], aria_label="Documentation sections") }}
+-#}
+{% macro doc_sidebar(items, aria_label="Documentation navigation") %}
+<nav class="doc-sidebar" aria-label="{{ aria_label }}">
+  <ul class="doc-sidebar__list">
+    {% for item in items %}
+    <li class="doc-sidebar__item">
+      <a class="doc-sidebar__link" href="{{ item.link }}">{{ item.label }}</a>
+      {% if item.children %}
+      <ul class="doc-sidebar__list doc-sidebar__list--nested" aria-expanded="false">
+        {% for child in item.children %}
+        <li class="doc-sidebar__item">
+          <a class="doc-sidebar__link" href="{{ child.link }}">{{ child.label }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endmacro %}
