@@ -80,6 +80,9 @@ linkcheck_ignore = [
     # galaxy.ansible.com / hub.docker.com return 403 to non-browser clients.
     r"https://galaxy\.ansible\.com/.*",
     r"https://hub\.docker\.com/.*",
+    # Non-HTTP URI schemes that appear in generated collection RST (e.g. the
+    # tailscale_role "tag:" ACL tags) and that linkcheck cannot resolve.
+    r"^tag:.*",
 ]
 
 # Sitemap configuration

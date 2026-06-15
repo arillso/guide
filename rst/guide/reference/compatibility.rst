@@ -665,9 +665,12 @@ Current Known Issues
 Version-Specific Issues
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Issues are tracked per version in GitHub Issues.
-
-See: https://github.com/arillso/ansible.*/issues
+Issues are tracked per version in GitHub Issues, in each collection's
+repository (for example `arillso/ansible.system
+<https://github.com/arillso/ansible.system/issues>`_,
+`arillso/ansible.agent <https://github.com/arillso/ansible.agent/issues>`_,
+and `arillso/ansible.container
+<https://github.com/arillso/ansible.container/issues>`_).
 
 Compatibility Checklist
 -----------------------
@@ -742,7 +745,9 @@ Release Schedule
 **Subscribe to releases:**
 
 * GitHub: Watch → Custom → Releases
-* RSS: https://github.com/arillso/ansible.*/releases.atom
+* RSS: each collection exposes a release feed at
+  ``https://github.com/arillso/<repository>/releases.atom`` (for example
+  `ansible.system <https://github.com/arillso/ansible.system/releases.atom>`_)
 
 Next Steps
 ----------
