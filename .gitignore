@@ -7,7 +7,6 @@
 /temp-rst
 /build
 /rst/collections
-.dde
 node_modules/
 
 # Generated frontend artefacts — produced by FrontendBuildPipeline (postcss + esbuild).
