@@ -46,7 +46,7 @@ Entry points:
 Tokens live in `src/styles/tokens/` and are exposed as CSS Custom
 Properties on `:root`. Components MUST reference them via `var(--token)`;
 literal colors, raw px values, or magic numbers outside `tokens/` count as
-a contract violation (see design §7.3 Token-Vertrag).
+a contract violation.
 
 | Category | Example tokens | Source |
 |----------|----------------|--------|
@@ -93,7 +93,7 @@ All commands run from the repository root.
 | `npm run build:js` | esbuild bundle of `src/scripts/index.js` → `_static/custom.js` (target ES2020). |
 | `npm run build:watch:css` | Same as `build:css`, rebuild on change. |
 | `npm run build:watch:js` | Same as `build:js`, rebuild on change. |
-| `./scripts/build_frontend.sh` | Equivalent to `npm run build`. Used by the top-level `build.sh` as step 1 (see design §4.3). |
+| `./scripts/build_frontend.sh` | Equivalent to `npm run build`. Used by the top-level `build.sh` as step 1. |
 
 The PostCSS config in `postcss.config.js` enables `postcss-import` plus
 `autoprefixer` and `cssnano` (the latter two are applied during the

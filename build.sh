@@ -22,7 +22,7 @@ echo "Building frontend bundles..."
 ./scripts/build_frontend.sh
 
 # 2. Ensure Ansible collections are present in the local cache
-#    (replaces the former galaxy-install calls; see design Section 6.2).
+#    (replaces the former galaxy-install calls).
 echo "Ensuring Ansible collection cache..."
 CACHE_DIR="${ARILLSO_COLLECTIONS_CACHE:-${HOME}/.cache/arillso-collections}"
 CACHE_ARGS=(--versions-file versions.env --cache-dir "${CACHE_DIR}")
@@ -32,7 +32,7 @@ fi
 python3 scripts/collection_cache.py ensure "${CACHE_ARGS[@]}" > "${CACHE_MANIFEST_FILE}"
 
 # Build ANSIBLE_COLLECTIONS_PATH from the manifest so antsibull-docs sees the
-# cached collection tree (design §4.3, §6.4). Each cached collection lives in a
+# cached collection tree. Each cached collection lives in a
 # self-contained <path>/ansible_collections tree (the cache stores every pinned
 # version in its own directory). ansible-doc resolves collections from the
 # parent of an "ansible_collections" directory, so we join those per-collection
@@ -58,7 +58,7 @@ antsibull-docs \
 # 4. Copy collection documentation into source directory
 rsync -cprv --delete-after temp-rst/collections/ rst/collections/
 
-# 5. Normalize collection names (token-based; see design Section 6.3).
+# 5. Normalize collection names (token-based).
 echo "Normalizing collection names..."
 python3 scripts/normalize_collections.py --root rst
 

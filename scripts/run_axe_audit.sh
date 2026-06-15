@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run @axe-core/cli WCAG audit against representative built HTML pages.
-# Exits non-zero on serious/critical findings per WCAG 2.1 AA (Requirements 4.5, 5.5, 5.6).
+# Exits non-zero on serious/critical findings per WCAG 2.1 AA.
 
 set -e
 set -u
@@ -11,7 +11,7 @@ cd "$REPO_ROOT"
 
 # Representative pages: landing, getting-started guide, collection index.
 # Non-existent pages are skipped with a warning so the script remains robust
-# during early build phases (per design §6.12 and task 6.3 Observable Done).
+# during early build phases.
 PAGES=(
   "build/html/index.html"
   "build/html/guide/getting-started/quickstart.html"

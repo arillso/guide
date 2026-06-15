@@ -49,11 +49,10 @@ in der ausgelieferten HTML-Doku eingeführt haben.
 
 ## Baseline-Build-Zeit
 
-Vor dem ersten Refactoring-Merge auf `main` festgehalten
-(siehe Task 7.2):
+Vor dem ersten Refactoring-Merge auf `main` festzuhalten:
 
-- Lokale Wallclock-Zeit `./build.sh`: _TBD durch Task 7.2_
-- CI-Wallclock-Zeit Build-Job: _TBD durch Task 7.2_
+- Lokale Wallclock-Zeit `./build.sh`: _TBD_
+- CI-Wallclock-Zeit Build-Job: _TBD_
 
 Aktueller Lauf darf nicht signifikant (> 20 %) über der Baseline
 liegen.

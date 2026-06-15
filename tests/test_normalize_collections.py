@@ -4,9 +4,7 @@ Diese Tests rufen den Normalisierer als Subprozess auf — dasselbe Aufrufmuster
 das ``build.sh`` produktiv nutzt — und prüfen das beobachtbare Verhalten gegen
 Fixture-RST-Dateien in einem temporären Verzeichnis.
 
-Abgedeckt sind die in
-``.kiro/specs/refactoring-structure-to-modern-best-practices/tasks.md``
-§3.3 geforderten Cases (Requirements 2.6, 2.7; Design §6.3):
+Abgedeckte Cases:
 
 * Wortgrenzen-Treffer (positiv) für ``Arillso``, ``Arillso.System``,
   ``Arillso.Agent``, ``Arillso.Container``.

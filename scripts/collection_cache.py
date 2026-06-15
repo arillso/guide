@@ -6,10 +6,7 @@ Arillso collection versions, maintains a versioned local cache under
 ``~/.cache/arillso-collections/<namespace>/<name>/<version>/`` and, in online
 mode, fetches missing versions via ``ansible-galaxy collection install``.
 
-See ``.kiro/specs/refactoring-structure-to-modern-best-practices/design.md``
-section 6.2 for the full contract.
-
-Exit codes (per design §6.2):
+Exit codes:
 
 * ``0`` -- success; JSON manifest written to stdout.
 * ``1`` -- offline mode and cache miss.
@@ -47,7 +44,7 @@ _VERSIONS_LINE_RE = re.compile(r'^([A-Z][A-Z0-9_]*)="([^"]+)"')
 # successfully. Presence signals "cache hit"; absence forces a re-download.
 CACHE_COMPLETE_MARKER = ".cache_complete"
 
-# Exit codes (must match design §6.2 / requirements §7.1).
+# Exit codes (see the module docstring for the full contract).
 EXIT_OK = 0
 EXIT_OFFLINE_MISS = 1
 EXIT_NO_VERSIONS_FILE = 2
@@ -234,7 +231,7 @@ def build_manifest(
     cache_dir: Path,
     resolved: List[Tuple[str, str, str, Path]],
 ) -> Dict[str, object]:
-    """Build the stdout JSON manifest consumed by ``build.sh`` (Task 5.1)."""
+    """Build the stdout JSON manifest consumed by ``build.sh``."""
     return {
         "cache_root": str(cache_dir),
         "collections": [

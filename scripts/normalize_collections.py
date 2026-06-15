@@ -8,10 +8,6 @@ angegebenen ``--root``-Verzeichnis und normalisiert Namespace-Tokens
 während ``Arillso``, ``Arillso.System``, ``arillso.Agent`` etc. zur kanonischen
 Kleinschreibung normalisiert werden.
 
-Siehe
-``.kiro/specs/refactoring-structure-to-modern-best-practices/design.md``
-Abschnitt 6.3 sowie Tasks 3.2 / Requirements 1.3, 2.6, 2.7.
-
 CLI:
 
     python scripts/normalize_collections.py \
@@ -35,7 +31,7 @@ import sys
 from pathlib import Path
 from typing import List, Sequence, Set, Tuple
 
-# Default-Whitelist gemäß design §6.3 und tasks.md §3.2.
+# Default-Whitelist der dokumentierten Arillso-Collections.
 DEFAULT_COLLECTIONS: Tuple[str, ...] = (
     "arillso.system",
     "arillso.agent",

@@ -1,11 +1,10 @@
 /* ============================================
    Cross-Cutting Responsive Media Queries
-   Per design.md §6.9, fine-grained component-local responsive rules
-   should be migrated into their components in Task 4.2.
-   For now, the global top-level media-query blocks live here.
+   Fine-grained component-local responsive rules should live in their
+   components; the global top-level media-query blocks live here.
 
    --------------------------------------------------------------
-   Breakpoint Convention (Task 4.2)
+   Breakpoint Convention
    --------------------------------------------------------------
    CSS Custom Properties (e.g. var(--bp-md)) CANNOT be used directly
    inside @media query conditions — the spec requires the condition
@@ -24,8 +23,8 @@
 
    NOTE: The pre-existing rules below use legacy `max-width` queries
    (desktop-first) and are kept verbatim from the original monolith
-   to avoid layout regression. Full mobile-first refactor is out of
-   scope for Task 4.2; new rules added by 4.2 use `min-width`.
+   to avoid layout regression. A full mobile-first refactor is out of
+   scope here; new rules should use `min-width`.
    ============================================ */
 
 /* Tablet - max 1024px */

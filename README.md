@@ -63,7 +63,7 @@ npm run build:watch:js    # esbuild, in another shell
 
 ## Build Steps
 
-`./build.sh` runs the pipeline in this order (see design §4.3):
+`./build.sh` runs the pipeline in this order:
 
 1. **Frontend build** — `scripts/build_frontend.sh` runs PostCSS over
    `src/styles/index.css` and esbuild over `src/scripts/index.js`,
@@ -91,8 +91,7 @@ instructions, and the pull request process.
 
 - [`src/README.md`](src/README.md) — frontend module map, token usage,
   component macros, and frontend build commands.
-- `docs/regression-checklist.md` — manual regression checklist
-  (introduced by Task 7.1).
+- `docs/regression-checklist.md` — manual regression checklist.
 
 ## License
 
