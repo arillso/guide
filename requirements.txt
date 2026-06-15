@@ -4,8 +4,13 @@
 
 # Created with antsibull-docs 2.5.0.post0
 
-antsibull-docs >=2.24.0, <3.0.0
+# Exact pins for the direct build dependencies; Renovate (pip manager via the
+# org renovate-base preset) bumps these as new releases land. Transitive deps
+# (sphinx, antsibull-core, jinja2, ...) are intentionally not locked here — a
+# full pip-compile constraints file would be the next step if the floating
+# transitive tree ever causes drift.
+antsibull-docs==2.24.0
 ansible-pygments==0.1.2
 sphinx-ansible-theme==0.10.4
-sphinxcontrib-mermaid>=2.0.2
-sphinx-sitemap>=2.9.0
+sphinxcontrib-mermaid==2.0.2
+sphinx-sitemap==2.9.0
