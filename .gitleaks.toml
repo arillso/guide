@@ -1,0 +1,16 @@
+title = "gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+    description = "Allowlisted files"
+    paths = [
+    '''megalinter-reports''',
+    '''(.*?)gitleaks\.toml$''',
+    '''(?i)(.*?)(png|jpeg|jpg|gif|doc|docx|pdf|bin|xls|xlsx|pyc|zip)$''',
+    # Hand-written documentation pages that intentionally contain example
+    # placeholder secrets (e.g. "sk-1234567890abcdef", "-----BEGIN RSA
+    # PRIVATE KEY-----") to illustrate best practices. Not real secrets.
+    '''rst/guide/best-practices/security\.rst$''',
+    '''rst/github/action_playbook\.rst$''']

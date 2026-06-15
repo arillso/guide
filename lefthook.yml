@@ -1,0 +1,39 @@
+---
+# Lefthook git hooks — run `lefthook install` once after cloning.
+# Tools without a system binary are installed on-demand via `npx --yes`.
+# System binaries: yamllint, gitleaks (>= v8.18 for `git --staged` subcommand),
+# actionlint.
+#
+# Stack: Sphinx/antsibull documentation build. Adapted from
+# arillso/ansible.system (prettier+yamllint+markdownlint+actionlint+gitleaks),
+# without the ansible-lint hook — this repo builds docs, it has no roles.
+#
+# Generated and build artefacts (build/, temp-rst/, rst/collections/) are
+# git-ignored; staged files from them should not block commits.
+
+pre-commit:
+    parallel: true
+    commands:
+        prettier:
+            glob: "*.{json,yml,yaml,md}"
+            exclude: "(^build/|^temp-rst/|^rst/collections/)"
+            run: npx --yes -- prettier --check {staged_files}
+        yamllint:
+            glob: "*.{yml,yaml}"
+            exclude: "(^build/|^temp-rst/|^rst/collections/)"
+            run: yamllint -c .yamllint {staged_files}
+        markdownlint:
+            glob: "*.md"
+            exclude: "(^build/|^temp-rst/|^rst/collections/)"
+            run: npx --yes -- markdownlint-cli2 {staged_files}
+        actionlint:
+            glob: ".github/workflows/*.{yml,yaml}"
+            run: actionlint {staged_files}
+        gitleaks:
+            run: gitleaks git --staged --redact --no-banner
+
+pre-push:
+    parallel: true
+    commands:
+        gitleaks-full:
+            run: gitleaks git --redact --no-banner
