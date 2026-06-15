@@ -17,6 +17,21 @@ trap 'rm -f "${CACHE_MANIFEST_FILE}"; popd' EXIT
 # shellcheck source=versions.env
 source versions.env
 
+# 0. Ensure the npm CLI tools (postcss, esbuild) are available. The container
+#    image bakes them into /usr/src/node_modules; a plain CI runner or host
+#    checkout has neither, so install them on demand. Skipped when a populated
+#    node_modules already exists (container, or a previous run), keeping the
+#    step idempotent. Requires npm only in the not-yet-installed case — GitHub
+#    runners ship it, and the Docker image never reaches this branch.
+if [ ! -x /usr/src/node_modules/.bin/postcss ] && [ ! -x node_modules/.bin/postcss ]; then
+    echo "Installing npm dependencies (postcss, esbuild)..."
+    if [ -f package-lock.json ]; then
+        npm ci --no-audit --no-fund
+    else
+        npm install --no-audit --no-fund
+    fi
+fi
+
 # 1. Build frontend artefacts (CSS + JS) from src/ into _static/
 echo "Building frontend bundles..."
 ./scripts/build_frontend.sh
