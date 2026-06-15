@@ -39,6 +39,13 @@ jobs:
             - name: Build Documentation
               run: ./build.sh
 
+            # Reuse the rst/ tree that build.sh already generated (collections
+            # rendered + normalized) and validate every external link. Internal
+            # :ref:/:doc: references are already enforced by the nitpicky html
+            # build above; this catches dead external URLs.
+            - name: Check Links
+              run: sphinx-build -b linkcheck rst build/linkcheck -c .
+
     security-secrets:
         name: Secret Detection Scan
         uses: arillso/.github/.github/workflows/security-secrets.yml@2026-06-14

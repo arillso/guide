@@ -568,4 +568,4 @@ Files to Avoid
    * :ref:`contributing` - How to contribute (code style, testing, development)
    * :ref:`cicd` - CI/CD workflows and linter configurations
    * :ref:`compatibility` - Version requirements and platform support
-   * `STANDARDS.md on GitHub <https://github.com/arillso/.github/blob/main/STANDARDS.md>`_
+   * `arillso/.github on GitHub <https://github.com/arillso/.github>`_ - shared org standards and reusable workflows

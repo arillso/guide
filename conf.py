@@ -65,6 +65,26 @@ default_role = "any"
 
 nitpicky = True
 
+# Link checking (sphinx-build -b linkcheck). Internal :ref:/:doc: references are
+# validated by the regular html build (nitpicky); these options harden the
+# external HTTP checks against flaky endpoints so CI fails only on genuinely
+# broken links.
+linkcheck_retries = 2
+linkcheck_timeout = 15
+linkcheck_workers = 5
+# Treat anchor-only failures as warnings, not errors: many sites render anchors
+# client-side, so a missing #fragment is not a broken page.
+linkcheck_anchors = False
+# Hosts that rate-limit or block automated HEAD/GET requests but are known-good.
+linkcheck_ignore = [
+    # galaxy.ansible.com / hub.docker.com return 403 to non-browser clients.
+    r"https://galaxy\.ansible\.com/.*",
+    r"https://hub\.docker\.com/.*",
+    # Non-HTTP URI schemes that appear in generated collection RST (e.g. the
+    # tailscale_role "tag:" ACL tags) and that linkcheck cannot resolve.
+    r"^tag:.*",
+]
+
 # Sitemap configuration
 html_baseurl = "https://guide.arillso.io/"
 sitemap_url_scheme = "{link}"
