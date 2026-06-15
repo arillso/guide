@@ -80,12 +80,6 @@ python3 scripts/normalize_collections.py --root rst
 # 6. Build Sphinx site
 sphinx-build -M html rst build -c . -W --keep-going
 
-# 7. Optimize CSS and JS if postcss is available
-if command -v postcss &> /dev/null && [ -f build/html/_static/custom.css ]; then
-    echo "Optimizing CSS with PostCSS (autoprefixer + cssnano)..."
-    postcss build/html/_static/custom.css \
-        --use autoprefixer --use cssnano \
-        --no-map \
-        -o build/html/_static/custom.css
-    echo "CSS optimization complete."
-fi
+# Note: no separate post-Sphinx CSS optimization step. The frontend build
+# (step 1) already runs custom.css through postcss.config.js, which applies
+# autoprefixer and cssnano, so the asset Sphinx copies is final.

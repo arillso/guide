@@ -52,7 +52,7 @@ EXIT_NO_ANSIBLE_GALAXY = 3
 EXIT_NETWORK_ERROR = 4
 
 
-def parse_versions_file(path: Path) -> Dict[str, Tuple[str, str]]:
+def parse_versions_file(path: Path) -> Dict[str, Tuple[str, str, str]]:
     """Parse a ``versions.env`` shell-style file.
 
     Returns a mapping ``{"<namespace>.<name>": ("<namespace>", "<name>",
@@ -80,7 +80,7 @@ def parse_versions_file(path: Path) -> Dict[str, Tuple[str, str]]:
             namespace, name = ENV_VAR_TO_COLLECTION[key]
             found[f"{namespace}.{name}"] = (namespace, name, value)
 
-    return found  # type: ignore[return-value]
+    return found
 
 
 def read_index(cache_dir: Path) -> Dict[str, Dict[str, str]]:
