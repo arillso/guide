@@ -165,6 +165,87 @@ def test_idempotency_second_run_is_noop(tmp_path: Path) -> None:
     )
 
 
+def test_url_and_email_contexts_not_flagged(tmp_path: Path) -> None:
+    """``arillso.io`` in URLs/E-Mails/Subdomains ist KEINE Collection.
+
+    Regression für die zu gierige ``arillso.<sub>``-Erkennung, die
+    ``hello@arillso.io`` (E-Mail), ``https://arillso.io`` (URL) und
+    ``guide.arillso.io`` (Subdomain) als ungültige Collection ``arillso.io``
+    gemeldet hat. Vor dem Lookbehind-Fix wäre dies Exit-Code 1 gewesen.
+    """
+
+    doc = tmp_path / "contact.rst"
+    original = (
+        "Kontakt\n"
+        "=======\n\n"
+        "Schreib an hello@arillso.io oder besuche https://arillso.io/docs.\n"
+        "Die Doku liegt unter https://guide.arillso.io.\n"
+    )
+    doc.write_text(original, encoding="utf-8")
+
+    result = _run_normalize(tmp_path)
+
+    assert result.returncode == 0, (
+        f"URL/email contexts wrongly flagged.\nstdout={result.stdout!r}\n"
+        f"stderr={result.stderr!r}"
+    )
+    # Inhalt unverändert — kein Token war eine echte Collection.
+    assert doc.read_text(encoding="utf-8") == original
+
+
+def test_doc_placeholder_collection_not_flagged(tmp_path: Path) -> None:
+    """Generischer Platzhalter ``arillso.collection.<role>`` bleibt unangetastet.
+
+    In Anleitungen steht ``arillso.collection.role_name`` als Schablone; das ist
+    keine reale Collection und darf weder gemeldet noch normalisiert werden.
+    Gross- wie Kleinschreibung des Platzhalters wird abgedeckt.
+    """
+
+    doc = tmp_path / "guide.rst"
+    original = (
+        "Rollen-Beispiel\n"
+        "===============\n\n"
+        "   - role: arillso.collection.role_name\n"
+        "   - role: arillso.COLLECTION.ROLE_NAME\n"
+    )
+    doc.write_text(original, encoding="utf-8")
+
+    result = _run_normalize(tmp_path)
+
+    assert result.returncode == 0, (
+        f"placeholder wrongly flagged.\nstdout={result.stdout!r}\n"
+        f"stderr={result.stderr!r}"
+    )
+    # Platzhalter bleibt wörtlich erhalten (kein Casing-Eingriff).
+    assert doc.read_text(encoding="utf-8") == original
+
+
+def test_real_typo_still_flagged_despite_relaxations(tmp_path: Path) -> None:
+    """Ein echter Tippfehler (`arillso.systen`) wird weiterhin als ungültig gemeldet.
+
+    Stellt sicher, dass die URL-/E-Mail-/Platzhalter-Ausnahmen die echte
+    Whitelist-Prüfung nicht aufweichen.
+    """
+
+    doc = tmp_path / "typo.rst"
+    doc.write_text(
+        "Typo-Test\n"
+        "=========\n\n"
+        "Hier referenziert jemand arillso.systen statt arillso.system.\n",
+        encoding="utf-8",
+    )
+
+    result = _run_normalize(tmp_path)
+
+    assert result.returncode == 1, (
+        f"expected exit 1 for real typo, got {result.returncode}\n"
+        f"stdout={result.stdout!r}\nstderr={result.stderr!r}"
+    )
+    assert "arillso.systen" in result.stderr, (
+        f"typo token missing from stderr: {result.stderr!r}"
+    )
+
+
 def test_invalid_collection_name_exits_one_with_path_and_token(
     tmp_path: Path,
 ) -> None:

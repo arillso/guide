@@ -42,10 +42,28 @@ DEFAULT_COLLECTIONS: Tuple[str, ...] = (
     "arillso.container",
 )
 
+# Generische Doku-Platzhalter, die wie ``arillso.<name>`` aussehen, aber bewusst
+# KEINE realen Collections referenzieren -- z. B. ``arillso.collection.role_name``
+# als Schablone in Anleitungen. Diese ``<sub>``-Tokens (lowercased) werden weder
+# als ungültig gemeldet noch normalisiert. Bewusst eng gehalten: nur echte
+# Schablonen-Wörter, damit Tippfehler wie ``arillso.systen`` weiterhin auffallen.
+PLACEHOLDER_SUBS: frozenset = frozenset({"collection"})
+
 # Regex 1: ``arillso.<Sub>`` an Wortgrenzen, beide Seiten case-insensitive.
 # Wird genutzt, um (a) Casing-Normalisierung durchzuführen und (b) zu prüfen,
 # ob ``<Sub>`` (lowercased) in der Whitelist erscheint.
-_DOTTED_RE = re.compile(r"\b(?:arillso)\.([A-Za-z][A-Za-z0-9_]*)\b", re.IGNORECASE)
+#
+# Das vorangestellte ``(?<![\w@./-])`` schließt URL-, E-Mail- und Subdomain-
+# Kontexte aus: vor einem echten Collection-Token (z. B. ``arillso.system``)
+# steht nie ``@`` (E-Mail), ``/`` (URL-Pfad), ``.`` (Subdomain wie
+# ``guide.arillso.io``) oder ``-``. Dadurch werden ``hello@arillso.io``,
+# ``https://arillso.io`` und ``guide.arillso.io`` nicht mehr fälschlich als
+# Collection ``arillso.io`` gewertet, während ``:ref:`arillso.system``` oder
+# ``role: arillso.system.foo`` weiterhin greifen. ``\w`` deckt auch den
+# Wortgrenzen-Fall ab, den ``\b`` allein nicht case-sicher abfängt.
+_DOTTED_RE = re.compile(
+    r"(?<![\w@./-])(?:arillso)\.([A-Za-z][A-Za-z0-9_]*)\b", re.IGNORECASE
+)
 
 # Regex 2: standalone ``Arillso`` an Wortgrenzen mit Großbuchstaben am Anfang.
 # Greift NICHT in zusammengesetzten Wörtern wie ``ArillsoCustomThing`` (folgt
@@ -73,8 +91,12 @@ def _normalize_text(
     def _dotted_sub(match: re.Match[str]) -> str:
         nonlocal replacements
         sub = match.group(1)
-        canonical = f"arillso.{sub.lower()}"
         original = match.group(0)
+        # Generische Doku-Platzhalter (``arillso.collection.role_name``) bleiben
+        # unangetastet: nicht als ungültig melden, nicht normalisieren.
+        if sub.lower() in PLACEHOLDER_SUBS:
+            return original
+        canonical = f"arillso.{sub.lower()}"
         # Whitelist-Check passiert immer, unabhängig von Änderung -- so erkennen
         # wir auch bereits-lowercased ungültige Namen wie ``arillso.UnknownThing``
         # oder ``arillso.foo``.
@@ -88,8 +110,9 @@ def _normalize_text(
 
     new_text = _DOTTED_RE.sub(_dotted_sub, text)
 
-    def _standalone_sub(_match: re.Match[str]) -> str:
+    def _standalone_sub(_match: "re.Match[str]") -> str:
         nonlocal replacements
+        del _match  # Signatur von re.sub verlangt das Argument; Inhalt ungenutzt.
         replacements += 1
         return "arillso"
 

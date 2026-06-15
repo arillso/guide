@@ -31,9 +31,13 @@ if [ "${ARILLSO_OFFLINE:-0}" = "1" ]; then
 fi
 python3 scripts/collection_cache.py ensure "${CACHE_ARGS[@]}" > "${CACHE_MANIFEST_FILE}"
 
-# Export the cache root as ANSIBLE_COLLECTIONS_PATH so antsibull-docs sees
-# the cached collection tree (design §4.3, §6.4).
-ANSIBLE_COLLECTIONS_PATH="$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['cache_root'])" "${CACHE_MANIFEST_FILE}")"
+# Build ANSIBLE_COLLECTIONS_PATH from the manifest so antsibull-docs sees the
+# cached collection tree (design §4.3, §6.4). Each cached collection lives in a
+# self-contained <path>/ansible_collections tree (the cache stores every pinned
+# version in its own directory). ansible-doc resolves collections from the
+# parent of an "ansible_collections" directory, so we join those per-collection
+# parents — not the bare cache_root, which has no ansible_collections child.
+ANSIBLE_COLLECTIONS_PATH="$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(':'.join(c['path'] + '/ansible_collections' for c in d['collections']))" "${CACHE_MANIFEST_FILE}")"
 export ANSIBLE_COLLECTIONS_PATH
 
 # 3. Create collection documentation into temporary directory
