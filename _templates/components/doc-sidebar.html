@@ -1,0 +1,61 @@
+{#-
+  doc_sidebar — Reusable documentation sidebar with nested navigation.
+
+  Parameters:
+    items (list of dict, required) — navigation items. Each item:
+        {
+          "label":    str,          # required, visible link text
+          "link":     str,          # required, href target
+          "children": list[dict]?   # optional, one level of nesting
+        }
+    aria_label (string, optional)  — accessible name for the <nav> landmark
+                                     (default: "Documentation navigation")
+
+  Slots:
+    None — structure is fully data-driven via `items`. Collapsible group
+    behaviour is layered on client-side via `aria-expanded` toggles in
+    `src/scripts/features/`.
+
+  A11y:
+    - Wraps in <nav aria-label="..."> for landmark navigation.
+    - Uses <ul>/<li> structure for screen reader semantics.
+    - Each link is keyboard-focusable through native <a> elements.
+    - For groups with children, the parent link carries `aria-expanded` and
+      `aria-controls` (pointing at the nested list's id) — the valid place for
+      that state is the interactive control, not the controlled container.
+      The closed default is conservative so JS-disabled visitors still see
+      every link; client-side enhancement in `src/scripts/features/` flips
+      `aria-expanded` and toggles the list.
+
+  Example:
+    {% from "components/doc-sidebar.html" import doc_sidebar %}
+    {{ doc_sidebar([
+      {"label": "Guide", "link": "/guide/", "children": [
+        {"label": "Quickstart", "link": "/guide/quickstart/"},
+      ]},
+    ], aria_label="Documentation sections") }}
+-#}
+{% macro doc_sidebar(items, aria_label="Documentation navigation") %}
+<nav class="doc-sidebar" aria-label="{{ aria_label }}">
+  <ul class="doc-sidebar__list">
+    {% for item in items %}
+    <li class="doc-sidebar__item">
+      {% if item.children %}
+      {% set nested_id = "doc-sidebar-group-" ~ loop.index %}
+      <a class="doc-sidebar__link" href="{{ item.link }}"
+         aria-expanded="false" aria-controls="{{ nested_id }}">{{ item.label }}</a>
+      <ul id="{{ nested_id }}" class="doc-sidebar__list doc-sidebar__list--nested">
+        {% for child in item.children %}
+        <li class="doc-sidebar__item">
+          <a class="doc-sidebar__link" href="{{ child.link }}">{{ child.label }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <a class="doc-sidebar__link" href="{{ item.link }}">{{ item.label }}</a>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endmacro %}

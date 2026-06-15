@@ -1,9 +1,19 @@
 {
   "private": true,
+  "scripts": {
+    "build:css": "postcss src/styles/index.css -o _static/custom.css",
+    "build:js": "esbuild src/scripts/index.js --bundle --target=es2020 --outfile=_static/custom.js",
+    "build": "npm run build:css && npm run build:js",
+    "build:watch:css": "postcss src/styles/index.css -o _static/custom.css --watch",
+    "build:watch:js": "esbuild src/scripts/index.js --bundle --target=es2020 --outfile=_static/custom.js --watch"
+  },
   "devDependencies": {
+    "@axe-core/cli": "4.11.3",
     "autoprefixer": "10.5.0",
     "cssnano": "8.0.2",
+    "esbuild": "0.28.0",
     "postcss": "8.5.15",
-    "postcss-cli": "11.0.1"
+    "postcss-cli": "11.0.1",
+    "postcss-import": "16.1.1"
   }
 }

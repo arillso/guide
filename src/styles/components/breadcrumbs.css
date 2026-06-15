@@ -1,0 +1,19 @@
+/* ============================================
+   Breadcrumbs - Navigation Trail
+   ============================================ */
+
+/* Breadcrumb styling - cleaner appearance */
+.wy-breadcrumbs li a {
+  display: inline-block;
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Show full text on hover as tooltip via title attribute */
+.wy-breadcrumbs li a[title]:hover {
+  text-decoration: underline;
+  cursor: help;
+}

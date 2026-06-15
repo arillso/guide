@@ -1,0 +1,53 @@
+/* ============================================
+   Global Typography & Base Styles
+   ============================================ */
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+/* Heading Styles - Modern & Bold */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-sans);
+  font-weight: var(--font-bold);
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  line-height: var(--leading-tight);
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-4);
+}
+
+/* Code Typography */
+code,
+pre {
+  font-family: var(--font-mono);
+  font-weight: var(--font-normal);
+  font-feature-settings:
+    'liga' 1,
+    'calt' 1;
+}
+
+/* ============================================
+   Links - Modern Styling
+   ============================================ */
+
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  font-weight: var(--font-medium);
+  position: relative;
+}
+
+a:hover {
+  color: var(--primary-dark);
+}

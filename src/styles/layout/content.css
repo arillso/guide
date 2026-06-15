@@ -1,0 +1,218 @@
+/* ============================================
+   Content Area Layout
+   Wraps Sphinx-emitted .wy-nav-content with heading/text variants.
+   Extends typography rules from base/typography.css with class-scoped overrides.
+   ============================================ */
+
+/* Class-scoped extension of body typography (paired with body rule in base/typography.css) */
+.wy-nav-content {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+/* Content-area heading variants extending base h1–h6 (paired with rule in base/typography.css) */
+.wy-nav-content h1,
+.wy-nav-content h2,
+.wy-nav-content h3,
+.wy-nav-content h4,
+.wy-nav-content h5,
+.wy-nav-content h6 {
+  font-family: var(--font-sans);
+  font-weight: var(--font-bold);
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  line-height: var(--leading-tight);
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-4);
+}
+
+/* H1 - Hero Style with Gradient */
+.wy-nav-content h1 {
+  font-size: var(--text-5xl);
+  font-weight: var(--font-extrabold);
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--accent-purple) 50%,
+    var(--secondary-color) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+  margin-bottom: var(--space-6);
+  line-height: var(--leading-tight);
+}
+
+/* Remove excessive top margin on first heading after breadcrumbs */
+.wy-nav-content .section:first-child > h1:first-child,
+.wy-nav-content .section:first-child > h2:first-child {
+  margin-top: var(--space-2);
+}
+
+/* H2 - Section Headers */
+.wy-nav-content h2 {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-top: var(--space-12);
+  position: relative;
+  padding-left: var(--space-4);
+}
+
+.wy-nav-content h2::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 70%;
+  background: linear-gradient(
+    180deg,
+    var(--primary-color) 0%,
+    var(--secondary-color) 100%
+  );
+  border-radius: var(--radius-full);
+}
+
+/* H3 - Subsection Headers */
+.wy-nav-content h3 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  color: var(--primary-color);
+  margin-top: var(--space-8);
+}
+
+/* H4, H5, H6 */
+.wy-nav-content h4 {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+.wy-nav-content h5 {
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+}
+
+.wy-nav-content h6 {
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Paragraph & Text Styles */
+.wy-nav-content p {
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-5);
+}
+
+.wy-nav-content p strong {
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+.wy-nav-content p em {
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+/* ============================================
+   Content Area - Modern Layout
+   ============================================ */
+
+.wy-nav-content {
+  background: var(--bg-primary);
+  max-width: 1200px;
+  padding: var(--space-4) var(--space-10) var(--space-8);
+  border-radius: var(--radius-2xl);
+  margin: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.wy-nav-content-wrap {
+  background: var(--bg-secondary);
+}
+
+/* Section Styling */
+.section {
+  margin-bottom: var(--space-12);
+}
+
+/* Lists - Modern Styling */
+.wy-nav-content ul,
+.wy-nav-content ol {
+  margin-bottom: var(--space-6);
+  padding-left: var(--space-6);
+}
+
+.wy-nav-content li {
+  margin-bottom: var(--space-3);
+  line-height: var(--leading-relaxed);
+}
+
+.wy-nav-content ul li::marker {
+  color: var(--primary-color);
+}
+
+.wy-nav-content ol li::marker {
+  color: var(--primary-color);
+  font-weight: var(--font-semibold);
+}
+
+/* ============================================
+   Content-area link styling
+   (element-level `a`/`a:hover` live in base/typography.css)
+   ============================================ */
+
+/* Underline Animation */
+.wy-nav-content a:not(.btn):not(.wy-btn) {
+  background-image: linear-gradient(var(--primary-color), var(--primary-color));
+  background-position: 0% 100%;
+  background-repeat: no-repeat;
+  background-size: 0% 2px;
+  transition: background-size var(--transition-base);
+}
+
+.wy-nav-content a:not(.btn):not(.wy-btn):hover {
+  background-size: 100% 2px;
+  text-decoration: none;
+}
+
+/* External Links */
+a.reference.external::after {
+  content: ' ↗';
+  font-size: 0.7em;
+  opacity: 0.5;
+  margin-left: var(--space-1);
+  transition: opacity var(--transition-fast);
+}
+
+a.reference.external:hover::after {
+  opacity: 0.8;
+}
+
+/* Horizontal Rules with Style */
+.wy-nav-content hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--primary-color) 50%,
+    transparent 100%
+  );
+  margin: 3em 0;
+}

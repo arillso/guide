@@ -7,4 +7,17 @@
 /temp-rst
 /build
 /rst/collections
-.dde
+node_modules/
+
+# Generated frontend artefacts — produced by FrontendBuildPipeline (postcss + esbuild).
+# Source lives under src/styles/ and src/scripts/; build output is written back into _static/.
+_static/custom.css
+_static/custom.js
+
+# Local migration reference snapshot of the legacy monolith (Phase 2 source-of-truth).
+.frontend-snapshot/
+
+# Python bytecode and pytest cache.
+__pycache__/
+*.py[cod]
+.pytest_cache/

@@ -1,0 +1,4 @@
+name: arillso-guide
+containers:
+    arillso-doc-generator:
+        shell: bash

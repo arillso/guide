@@ -1,0 +1,318 @@
+/* ============================================
+   Code Blocks - Terminal Style with Copy Button
+   ============================================ */
+
+/* Class-scoped code/pre typography for rst-content (element-level lives in base/typography.css) */
+.rst-content code,
+.rst-content pre {
+  font-family: var(--font-mono);
+  font-weight: var(--font-normal);
+  font-feature-settings:
+    'liga' 1,
+    'calt' 1;
+}
+
+/* Code block container - dark terminal background.
+   Hex literals (#1e1e1e, #d4d4d4) preserved: domain-specific terminal/Pygments
+   colors are intentionally outside the design-system token palette. */
+.highlight,
+.rst-content div[class^='highlight'],
+.rst-content pre.literal-block {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  margin: var(--space-6) 0;
+  position: relative;
+  background: #1e1e1e;
+  border: none !important;
+}
+
+/* Code Block Header - Terminal Style */
+.highlight::before {
+  content: '';
+  display: block;
+  height: 40px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 100%
+  );
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+}
+
+.highlight::after {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 16px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff5f56;
+  box-shadow:
+    20px 0 0 #ffbd2e,
+    40px 0 0 #27c93f;
+}
+
+.highlight pre {
+  padding: var(--space-6) var(--space-6) var(--space-6) var(--space-6);
+  padding-top: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  background: #1e1e1e;
+  color: #d4d4d4;
+  margin: 0;
+  border-left: none;
+  overflow-x: auto;
+}
+
+/* ============================================
+   Pygments Syntax Highlighting Color Scheme
+   Hex literals preserved: domain-specific syntax colors
+   (mapped to VS Code Dark+ palette, no token equivalents exist).
+   ============================================ */
+
+/* Base text color for code blocks - CRITICAL for readability */
+.highlight,
+.highlight pre,
+.highlight code,
+.highlight span {
+  color: #d4d4d4 !important;
+} /* Light gray for ALL text by default */
+
+/* Override ANY dark text that Pygments might inject */
+.highlight * {
+  color: inherit;
+}
+
+/* Keywords (true, false, name, tasks, etc.) */
+.highlight .k,
+.highlight .kd,
+.highlight .kn,
+.highlight .kt {
+  color: #569cd6;
+} /* Keywords - Blue */
+
+/* Strings */
+.highlight .s,
+.highlight .s1,
+.highlight .s2,
+.highlight .sb,
+.highlight .sc,
+.highlight .sd {
+  color: #ce9178;
+} /* Strings - Orange */
+
+/* Comments */
+.highlight .c,
+.highlight .c1,
+.highlight .cm,
+.highlight .ch {
+  color: #7cba7c;
+  font-style: italic;
+} /* Comments - Brighter Green */
+
+/* Function names */
+.highlight .nf {
+  color: #dcdcaa;
+} /* Function names - Yellow */
+
+/* Class names */
+.highlight .nc {
+  color: #4ec9b0;
+} /* Class names - Cyan */
+
+/* Numbers */
+.highlight .mi,
+.highlight .mf,
+.highlight .m,
+.highlight .mb,
+.highlight .mo,
+.highlight .mh {
+  color: #b5cea8;
+} /* Numbers - Light Green */
+
+/* Operators */
+.highlight .o,
+.highlight .ow {
+  color: #d4d4d4;
+} /* Operators - Light Gray */
+
+/* Variable names, identifiers */
+.highlight .n,
+.highlight .nv,
+.highlight .nt {
+  color: #9cdcfe;
+} /* Names/Variables - Light Blue */
+
+/* Attributes, YAML keys */
+.highlight .na,
+.highlight .l,
+.highlight .l-Scalar,
+.highlight .l-Scalar-Plain {
+  color: #9cdcfe;
+} /* Attributes/Keys - Light Blue */
+
+/* Built-in functions */
+.highlight .nb,
+.highlight .bp {
+  color: #4ec9b0;
+} /* Built-ins - Cyan */
+
+/* Punctuation */
+.highlight .p,
+.highlight .pi {
+  color: #d4d4d4;
+} /* Punctuation - Light Gray */
+
+/* YAML specific - keys should be bright */
+.highlight .nt {
+  color: #9cdcfe !important;
+  font-weight: 500;
+} /* YAML tags/keys - Bright blue */
+
+/* Booleans */
+.highlight .kc {
+  color: #569cd6;
+} /* true/false - Blue */
+
+/* Bash-specific highlighting */
+.highlight .nb {
+  color: #4ec9b0 !important;
+} /* Bash commands - Cyan */
+
+.highlight .nv {
+  color: #9cdcfe !important;
+} /* Bash variables - Light blue */
+
+.highlight .s,
+.highlight .s1,
+.highlight .s2 {
+  color: #ce9178 !important;
+} /* Bash strings - Orange */
+
+/* Go-specific highlighting */
+.highlight .nx {
+  color: #9cdcfe !important;
+} /* Go identifiers - Light blue */
+
+.highlight .kd {
+  color: #569cd6 !important;
+} /* Go keywords (func, package, etc.) - Blue */
+
+.highlight .kt {
+  color: #4ec9b0 !important;
+} /* Go types - Cyan */
+
+/* Generic tokens that might be dark */
+.highlight .ge,
+.highlight .gs,
+.highlight .err {
+  color: #d4d4d4 !important;
+} /* Generic/Error tokens - Light gray */
+
+/* ============================================
+   Inline Code - Modern Pill Style
+   ============================================ */
+
+code.literal {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 102, 255, 0.08) 0%,
+    rgba(160, 95, 247, 0.08) 100%
+  );
+  color: var(--primary-color);
+  border-radius: var(--radius-md);
+  padding: 0.25em 0.6em;
+  font-size: 0.9em;
+  font-weight: var(--font-medium);
+  border: 1px solid rgba(0, 102, 255, 0.15);
+  transition: all var(--transition-fast);
+}
+
+code.literal:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 102, 255, 0.12) 0%,
+    rgba(160, 95, 247, 0.12) 100%
+  );
+  border-color: rgba(0, 102, 255, 0.25);
+}
+
+/* ============================================
+   Copy Button (added via JavaScript)
+   Hex literal #d4d4d4 preserved: matches terminal text color above.
+   ============================================ */
+
+.code-copy-button {
+  position: absolute;
+  top: 50px;
+  right: 16px;
+  padding: var(--space-2) var(--space-4);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-md);
+  color: #d4d4d4;
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  z-index: 100;
+  opacity: 0;
+  font-family: var(--font-sans);
+  /* WCAG 2.5.5 — minimum 44×44 px touch target. */
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.highlight:hover .code-copy-button {
+  opacity: 1;
+}
+
+/* Reveal the copy button for keyboard users (focus-visible).
+   Without this rule the button is opacity:0 unless the user hovers
+   the .highlight container, which is unreachable via keyboard. */
+.code-copy-button:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--accent-info);
+  outline-offset: 2px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.code-copy-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.code-copy-button:active {
+  transform: translateY(0);
+}
+
+.code-copy-button.copied {
+  background: rgba(0, 217, 165, 0.2);
+  border-color: rgba(0, 217, 165, 0.3);
+  color: var(--accent-success);
+}
+
+/* ============================================
+   Language Badge
+   ============================================ */
+
+.highlight .code-lang-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: var(--space-1) var(--space-3);
+  background: rgba(0, 102, 255, 0.15);
+  border-radius: var(--radius-md);
+  color: var(--primary-light);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

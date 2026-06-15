@@ -1,0 +1,72 @@
+/* ============================================
+   Tables - Modern Design
+   ============================================ */
+
+.wy-table-responsive table {
+  border: none;
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+}
+
+.wy-table-responsive table thead {
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--accent-purple) 100%
+  );
+}
+
+.wy-table-responsive table th {
+  background: transparent !important;
+  color: var(--text-on-primary) !important;
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  padding: var(--space-4) var(--space-5);
+}
+
+.wy-table-responsive table td {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.wy-table-responsive table tr:nth-child(even) {
+  background-color: var(--bg-secondary);
+}
+
+.wy-table-responsive table tr:hover {
+  background-color: var(--primary-extra-light);
+  transition: background-color var(--transition-fast);
+}
+
+.wy-table-responsive table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Table Cell Emphasis */
+.wy-table-responsive table td:first-child {
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+.wy-table-responsive table td code {
+  font-size: 0.85em;
+}
+
+/* Enhanced Tables for Projects Overview */
+.wy-table-responsive table.docutils {
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin: 2em 0;
+}
+
+.wy-table-responsive table.docutils td:first-child {
+  font-weight: var(--font-semibold);
+  color: var(--primary-dark);
+}

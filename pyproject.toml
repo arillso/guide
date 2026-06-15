@@ -1,0 +1,11 @@
+# Project-wide tool configuration.
+# Note: the project intentionally has NO [project] table here — the build is
+# orchestrated via requirements.txt / requirements-dev.txt and Dockerfile, not
+# as a Python package. Only tool configuration belongs in this file.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-ra"

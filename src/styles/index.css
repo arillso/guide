@@ -1,0 +1,43 @@
+/*
+ * src/styles/index.css
+ *
+ * CSS aggregator / entry point. PostCSS resolves these @import directives
+ * via postcss-import; no rules live here.
+ *
+ * Order matters:
+ *   1. Tokens (custom properties) — must be defined before any consumer.
+ *   2. Base / element defaults — establish the foundation before components.
+ *   3. Layout primitives (non-responsive) — page-level structure.
+ *   4. Components — built on top of tokens, base and layout.
+ *   5. Responsive overrides — media queries last so they win the cascade.
+ */
+
+/* Tokens — must come first so custom properties exist before any consumer */
+@import "tokens/colors.css";
+@import "tokens/typography.css";
+@import "tokens/spacing.css";
+@import "tokens/breakpoints.css";
+
+/* Base / element defaults */
+@import "base/reset.css";
+@import "base/typography.css";
+
+/* Layout (excluding responsive overrides) */
+@import "layout/content.css";
+@import "layout/animations.css";
+
+/* Components */
+@import "components/breadcrumbs.css";
+@import "components/sidebar.css";
+@import "components/code-block.css";
+@import "components/feature-card.css";
+@import "components/admonitions.css";
+@import "components/buttons.css";
+@import "components/tables.css";
+@import "components/footer.css";
+@import "components/scrollbar.css";
+@import "components/mermaid.css";
+@import "components/utilities.css";
+
+/* Responsive overrides — load last so media queries override component defaults */
+@import "layout/responsive.css";

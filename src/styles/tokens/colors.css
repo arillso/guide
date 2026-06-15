@@ -1,0 +1,94 @@
+/* ============================================
+   Color Tokens
+   Palette, semantic colors, elevation, glassmorphism
+   ============================================ */
+
+:root {
+  /* ========================================
+       Color Palette - Subtle Tech
+       Modern, clean, minimal color
+       Inspired by: Linear, Vercel Docs
+       ======================================== */
+  --primary-color: #0070f3;
+  --primary-dark: #0761d1;
+  --primary-light: #3291ff;
+  --primary-extra-light: #e6f3ff;
+
+  --secondary-color: #687076;
+  --secondary-dark: #52555a;
+  --secondary-light: #9499a1;
+  --secondary-extra-light: #f5f5f6;
+
+  /* Accent & Status Colors */
+  --accent-success: #0ba95b;
+  --accent-warning: #f5a623;
+  --accent-danger: #e5484d;
+  --accent-info: #0090ff;
+  --accent-purple: #8e4ec6;
+  --accent-pink: #e93d82;
+
+  /* ========================================
+       Neutral Palette - Warm Grays
+       ======================================== */
+  --gray-50: #fafbfc;
+  --gray-100: #f4f5f7;
+  --gray-200: #e9ecef;
+  --gray-300: #dee2e6;
+  --gray-400: #adb5bd;
+  --gray-500: #6c757d;
+  --gray-600: #495057;
+  --gray-700: #343a40;
+  --gray-800: #212529;
+  --gray-900: #16181a;
+
+  /* ========================================
+       Background & Surface Colors
+       ======================================== */
+  --bg-primary: #ffffff;
+  --bg-secondary: #fafbfc;
+  --bg-tertiary: #f4f5f7;
+  --bg-elevated: #ffffff;
+  --bg-overlay: rgba(255, 255, 255, 0.95);
+
+  /* ========================================
+       Text Colors
+       ======================================== */
+  --text-primary: #16181a;
+  --text-secondary: #495057;
+  --text-tertiary: #6c757d;
+  --text-on-primary: #ffffff;
+  --text-on-secondary: #ffffff;
+
+  /* ========================================
+       Border & Divider Colors
+       ======================================== */
+  --border-light: #e9ecef;
+  --border-medium: #dee2e6;
+  --border-strong: #adb5bd;
+  --divider: rgba(0, 0, 0, 0.08);
+
+  /* ========================================
+       Elevation & Shadow System
+       ======================================== */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 2px 4px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 8px 0 rgba(0, 0, 0, 0.04), 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  --shadow-lg:
+    0 8px 16px 0 rgba(0, 0, 0, 0.06), 0 4px 8px 0 rgba(0, 0, 0, 0.08);
+  --shadow-xl:
+    0 16px 32px 0 rgba(0, 0, 0, 0.08), 0 8px 16px 0 rgba(0, 0, 0, 0.1);
+  --shadow-2xl:
+    0 24px 48px 0 rgba(0, 0, 0, 0.12), 0 12px 24px 0 rgba(0, 0, 0, 0.14);
+
+  /* Colored Shadows */
+  --shadow-primary: 0 8px 24px rgba(0, 102, 255, 0.15);
+  --shadow-secondary: 0 8px 24px rgba(255, 107, 53, 0.15);
+  --shadow-success: 0 8px 24px rgba(0, 217, 165, 0.15);
+
+  /* ========================================
+       Glassmorphism Effects
+       ======================================== */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-blur: blur(20px) saturate(180%);
+}
