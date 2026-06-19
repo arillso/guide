@@ -53,4 +53,4 @@ jobs:
               uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
 
     security-secrets:
-        uses: arillso/.github/.github/workflows/security-secrets.yml@2026-06-14
+        uses: arillso/.github/.github/workflows/security-secrets.yml@2026-06-18
