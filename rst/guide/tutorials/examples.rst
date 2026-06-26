@@ -580,6 +580,10 @@ metrics and logs with Grafana Alloy.
    [k3s_agents]
    k3s-worker-1.example.com
 
+   [k3s_all:children]
+   k3s_server
+   k3s_agents
+
 **playbook.yml**
 
 .. code-block:: yaml
@@ -596,6 +600,19 @@ metrics and logs with Grafana Alloy.
          vars:
            k3s_node_name: "{{ inventory_hostname }}"
            k3s_server_url: ""
+           k3s_token: "{{ lookup('env', 'K3S_TOKEN') }}"
+
+   - name: Join K3s agents to the cluster
+     hosts: k3s_agents
+     become: true
+
+     tasks:
+       - name: Deploy K3s agent
+         ansible.builtin.include_role:
+           name: arillso.container.k3s
+         vars:
+           k3s_node_name: "{{ inventory_hostname }}"
+           k3s_server_url: "https://{{ hostvars[groups['k3s_server'][0]].ansible_host }}:6443"
            k3s_token: "{{ lookup('env', 'K3S_TOKEN') }}"
 
    - name: Register GitOps workloads with Fleet
