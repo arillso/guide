@@ -543,6 +543,291 @@ Automated deployment on git push.
 
 Push to main branch to trigger deployment.
 
+Example 9: K3s + Fleet + Monitoring
+------------------------------------
+
+Bootstrap a K3s cluster, register GitOps workloads with Fleet and ship
+metrics and logs with Grafana Alloy.
+
+**Files:**
+
+.. code-block:: text
+
+   k3s-fleet-monitoring/
+   ├── ansible.cfg
+   ├── inventory.ini
+   ├── requirements.yml
+   └── playbook.yml
+
+**requirements.yml**
+
+.. code-block:: yaml
+
+   ---
+   collections:
+     - name: arillso.container
+       version: ">=1.0.0"
+     - name: arillso.agent
+       version: ">=1.0.0"
+
+**inventory.ini**
+
+.. code-block:: ini
+
+   [k3s_server]
+   k3s-master.example.com
+
+   [k3s_agents]
+   k3s-worker-1.example.com
+
+   [k3s_all:children]
+   k3s_server
+   k3s_agents
+
+**playbook.yml**
+
+.. code-block:: yaml
+
+   ---
+   - name: Install K3s control plane
+     hosts: k3s_server
+     become: true
+
+     tasks:
+       - name: Deploy K3s server
+         ansible.builtin.include_role:
+           name: arillso.container.k3s
+         vars:
+           k3s_node_name: "{{ inventory_hostname }}"
+           k3s_server_url: ""
+           k3s_token: "{{ lookup('env', 'K3S_TOKEN') }}"
+
+   - name: Join K3s agents to the cluster
+     hosts: k3s_agents
+     become: true
+
+     tasks:
+       - name: Deploy K3s agent
+         ansible.builtin.include_role:
+           name: arillso.container.k3s
+         vars:
+           k3s_node_name: "{{ inventory_hostname }}"
+           k3s_server_url: "https://{{ hostvars[groups['k3s_server'][0]].ansible_host }}:6443"
+           k3s_token: "{{ lookup('env', 'K3S_TOKEN') }}"
+
+   - name: Register GitOps workloads with Fleet
+     hosts: k3s_server
+     become: true
+
+     tasks:
+       - name: Deploy Fleet GitRepos
+         ansible.builtin.include_role:
+           name: arillso.container.fleet
+         vars:
+           fleet_enable_gitrepos: true
+           fleet_gitrepos:
+             - name: "platform-apps"
+               namespace: "fleet-default"
+               repository: "https://github.com/example/platform-apps.git"
+               branch: "main"
+               paths:
+                 - "manifests/"
+               targets:
+                 - name: "production"
+                   cluster_selector:
+                     matchLabels:
+                       env: "prod"
+
+   - name: Ship metrics and logs with Alloy
+     hosts: k3s_all
+     become: true
+
+     tasks:
+       - name: Install Grafana Alloy
+         ansible.builtin.include_role:
+           name: arillso.agent.alloy
+         vars:
+           alloy_enable_prometheus: true
+           alloy_enable_advanced_node_exporter: true
+           alloy_enable_loki: true
+           alloy_loki_file_sources:
+             - name: "syslog"
+               targets:
+                 - path: "/var/log/syslog"
+               write_to: "default"
+
+**Run:**
+
+.. code-block:: bash
+
+   ansible-galaxy collection install -r requirements.yml
+   export K3S_TOKEN="my-secret-token-123"
+   ansible-playbook playbook.yml
+
+Example 10: Multi-Host Firewall
+--------------------------------
+
+Apply a consistent nftables baseline across a fleet of hosts and open
+extra ports only where a role group needs them.
+
+**Files:**
+
+.. code-block:: text
+
+   firewall-fleet/
+   ├── ansible.cfg
+   ├── inventory.ini
+   ├── group_vars/
+   │   ├── all.yml
+   │   └── web.yml
+   ├── requirements.yml
+   └── playbook.yml
+
+**requirements.yml**
+
+.. code-block:: yaml
+
+   ---
+   collections:
+     - name: arillso.system
+       version: ">=1.0.0"
+
+**inventory.ini**
+
+.. code-block:: ini
+
+   [web]
+   web-1.example.com
+   web-2.example.com
+
+   [db]
+   db-1.example.com
+
+**group_vars/all.yml**
+
+.. code-block:: yaml
+
+   ---
+   # Baseline applied to every host.
+   firewall_base_rules:
+     - iifname lo accept
+     - ct state established,related accept
+     - tcp dport 22 accept comment "SSH"
+
+**group_vars/web.yml**
+
+.. code-block:: yaml
+
+   ---
+   # Extra ports only for the web group.
+   firewall_extra_rules:
+     - tcp dport 80 accept comment "HTTP"
+     - tcp dport 443 accept comment "HTTPS"
+
+**playbook.yml**
+
+.. code-block:: yaml
+
+   ---
+   - name: Apply firewall baseline to all hosts
+     hosts: all
+     become: true
+
+     tasks:
+       - name: Configure nftables firewall
+         ansible.builtin.include_role:
+           name: arillso.system.firewall
+         vars:
+           firewall:
+             - table:
+                 family: inet
+                 name: filter
+                 chains:
+                   - name: input
+                     hook: input
+                     policy: drop
+                     priority: 0
+                     rules: "{{ firewall_base_rules + (firewall_extra_rules | default([])) }}"
+
+**Run:**
+
+.. code-block:: bash
+
+   ansible-galaxy collection install -r requirements.yml
+   ansible-playbook playbook.yml
+
+Example 11: Secret Management
+------------------------------
+
+Install the Bitwarden Secrets Manager CLI and combine it with Ansible
+Vault instead of hard-coding credentials in playbooks.
+
+**Files:**
+
+.. code-block:: text
+
+   secret-management/
+   ├── group_vars/
+   │   └── all/
+   │       └── vault.yml        # encrypted with ansible-vault
+   ├── requirements.yml
+   └── playbook.yml
+
+**requirements.yml**
+
+.. code-block:: yaml
+
+   ---
+   collections:
+     - name: arillso.system
+       version: ">=1.0.0"
+     - name: community.general
+       version: ">=8.0.0"
+
+**group_vars/all/vault.yml** (encrypted)
+
+.. code-block:: yaml
+
+   ---
+   # ansible-vault encrypt group_vars/all/vault.yml
+   vault_db_password: "super-secret-db-password"
+
+**playbook.yml**
+
+.. code-block:: yaml
+
+   ---
+   - name: Deploy with managed secrets
+     hosts: all
+     become: true
+
+     tasks:
+       # The role installs the `bws` CLI; secrets are then resolved at
+       # runtime via the community.general lookup.
+       - name: Install Bitwarden Secrets Manager CLI
+         ansible.builtin.include_role:
+           name: arillso.system.bitwarden_secrets
+
+       - name: Resolve an API key from Bitwarden Secrets Manager
+         ansible.builtin.set_fact:
+           api_key: >-
+             {{ lookup('community.general.bitwarden_secrets_manager',
+                       '00000000-0000-0000-0000-000000000000',
+                       bws_access_token=lookup('env', 'BWS_ACCESS_TOKEN')).value }}
+         no_log: true
+
+       - name: Use a Vault-encrypted value
+         ansible.builtin.debug:
+           msg: "DB password length is {{ vault_db_password | length }} characters"
+
+**Run:**
+
+.. code-block:: bash
+
+   ansible-galaxy collection install -r requirements.yml
+   export BWS_ACCESS_TOKEN="0.your-bitwarden-access-token"
+   ansible-playbook playbook.yml --ask-vault-pass
+
 Tips & Best Practices
 ----------------------
 
