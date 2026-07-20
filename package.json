@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "@axe-core/cli": "4.12.1",
-    "autoprefixer": "10.5.3",
+    "autoprefixer": "10.5.4",
     "cssnano": "8.0.2",
     "esbuild": "0.28.1",
     "postcss": "8.5.19",
