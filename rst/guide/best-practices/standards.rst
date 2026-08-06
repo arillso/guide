@@ -244,10 +244,14 @@ All Ansible Collections must include:
 
 * **CONTRIBUTING.md** - Required for all collections
 * **meta/argument_specs.yml** - Required for every role
+* **meta/runtime.yml** - ``requires_ansible``, plus ``action_groups`` where roles share an API target
 * **CHANGELOG.md** - Version history
-* **galaxy.yml** - Collection metadata
+* **galaxy.yml** - Collection metadata, dependencies with lower bounds only
+* **extensions/molecule/** - One test scenario per role
+* **Makefile** - Named targets for lint, test, and build, shared by CI and developers
 
-See :ref:`contributing` for complete file structure, code style, and development standards.
+See :ref:`contributing` for the contribution workflow and :ref:`ansible-roles` for how
+roles and collections are designed internally.
 
 Testing Philosophy
 ~~~~~~~~~~~~~~~~~~
@@ -255,12 +259,14 @@ Testing Philosophy
 **All collections must implement three-level testing:**
 
 1. **Unit Tests** - Python plugins with pytest
-2. **Molecule Tests** - Critical roles on multiple distributions
+2. **Molecule Tests** - One scenario per role under ``extensions/molecule/<role>/``,
+   with ``idempotence`` in the test sequence
 3. **Integration Tests** - ansible-test for end-to-end validation
 
 **All tests consolidated in single** ``ci.yml`` **workflow.**
 
-See :ref:`cicd` for complete CI workflow implementation.
+See :ref:`cicd` for complete CI workflow implementation and :ref:`ansible-roles` for
+scenario layout, driver choice, and what ``verify.yml`` should assert.
 
 CI Workflow Structure
 ~~~~~~~~~~~~~~~~~~~~~
@@ -565,6 +571,7 @@ Files to Avoid
 
 .. seealso::
 
+   * :ref:`ansible-roles` - Role and collection design rules
    * :ref:`contributing` - How to contribute (code style, testing, development)
    * :ref:`cicd` - CI/CD workflows and linter configurations
    * :ref:`compatibility` - Version requirements and platform support
