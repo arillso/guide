@@ -45,8 +45,10 @@ Recommended Structure
    repository/
    ├── .github/
    │   ├── workflows/
-   │   │   ├── ci.yml
-   │   │   └── publish.yml
+   │   │   ├── pull-request.yml
+   │   │   ├── merge.yml
+   │   │   ├── nightly-security.yml
+   │   │   └── tag.yml
    │   ├── ISSUE_TEMPLATE/
    │   ├── pull_request_template.md
    │   ├── CODEOWNERS
@@ -187,32 +189,66 @@ Workflow Standards
 Naming Convention
 ~~~~~~~~~~~~~~~~~
 
-* Lowercase with hyphens
-* Short and descriptive
-* Standard names: ``ci.yml``, ``publish.yml``, ``codeql.yml``, ``security.yml``
+Workflow files fall into two layers, each with its own naming rule.
+
+**Reusable workflows** live in ``arillso/.github`` and are named
+``<category>-<purpose>.yml``:
+
+* ``ci-*.yml`` - Continuous Integration
+* ``security-*.yml`` - Security scanning
+* ``release-*.yml`` - Release and publishing
+* ``cleanup-*.yml`` - Cleanup and maintenance
+* ``ai-*.yml`` - AI-assisted workflows
+
+The category prefix keeps the library navigable and lets a consumer see which
+CI it is calling. The ``name:`` field spells the purpose out in full, without
+abbreviations (``name: CI - Ansible Collection``, not ``CI Ansible``).
+
+**Caller workflows** live in each project repository and are named after the
+event that triggers them, not after the work they do:
+
+* ``pull-request.yml`` - checks on pull requests
+* ``merge.yml`` - checks after merge to ``main``
+* ``tag.yml`` - release on tag push
+* ``nightly-security.yml`` - scheduled security scans
+* ``cleanup.yml`` - scheduled maintenance
+
+A caller is thin: it wires an event to one or more reusable workflows and
+passes inputs. All names are lowercase with hyphens.
 
 Standard Workflows
 ~~~~~~~~~~~~~~~~~~
+
+Caller workflows in a project repository:
 
 .. list-table::
    :header-rows: 1
    :widths: 25 20 55
 
-   * - Workflow
+   * - Trigger
      - Filename
      - Description
-   * - CI
-     - ``ci.yml``
-     - Linting, testing, building
-   * - Publish
-     - ``publish.yml``
+   * - Pull request
+     - ``pull-request.yml``
+     - Linting and testing on pull requests
+   * - Merge
+     - ``merge.yml``
+     - Linting and testing on ``main`` after merge
+   * - Tag
+     - ``tag.yml``
      - Publish to registry + GitHub Release
-   * - Security
-     - ``security.yml``
-     - Trivy scanning
-   * - CodeQL
-     - ``codeql.yml``
-     - Code analysis (required for public repos)
+   * - Schedule
+     - ``nightly-security.yml``
+     - Security scanning, including CodeQL (required for public repos)
+   * - Schedule
+     - ``cleanup.yml``
+     - Registry retention cleanup (only where a registry is used)
+
+Not every repository needs every caller: ``tag.yml`` exists only where there is
+something to release, ``cleanup.yml`` only where a container registry is used.
+
+The reusable workflows these callers invoke are listed in
+`arillso/.github <https://github.com/arillso/.github>`_.
 
 GitHub Actions Security
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -263,7 +299,8 @@ Testing Philosophy
    with ``idempotence`` in the test sequence
 3. **Integration Tests** - ansible-test for end-to-end validation
 
-**All tests consolidated in single** ``ci.yml`` **workflow.**
+**All tests run from the event callers** (``pull-request.yml``, ``merge.yml``),
+which delegate to the shared CI workflows in ``arillso/.github``.
 
 See :ref:`cicd` for complete CI workflow implementation and :ref:`ansible-roles` for
 scenario layout, driver choice, and what ``verify.yml`` should assert.
@@ -367,7 +404,7 @@ Release Process
 
 4. **Automated workflow triggers**
 
-   * ``publish.yml`` publishes to Galaxy
+   * ``tag.yml`` publishes to Galaxy
    * Creates GitHub Release with CHANGELOG
 
 Publish Workflow
@@ -375,7 +412,7 @@ Publish Workflow
 
 **Requirements:**
 
-* Single consolidated ``publish.yml`` workflow
+* Single ``tag.yml`` caller, delegating to ``release-ansible-collection.yml``
 * Tag format without 'v' prefix: ``1.0.0`` (NOT ``v1.0.0``)
 * Validate version matches galaxy.yml
 * Check CHANGELOG entry exists
@@ -383,7 +420,7 @@ Publish Workflow
 
 **Do NOT:**
 
-* ❌ Create separate ``release.yml`` and ``publish.yml``
+* ❌ Split releasing across several callers on the same tag event
 * ❌ Use ``release: [published]`` event
 * ❌ Use 'v' prefix in tags (``1.0.0``, not ``v1.0.0``)
 
