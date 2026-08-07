@@ -620,14 +620,20 @@ Apply CIS benchmark recommendations using arillso roles:
 
        # 2. Disable unused services
        - name: Stop unnecessary services
-         ansible.builtin.systemd:
+         ansible.builtin.systemd_service:
            name: "{{ item }}"
            state: stopped
-           enabled: no
+           enabled: false
          loop:
            - avahi-daemon
            - cups
-         ignore_errors: yes
+         register: cis_stop_services
+         # Not every image ships these units. A missing unit is expected here,
+         # any other failure is not - so scope the tolerance instead of using
+         # ignore_errors, which would swallow real errors too.
+         failed_when:
+           - cis_stop_services.failed
+           - "'Could not find the requested service' not in (cis_stop_services.msg | default(''))"
 
        # 3. Kernel hardening
        - name: Apply CIS kernel parameters
@@ -812,5 +818,6 @@ Next Steps
 .. seealso::
 
    * :ref:`standards` - Repository Standards
+   * :ref:`ansible-roles` - Role design, ``no_log`` and secret-handling rules
    * :ref:`contributing` - Contributing Guidelines
    * :ref:`cicd` - CI/CD Security

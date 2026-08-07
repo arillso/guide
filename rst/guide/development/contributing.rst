@@ -58,7 +58,9 @@ Ansible Collection Standards
 File Organization
 ~~~~~~~~~~~~~~~~~
 
-Each role must follow the standard structure defined in :ref:`standards`.
+Each role must follow the standard structure defined in :ref:`standards`. The design rules
+behind that structure - the role contract, ``argument_specs``, dispatcher pattern, handler
+namespacing, and composition - are documented in :ref:`ansible-roles`.
 
 **Required structure:**
 
@@ -66,24 +68,33 @@ Each role must follow the standard structure defined in :ref:`standards`.
 
    roles/ROLE_NAME/
    ├── defaults/
-   │   └── main.yml          # User-configurable variables
+   │   └── main.yml          # User-configurable variables, prefixed and commented
    ├── handlers/
-   │   └── main.yml          # Service restart handlers
+   │   └── main.yml          # Service restart handlers, names prefixed
    ├── meta/
    │   ├── main.yml          # Role metadata
    │   └── argument_specs.yml # REQUIRED: Variable specs
    ├── tasks/
-   │   ├── main.yml          # Main entry point
+   │   ├── main.yml          # Dispatcher, not implementation
    │   ├── install.yml       # Installation tasks
    │   ├── configure.yml     # Configuration tasks
    │   └── service.yml       # Service management
    ├── templates/
    │   └── ...               # Jinja2 templates
    ├── vars/
-   │   ├── main.yml          # Internal variables
+   │   ├── main.yml          # Internal constants, not inputs
    │   ├── Debian.yml        # Debian-specific vars
    │   └── RedHat.yml        # RedHat-specific vars
    └── README.md             # Role documentation
+
+The role's test scenario lives at the collection level, not inside the role:
+
+.. code-block:: text
+
+   extensions/molecule/ROLE_NAME/
+   ├── molecule.yml          # Driver, platforms, test_sequence
+   ├── converge.yml          # Invokes the role
+   └── verify.yml            # Asserts the end state on the system
 
 Code Style
 ~~~~~~~~~~
@@ -193,40 +204,40 @@ Testing Requirements
 
 **Before Submitting:**
 
+Use the Makefile targets - CI runs the same ones, so local and pipeline results cannot
+drift apart.
+
 1. **Lint your code:**
 
    .. code-block:: bash
 
-      ansible-lint roles/ROLE_NAME/
-      yamllint roles/ROLE_NAME/
+      make lint          # ansible-lint, yamllint, ruff/black
 
-2. **Test on supported platforms:**
-
-   * Minimum: Test on one major platform
-   * Ideal: Test on Ubuntu, Debian, and RHEL
-
-3. **Verify collection builds:**
+2. **Run the unit suite:**
 
    .. code-block:: bash
 
-      ansible-galaxy collection build --force
-      ansible-galaxy collection install arillso-COLLECTION-*.tar.gz --force
+      make test-unit     # pytest for modules, filters, lookups
 
-4. **Test with minimal playbook:**
+3. **Run the Molecule scenario** for the role you touched:
 
-   .. code-block:: yaml
+   .. code-block:: bash
 
-      ---
-      - name: Test role
-        hosts: localhost
-        become: true
-        roles:
-          - role: arillso.COLLECTION.ROLE_NAME
+      make test-molecule                       # every scenario, slow
+      cd extensions && molecule test -s ROLE_NAME   # just one
 
-5. **Verify idempotency:**
+   * The sequence must include ``idempotence`` - a second run changing anything is a bug
+   * Minimum: one major platform. Ideal: Ubuntu, Debian, and RHEL
+   * Roles needing a real kernel run under a VM driver, not a container
 
-   * Running twice should not change anything
-   * Check ``changed`` status
+4. **Verify the collection builds:**
+
+   .. code-block:: bash
+
+      make build
+
+See :ref:`ansible-roles` for scenario layout, driver choice, and the idempotence traps
+that linting does not catch.
 
 Release Process
 ~~~~~~~~~~~~~~~
@@ -536,6 +547,7 @@ Open a discussion on GitHub or check project-specific CONTRIBUTING.md files:
 .. seealso::
 
    * :ref:`standards` - Repository standards and conventions
+   * :ref:`ansible-roles` - Role and collection design rules
    * :ref:`cicd` - CI/CD workflows and automation
    * :ref:`compatibility` - Version compatibility and requirements
    * :ref:`list_of_collections` - Ansible Collections

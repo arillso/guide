@@ -431,6 +431,7 @@ Community & Support
    guide/tutorials/use-cases
    guide/tutorials/examples
    guide/best-practices/security
+   guide/best-practices/ansible-roles
 
 .. toctree::
    :hidden:
