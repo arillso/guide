@@ -270,7 +270,7 @@ Release Process
 
 4. **Automated workflows trigger**
 
-   * ``publish.yml`` publishes to Ansible Galaxy (see :ref:`cicd` for workflow details)
+   * ``tag.yml`` publishes to Ansible Galaxy (see :ref:`cicd` for workflow details)
    * Creates GitHub Release with CHANGELOG notes
 
 Go Project Standards

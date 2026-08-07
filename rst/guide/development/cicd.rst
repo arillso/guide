@@ -57,8 +57,8 @@ Workflow Template Structure
        steps:
          - uses: actions/checkout@<SHA> # v4
 
-CI Workflow (ci.yml)
---------------------
+CI Workflow (pull-request.yml, merge.yml)
+-----------------------------------------
 
 Standard Linting Workflow
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -287,13 +287,18 @@ Complete workflow implementing the :ref:`standards` CI architecture.
 
 **Architecture:** See :ref:`standards` for CI workflow structure diagram.
 
-CodeQL Workflow (codeql.yml)
------------------------------
+CodeQL Workflow (nightly-security.yml)
+--------------------------------------
 
 Security Scanning
 ~~~~~~~~~~~~~~~~~
 
 **Required for all public repositories** (see :ref:`standards`).
+
+CodeQL is not a workflow of its own in a project repository: the
+``nightly-security.yml`` caller invokes the shared ``security-code.yml``
+alongside the other scans. The example below shows the analysis steps that
+workflow performs.
 
 .. code-block:: yaml
 
@@ -343,8 +348,8 @@ Security Scanning
 Deploy/Publish Workflow
 -----------------------
 
-For Docker/Actions (deploy.yml)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+For Docker/Actions (tag.yml)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: yaml
 
@@ -404,8 +409,8 @@ For Docker/Actions (deploy.yml)
 * Publishes to GitHub Container Registry
 * Creates GitHub Release with auto-generated notes
 
-For Ansible Collections (publish.yml)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+For Ansible Collections (tag.yml)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Implementation of** :ref:`standards` **publish requirements.**
 
