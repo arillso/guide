@@ -28,15 +28,15 @@ Current Release Status
      - Status
      - End of Life
    * - arillso.system
-     - 1.0.x
+     - 1.1.x
      - Supported
      - TBD
    * - arillso.container
-     - 1.0.x
+     - 1.4.x
      - Supported
      - TBD
    * - arillso.agent
-     - 1.0.x
+     - 1.2.x
      - Supported
      - TBD
    * - arillso/ansible (container)
