@@ -296,9 +296,27 @@ Security Scanning
 **Required for all public repositories** (see :ref:`standards`).
 
 CodeQL is not a workflow of its own in a project repository: the
-``nightly-security.yml`` caller invokes the shared ``security-code.yml``
-alongside the other scans. The example below shows the analysis steps that
-workflow performs.
+``nightly-security.yml`` caller invokes the shared ``security-codeql.yml``
+alongside the other scans. The reusable analyses one language per call, so a
+repository with several analysable languages calls it once per language:
+
+.. code-block:: yaml
+
+   jobs:
+     codeql-python:
+       uses: arillso/.github/.github/workflows/security-codeql.yml@2026-06-18
+       with:
+         language: python
+
+     codeql-javascript:
+       uses: arillso/.github/.github/workflows/security-codeql.yml@2026-06-18
+       with:
+         language: javascript
+
+The caller must also grant ``security-events: write``, otherwise the reusable
+cannot upload its results.
+
+The example below shows the analysis steps that workflow performs.
 
 .. code-block:: yaml
 
