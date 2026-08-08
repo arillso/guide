@@ -18,12 +18,31 @@ export function initExternalLinks() {
   });
 }
 
+// Matches a host exactly or as a subdomain, so that a lookalike such as
+// `github.com.example.org` or a bare substring in a query parameter does
+// not get classified as the real destination.
+function hostMatches(hostname, domain) {
+  return hostname === domain || hostname.endsWith("." + domain);
+}
+
 function getExternalLinkDestination(url) {
-  if (url.includes("github.com/marketplace")) return "GitHub Actions";
-  if (url.includes("github.com")) return "GitHub";
-  if (url.includes("hub.docker.com")) return "Docker Hub";
-  if (url.includes("galaxy.ansible.com")) return "Ansible Galaxy";
-  if (url.includes("arillso.io")) return "Arillso Website";
+  let parsed;
+  try {
+    parsed = new URL(url, document.baseURI);
+  } catch {
+    return "Other";
+  }
+
+  const host = parsed.hostname.toLowerCase();
+
+  if (hostMatches(host, "github.com")) {
+    return parsed.pathname.startsWith("/marketplace")
+      ? "GitHub Actions"
+      : "GitHub";
+  }
+  if (hostMatches(host, "hub.docker.com")) return "Docker Hub";
+  if (hostMatches(host, "galaxy.ansible.com")) return "Ansible Galaxy";
+  if (hostMatches(host, "arillso.io")) return "Arillso Website";
   return "Other";
 }
 
