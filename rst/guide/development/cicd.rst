@@ -296,22 +296,42 @@ Security Scanning
 **Required for all public repositories** (see :ref:`standards`).
 
 CodeQL is not a workflow of its own in a project repository: the
-``nightly-security.yml`` caller invokes the shared ``security-code.yml``
-alongside the other scans. The example below shows the analysis steps that
-workflow performs.
+``nightly-security.yml`` caller invokes the shared ``security-codeql.yml``
+alongside the other scans. The reusable analyses one language per call, so a
+repository with several analysable languages calls it once per language:
+
+.. code-block:: yaml
+
+   jobs:
+     codeql-python:
+       uses: arillso/.github/.github/workflows/security-codeql.yml@2026-06-18
+       with:
+         language: python
+
+     codeql-javascript:
+       uses: arillso/.github/.github/workflows/security-codeql.yml@2026-06-18
+       with:
+         language: javascript
+
+The caller must also grant ``security-events: write``, otherwise the reusable
+cannot upload its results.
+
+The example below shows the analysis steps that workflow performs for the
+language it was called with.
 
 .. code-block:: yaml
 
    ---
-   name: CodeQL Analysis
+   name: Security - CodeQL
 
    on:
-     push:
-       branches: [main]
-     pull_request:
-       branches: [main]
-     schedule:
-       - cron: "0 6 * * 1"  # Weekly Monday 06:00 UTC
+     workflow_call:
+       inputs:
+         language:
+           description: 'Language to analyze (go, javascript, python, etc.)'
+           required: false
+           type: string
+           default: 'go'
 
    permissions:
      security-events: write
@@ -319,30 +339,33 @@ workflow performs.
 
    jobs:
      analyze:
-       name: Analyze Code
+       name: Analyze
        runs-on: ubuntu-latest
        strategy:
+         fail-fast: false
          matrix:
-           language: [go, python, javascript]
+           language: ['${{ inputs.language }}']
        steps:
-         - name: Checkout Code
-           uses: actions/checkout@<SHA> # v4
+         - name: Checkout repository
+           uses: actions/checkout@<SHA> # v7
 
          - name: Initialize CodeQL
-           uses: github/codeql-action/init@<SHA> # v3
+           uses: github/codeql-action/init@<SHA> # v4
            with:
              languages: ${{ matrix.language }}
 
          - name: Autobuild
-           uses: github/codeql-action/autobuild@<SHA> # v3
+           uses: github/codeql-action/autobuild@<SHA> # v4
 
          - name: Perform CodeQL Analysis
-           uses: github/codeql-action/analyze@<SHA> # v3
+           uses: github/codeql-action/analyze@<SHA> # v4
+           with:
+             category: "/language:${{ matrix.language }}"
 
 **Features:**
 
-* Weekly scheduled scans (Monday 06:00 UTC)
-* Multi-language support (Go, Python, JavaScript)
+* Runs on the caller's schedule (``nightly-security.yml``)
+* One language per call, so callers add a job per analysable language
 * Automatic SARIF upload to GitHub Security
 
 Deploy/Publish Workflow
