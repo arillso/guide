@@ -53,7 +53,7 @@ documentation toolchain only.
 ### Code Style
 
 - Use 4 spaces for indentation in YAML and JSON files (see `.editorconfig`)
-- Markdown follows `.markdownlint.json`; YAML follows `.yamllint`
+- Markdown follows `.markdownlint.json`; YAML follows `.yamllint.yml`
 - Run hooks locally with `lefthook install`; they run on commit and push
 
 ### Building
