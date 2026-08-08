@@ -79,7 +79,7 @@ Event-focused workflows calling reusables from `arillso/.github`:
 - **pull-request.yml** (`Pull Request`) - builds the docs, runs the secret
   scan, and runs Claude review on PRs
 - **merge.yml** (`Merge to Main`) - builds and deploys to Pages on push to
-  `main` and the weekly schedule, plus the secret scan
+  `main`, plus the secret scan
 - **nightly-security.yml** (`Nightly Security Scan`) - scheduled secret scan
 
 ## Do Not

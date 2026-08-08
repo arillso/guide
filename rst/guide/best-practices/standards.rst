@@ -303,7 +303,7 @@ See :ref:`cicd` for implementation details and examples.
 Schedule Frequency
 ~~~~~~~~~~~~~~~~~~
 
-Scheduled workflows run **weekly on Monday at 06:00 UTC**.
+Scheduled security workflows run **daily at 02:00 UTC**.
 
 See :ref:`cicd` for workflow implementation examples.
 
