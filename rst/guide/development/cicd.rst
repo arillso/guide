@@ -610,7 +610,7 @@ EditorConfig (.editorconfig)
    indent_size = 4
 
    [*.{yml,yaml}]
-   indent_size = 2
+   indent_size = 4
 
    [*.md]
    trim_trailing_whitespace = false

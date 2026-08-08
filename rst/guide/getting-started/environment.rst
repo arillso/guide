@@ -304,8 +304,8 @@ The .editorconfig file helps maintain a consistent coding style. Below is an exa
 
     # Specific settings for YAML files.
     [*.yml]
-    # Sets the indentation size for YAML files to 2 spaces.
-    indent_size = 2
+    # Sets the indentation size for YAML files to 4 spaces.
+    indent_size = 4
 
 .pre-commit-config.yaml for Ansible
 -----------------------------------
@@ -362,7 +362,7 @@ Maintains consistent coding style across editors and IDEs:
    insert_final_newline = true
 
    [*.{yml,yaml}]
-   indent_size = 2
+   indent_size = 4
 
    [*.md]
    trim_trailing_whitespace = false
