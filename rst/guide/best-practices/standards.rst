@@ -239,7 +239,8 @@ Caller workflows in a project repository:
      - Publish to registry + GitHub Release
    * - Schedule
      - ``nightly-security.yml``
-     - Security scanning, including CodeQL (required for public repos)
+     - Security scanning, including CodeQL (required for public repos with
+       CodeQL-supported code)
    * - Schedule
      - ``cleanup.yml``
      - Registry retention cleanup (only where a registry is used)
@@ -249,6 +250,42 @@ something to release, ``cleanup.yml`` only where a container registry is used.
 
 The reusable workflows these callers invoke are listed in
 `arillso/.github <https://github.com/arillso/.github>`_.
+
+.. _codeql-exception:
+
+CodeQL Exception
+~~~~~~~~~~~~~~~~
+
+CodeQL is required for public repositories **that contain code CodeQL can
+analyse**. A repository whose tree holds no file with a CodeQL-supported
+extension is exempt: there is nothing for the analysis to read, so the scan
+would either fail to configure or report an empty result forever.
+
+The test is the tree, not a maintained list of exempt repositories. It covers
+the compiled and interpreted languages ``security-code.yml`` is configured for
+via its ``languages`` input:
+
+.. code-block:: bash
+
+   # Exempt if this finds nothing
+   git ls-files -- '*.go' '*.py' '*.pyw' '*.js' '*.mjs' '*.cjs' '*.jsx' \
+     '*.ts' '*.tsx' '*.java' '*.cs' '*.c' '*.h' '*.cpp' '*.cc' '*.cxx' \
+     '*.hpp' '*.hh' '*.rb' '*.swift' '*.kt' '*.kts'
+
+CodeQL also ships an ``actions`` language that analyses
+``.github/workflows/*.yml``. It is deliberately **not** part of this test:
+``security-code.yml`` does not enable it, so workflow files alone do not make a
+repository subject to the criterion. Wiring up Actions analysis is a separate
+decision — until it happens, a repository with nothing but workflows and prose
+stays exempt.
+
+Pure Ansible Collections and pure documentation repositories are the usual
+case. Such a repository still runs ``nightly-security.yml``; its caller invokes
+the scans that do apply — at minimum ``security-secrets.yml`` — and omits
+``security-code.yml``.
+
+Adding a file in a supported language removes the exemption — the criterion is
+re-evaluated per audit, not granted once.
 
 GitHub Actions Security
 ~~~~~~~~~~~~~~~~~~~~~~~
