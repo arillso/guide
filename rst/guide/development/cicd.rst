@@ -293,7 +293,8 @@ CodeQL Workflow (nightly-security.yml)
 Security Scanning
 ~~~~~~~~~~~~~~~~~
 
-**Required for all public repositories** (see :ref:`standards`).
+**Required for all public repositories that contain CodeQL-supported code**
+(see :ref:`codeql-exception` for the exemption and how it is tested).
 
 CodeQL is not a workflow of its own in a project repository: the
 ``nightly-security.yml`` caller invokes the shared ``security-codeql.yml``
