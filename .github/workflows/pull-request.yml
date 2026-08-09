@@ -30,7 +30,7 @@ jobs:
             - name: Setup Python
               uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
               with:
-                  python-version: "3.14.6"
+                  python-version: "3.14.7"
                   cache: "pip"
 
             - name: Install Dependencies
@@ -48,10 +48,10 @@ jobs:
 
     security-secrets:
         name: Secret Detection Scan
-        uses: arillso/.github/.github/workflows/security-secrets.yml@2026-06-18
+        uses: arillso/.github/.github/workflows/security-secrets.yml@2026-08-07
 
     claude-review:
         name: Claude Code Review
-        uses: arillso/.github/.github/workflows/ai-claude-review.yml@2026-06-18
+        uses: arillso/.github/.github/workflows/ai-claude-review.yml@2026-08-07
         secrets:
             CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}

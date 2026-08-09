@@ -32,7 +32,7 @@ jobs:
             - name: Setup Python
               uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
               with:
-                  python-version: "3.14.6"
+                  python-version: "3.14.7"
                   cache: "pip"
 
             - name: Install Dependencies
@@ -51,4 +51,4 @@ jobs:
               uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
 
     security-secrets:
-        uses: arillso/.github/.github/workflows/security-secrets.yml@2026-06-18
+        uses: arillso/.github/.github/workflows/security-secrets.yml@2026-08-07
