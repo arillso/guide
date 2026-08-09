@@ -36,6 +36,7 @@ Every Repository Must Have
 7. **CHANGELOG.md** - Version history (for released projects)
 8. **AGENTS.md** - AI agent instructions
 9. **CLAUDE.md** - Import reference (``@AGENTS.md``)
+10. **REVIEW.md** - Code review rules for the AI review bot
 
 Recommended Structure
 ~~~~~~~~~~~~~~~~~~~~~
@@ -59,6 +60,7 @@ Recommended Structure
    ├── CONTRIBUTING.md      # Required for Ansible Collections
    ├── LICENSE
    ├── README.md
+   ├── REVIEW.md
    ├── .editorconfig
    ├── .gitignore
    └── [project files]
@@ -106,6 +108,125 @@ Guidelines
 * Long feature lists (except Ansible Collections)
 * Detailed code examples (belongs in AGENTS.md or guide.arillso.io)
 * Verbose descriptions
+
+.. _review-md:
+
+REVIEW.md
+---------
+
+``REVIEW.md`` holds the code review rules for a repository. Unlike the other
+required files it is written for a machine first: the AI review workflow
+``ai-claude-review.yml`` in `arillso/.github
+<https://github.com/arillso/.github>`_ reads it on every pull request and is
+instructed that it **takes precedence over generic best practices**. Where a
+rule in ``REVIEW.md`` conflicts with what the reviewer would otherwise apply,
+the file wins.
+
+This is what makes the file worth maintaining: it is the one place where a
+repository can narrow, widen, or overrule the review it receives, without
+touching the shared workflow.
+
+Precedence and the Base Branch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The workflow reads ``REVIEW.md`` from the **base branch**, never from the pull
+request's own checkout. It is fetched into a separate ``.review-base/``
+directory alongside ``AGENTS.md`` and ``CLAUDE.md``, and the reviewer is told
+to ignore any copy at the repository root.
+
+.. important::
+   A pull request cannot change the rules of the review it is subject to. A
+   change to ``REVIEW.md`` governs the *next* pull request, after it is merged
+   — not the one proposing it.
+
+The reason is that the reviewing agent holds approval rights. If a pull request
+could rewrite its instructions, it could instruct the reviewer to approve
+itself. Reading from the base ref removes that path.
+
+The file is optional in the sense that the workflow tolerates its absence: the
+checkout is sparse and exits cleanly when the file is missing, and the reviewer
+falls back to generic best practices. A repository without ``REVIEW.md`` is
+therefore not broken — it is merely unconfigured, and reviewed by defaults
+nobody chose.
+
+Structure
+~~~~~~~~~
+
+All repositories use the same five headings, in this order. The headings are
+the contract; the content under them is repository-specific.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Heading
+     - Content
+   * - ``# Code Review Guidelines``
+     - Document title. Identical across repositories.
+   * - ``## Scope``
+     - Two lists, **In scope** and **Out of scope**, naming paths and change
+       types. Generated artefacts and dependency-only Renovate pull requests
+       belong out of scope.
+   * - ``## Required checks``
+     - The conditions a change must meet: no committed secrets, the linters
+       and test suites that apply, passing security scans.
+   * - ``## Severity levels``
+     - A table mapping each level to its meaning and merge impact. Defines
+       what blocks a merge and what is merely flagged.
+   * - ``## Skip``
+     - Cases where a review adds nothing and may be skipped entirely.
+
+Severity levels are shared across repositories and should not be renamed —
+they are the vocabulary the reviewer uses in its comments:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 50 30
+
+   * - Level
+     - Meaning
+     - Merge impact
+   * - Bug
+     - Incorrect behavior or broken contract
+     - Blocks merge
+   * - Nit
+     - Minor issue — suboptimal but not incorrect
+     - Non-blocking
+   * - Pre-existing
+     - Issue present before this pull request; flagged for awareness
+     - No action required
+
+Writing Scope and Required Checks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``Scope`` and ``Required checks`` are where repositories genuinely differ, and
+where the file earns its keep. Name the actual paths and the actual commands.
+
+.. code-block:: markdown
+
+   ## Scope
+
+   In scope:
+
+   - Role changes (`roles/`)
+   - Lookup/module plugin changes (`plugins/`)
+   - Collection metadata (`galaxy.yml`, `meta/`)
+
+   Out of scope:
+
+   - `.ansible/` directories — local galaxy/fact caches
+   - Renovate dependency-only PRs (patch/minor with automerge enabled)
+
+   ## Required checks
+
+   - No secrets committed — no credentials, tokens, or keys
+   - `ansible-lint --profile=production` passes
+   - yamllint passes
+   - `argument_specs.yml` present and complete for any new or changed role
+
+A documentation repository lists its build and its markdown linter; an Ansible
+Collection lists ``ansible-lint``, molecule, and ``argument_specs.yml``. Both
+keep the same five headings.
 
 LICENSE Format
 --------------
@@ -198,7 +319,8 @@ Workflow files fall into two layers, each with its own naming rule.
 * ``security-*.yml`` - Security scanning
 * ``release-*.yml`` - Release and publishing
 * ``cleanup-*.yml`` - Cleanup and maintenance
-* ``ai-*.yml`` - AI-assisted workflows
+* ``ai-*.yml`` - AI-assisted workflows (see :ref:`review-md` for the rules
+  ``ai-claude-review.yml`` reads)
 
 The category prefix keeps the library navigable and lets a consumer see which
 CI it is calling. The ``name:`` field spells the purpose out in full, without
@@ -645,6 +767,7 @@ Files to Avoid
 
 .. seealso::
 
+   * :ref:`review-md` - Code review rules consumed by the AI review workflow
    * :ref:`ansible-roles` - Role and collection design rules
    * :ref:`contributing` - How to contribute (code style, testing, development)
    * :ref:`cicd` - CI/CD workflows and linter configurations
