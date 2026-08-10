@@ -11,17 +11,17 @@ services:
             - NODE_PATH=/usr/src/node_modules
             - PATH=/usr/src/node_modules/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
         volumes:
-            - '.:/project'
+            - ".:/project"
         working_dir: /project
         command:
             - bash
             - -c
             - ./build.sh && python -m http.server 8000 --directory build/html
         labels:
-            - 'traefik.enable=true'
-            - 'traefik.http.routers.arillso-guide-test-arillso-doc-generator.rule=Host(`arillso-guide.test`)'
-            - 'traefik.http.routers.arillso-guide-test-arillso-doc-generator-tls.rule=Host(`arillso-guide.test`)'
-            - 'traefik.http.routers.arillso-guide-test-arillso-doc-generator-tls.tls=true'
+            - "traefik.enable=true"
+            - "traefik.http.routers.arillso-guide-test-arillso-doc-generator.rule=Host(`arillso-guide.test`)"
+            - "traefik.http.routers.arillso-guide-test-arillso-doc-generator-tls.rule=Host(`arillso-guide.test`)"
+            - "traefik.http.routers.arillso-guide-test-arillso-doc-generator-tls.tls=true"
             # No host port is published, so tell Traefik which container port to
             # reach over the compose network (the python http.server in command).
-            - 'traefik.http.services.arillso-guide-test-arillso-doc-generator.loadbalancer.server.port=8000'
+            - "traefik.http.services.arillso-guide-test-arillso-doc-generator.loadbalancer.server.port=8000"

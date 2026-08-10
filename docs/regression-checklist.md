@@ -25,16 +25,16 @@ in der ausgelieferten HTML-Doku eingeführt haben.
 
 1. Sauberen Build erzeugen:
 
-   ```bash
-   ./build.sh
-   ```
+    ```bash
+    ./build.sh
+    ```
 
 2. Output im lokalen Browser öffnen:
 
-   ```bash
-   xdg-open build/html/index.html   # Linux
-   open build/html/index.html       # macOS
-   ```
+    ```bash
+    xdg-open build/html/index.html   # Linux
+    open build/html/index.html       # macOS
+    ```
 
 3. Diese Checkliste sequenziell durchgehen und jeden Punkt
    abhaken. Falls ein Punkt fehlschlägt: Befund unter dem
@@ -211,7 +211,7 @@ Mausunabhängige Bedienung — Voraussetzung für A11y und Power-User.
 Wenn ein Punkt fehlschlägt, hier protokollieren:
 
 | Datum | Punkt | Befund | Fix-Issue/PR |
-|-------|-------|--------|--------------|
+| ----- | ----- | ------ | ------------ |
 |       |       |        |              |
 
 ## Sign-Off
