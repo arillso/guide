@@ -93,6 +93,19 @@ instructions, and the pull request process.
   component macros, and frontend build commands.
 - `docs/regression-checklist.md` — manual regression checklist.
 
+## Security
+
+Report vulnerabilities to <security@arillso.io>. The full disclosure process
+is documented in the [organisation security policy](https://github.com/arillso/guide/security/policy).
+
+The site serves the same contact as an RFC 9116
+[`security.txt`](https://guide.arillso.io/.well-known/security.txt). It is
+rendered at build time from `_well_known/security.txt.in` by
+`scripts/security_txt.py`, which fills the `Expires` field with the build date
+plus one year. Do not replace the `{EXPIRES}` placeholder with a fixed date —
+an expired `security.txt` is invalid under RFC 9116, and the date only stays
+current because every merge to `main` redeploys the site.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
