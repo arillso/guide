@@ -54,7 +54,8 @@ def render_security_txt(template_text: str, now: datetime) -> str:
     if EXPIRES_PLACEHOLDER not in template_text:
         raise ValueError(f"Platzhalter {EXPIRES_PLACEHOLDER} fehlt im Template {TEMPLATE_PATH}")
 
-    return template_text.replace(EXPIRES_PLACEHOLDER, _one_year_later(now).isoformat())
+    expires = _one_year_later(now).replace(microsecond=0)
+    return template_text.replace(EXPIRES_PLACEHOLDER, expires.isoformat())
 
 
 def write_security_txt(now: datetime) -> Path:

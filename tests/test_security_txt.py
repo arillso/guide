@@ -51,6 +51,14 @@ def test_expires_is_one_year_after_now_in_utc() -> None:
     assert expires == now.replace(year=now.year + 1)
 
 
+def test_expires_has_no_microseconds() -> None:
+    now = datetime(2026, 8, 10, 12, 30, 0, 123456, tzinfo=timezone.utc)
+
+    expires = datetime.fromisoformat(_expires_value(render_security_txt(TEMPLATE, now)))
+
+    assert expires.microsecond == 0
+
+
 def test_no_placeholder_remains() -> None:
     rendered = render_security_txt(TEMPLATE, datetime.now(timezone.utc))
 

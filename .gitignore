@@ -7,6 +7,8 @@
 /temp-rst
 /build
 /rst/collections
+# Rendered from _well_known/security.txt.in at build time (scripts/security_txt.py).
+/_well_known_build
 node_modules/
 
 # Generated frontend artefacts — produced by FrontendBuildPipeline (postcss + esbuild).
