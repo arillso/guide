@@ -8,6 +8,20 @@
 # documentation:
 # http://www.sphinx-doc.org/en/master/config
 
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent / "scripts"))
+
+from security_txt import write_security_txt  # noqa: E402
+
+# Render .well-known/security.txt here, at config-read time, rather than from a
+# builder-inited handler: Sphinx validates html_extra_path while reading this
+# file, so a directory created later would still warn — and build.sh runs with
+# -W, which turns that warning into a failed build on a clean checkout.
+write_security_txt(datetime.now(timezone.utc))
+
 project = "arillso"
 copyright = "arillso contributors"
 
@@ -44,6 +58,10 @@ html_copy_source = False
 
 # Static files (CSS, JavaScript, Images)
 html_static_path = ["_static"]
+
+# Rendered just above; the contents are copied into the root of build/html,
+# which is what puts security.txt under /.well-known/.
+html_extra_path = ["_well_known_build"]
 html_css_files = ["custom.css"]
 html_js_files = ["custom.js"]
 
