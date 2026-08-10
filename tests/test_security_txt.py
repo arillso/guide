@@ -5,14 +5,15 @@ braucht Netz und den Collections-Cache und ist damit kein Unit-Test-Ziel.
 
 Abgedeckte Cases:
 
-* ``Expires`` ist gültiges ISO 8601 in UTC und liegt ein Jahr nach ``now``.
+* ``Expires`` ist gültiges ISO 8601 in UTC und liegt ``VALIDITY`` nach ``now``,
+  aber weniger als ein Jahr in der Zukunft (RFC 9116 §2.5.5).
 * Im Ergebnis bleibt kein ``{EXPIRES}``-Platzhalter stehen.
 * Die Pflichtzeile ``Contact:`` ist vorhanden.
 * Fehlt der Platzhalter im Template, wirft die Funktion ``ValueError`` —
   kein stiller Fallback auf eine Datei ohne Ablaufdatum.
 * Ein naives ``now`` (ohne Zeitzone) wirft ``ValueError``.
-* Der 29. Februar fällt auf den 28., statt ``replace(year=...)`` scheitern
-  zu lassen.
+* Der 29. Februar rechnet ohne Ausnahme durch, statt ``replace(year=...)``
+  scheitern zu lassen.
 """
 
 from __future__ import annotations
@@ -28,6 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from security_txt import (  # noqa: E402
     EXPIRES_PLACEHOLDER,
     TEMPLATE_PATH,
+    VALIDITY,
     render_security_txt,
 )
 
@@ -41,14 +43,23 @@ def _expires_value(rendered: str) -> str:
     raise AssertionError("keine Expires-Zeile im Ergebnis")
 
 
-def test_expires_is_one_year_after_now_in_utc() -> None:
+def test_expires_is_validity_after_now_in_utc() -> None:
     now = datetime(2026, 8, 10, 12, 30, 0, tzinfo=timezone.utc)
 
     expires = datetime.fromisoformat(_expires_value(render_security_txt(TEMPLATE, now)))
 
     assert expires.tzinfo is not None
     assert expires.utcoffset() == timedelta(0)
-    assert expires == now.replace(year=now.year + 1)
+    assert expires == now + VALIDITY
+
+
+def test_expires_is_under_one_year_out() -> None:
+    """RFC 9116 §2.5.5 empfiehlt eine Gültigkeit von weniger als einem Jahr."""
+    now = datetime(2026, 8, 10, 12, 30, 0, tzinfo=timezone.utc)
+
+    expires = datetime.fromisoformat(_expires_value(render_security_txt(TEMPLATE, now)))
+
+    assert now < expires < now.replace(year=now.year + 1)
 
 
 def test_expires_has_no_microseconds() -> None:
@@ -81,9 +92,10 @@ def test_naive_now_raises() -> None:
         render_security_txt(TEMPLATE, datetime(2026, 8, 10, 12, 0, 0))
 
 
-def test_leap_day_falls_back_to_february_28() -> None:
+def test_leap_day_does_not_raise() -> None:
+    """Am 29. Februar wirft ``replace(year=...)`` — der feste Offset nicht."""
     now = datetime(2028, 2, 29, 0, 0, 0, tzinfo=timezone.utc)
 
     expires = datetime.fromisoformat(_expires_value(render_security_txt(TEMPLATE, now)))
 
-    assert (expires.year, expires.month, expires.day) == (2029, 2, 28)
+    assert expires == now + VALIDITY

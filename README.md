@@ -102,9 +102,10 @@ The site serves the same contact as an RFC 9116
 [`security.txt`](https://guide.arillso.io/.well-known/security.txt). It is
 rendered at build time from `_well_known/security.txt.in` by
 `scripts/security_txt.py`, which fills the `Expires` field with the build date
-plus one year. Do not replace the `{EXPIRES}` placeholder with a fixed date —
-an expired `security.txt` is invalid under RFC 9116, and the date only stays
-current because every merge to `main` redeploys the site.
+plus 364 days — under the one year RFC 9116 §2.5.5 recommends. Do not replace
+the `{EXPIRES}` placeholder with a fixed date — an expired `security.txt` is
+invalid under RFC 9116, and the date only stays current because every merge to
+`main` redeploys the site.
 
 ## License
 

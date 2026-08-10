@@ -11,16 +11,19 @@ Bekannte Grenze: bleibt ``main`` zwölf Monate ohne Merge, läuft die Datei ab.
 ``nightly-security.yml`` deployt nicht. Ein Cron-Deploy wäre die Erweiterung,
 falls das eintritt.
 
-Eingehängt wird das Ergebnis über den ``builder-inited``-Hook in ``conf.py``
-und ``html_extra_path``.
+Aufgerufen wird das beim Einlesen von ``conf.py``, also bevor Sphinx
+``html_extra_path`` validiert; ein späterer Event-Hook käme zu spät.
 """
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 EXPIRES_PLACEHOLDER = "{EXPIRES}"
+
+# RFC 9116 §2.5.5 recommends less than a year of validity.
+VALIDITY = timedelta(days=364)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE_PATH = REPO_ROOT / "_well_known" / "security.txt.in"
@@ -28,21 +31,19 @@ OUTPUT_DIR = REPO_ROOT / "_well_known_build" / ".well-known"
 OUTPUT_PATH = OUTPUT_DIR / "security.txt"
 
 
-def _one_year_later(now: datetime) -> datetime:
-    """Gibt ``now`` plus ein Jahr zurück, mit Sonderfall 29. Februar.
+def _expiry_from(now: datetime) -> datetime:
+    """Gibt den Ablaufzeitpunkt zurück: ``now`` plus ``VALIDITY``.
 
-    ``replace(year=...)`` wirft am Schalttag ``ValueError: day is out of range
-    for month``, weil das Folgejahr keinen 29. Februar hat. In dem Fall wird
-    auf den 28. gekürzt.
+    RFC 9116 §2.5.5 empfiehlt eine Gültigkeit von **weniger** als einem Jahr,
+    deshalb 364 Tage statt exakt einem Jahr. Ein fester ``timedelta`` umgeht
+    zugleich den Schalttag-Sonderfall, an dem ``replace(year=...)``
+    ``ValueError: day is out of range for month`` wirft.
     """
-    try:
-        return now.replace(year=now.year + 1)
-    except ValueError:
-        return now.replace(year=now.year + 1, day=28)
+    return now + VALIDITY
 
 
 def render_security_txt(template_text: str, now: datetime) -> str:
-    """Ersetzt den ``{EXPIRES}``-Platzhalter durch ``now`` plus ein Jahr.
+    """Ersetzt den ``{EXPIRES}``-Platzhalter durch den Ablaufzeitpunkt.
 
     ``now`` muss zeitzonenbewusst sein — RFC 9116 verlangt einen Zeitstempel
     nach RFC 3339, und ein naives ``datetime`` liefert einen ohne Offset.
@@ -54,7 +55,7 @@ def render_security_txt(template_text: str, now: datetime) -> str:
     if EXPIRES_PLACEHOLDER not in template_text:
         raise ValueError(f"Platzhalter {EXPIRES_PLACEHOLDER} fehlt im Template {TEMPLATE_PATH}")
 
-    expires = _one_year_later(now).replace(microsecond=0)
+    expires = _expiry_from(now).replace(microsecond=0)
     return template_text.replace(EXPIRES_PLACEHOLDER, expires.isoformat())
 
 
