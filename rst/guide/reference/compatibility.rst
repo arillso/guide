@@ -599,7 +599,7 @@ Best Practices
 The ``#<date-tag>`` suffix pins the preset to a fixed revision. Without it
 Renovate resolves the preset against the default branch of
 ``arillso/.github``, so a change there takes effect without a pull request and
-without review. The ``customManager`` in ``renovate-base`` keeps the tag
+without review. A ``customManager`` in the shared presets keeps the tag
 current on its own (``automerge: true``).
 
 Lock Files
