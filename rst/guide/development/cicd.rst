@@ -305,12 +305,12 @@ repository with several analysable languages calls it once per language:
 
    jobs:
      codeql-python:
-       uses: arillso/.github/.github/workflows/security-codeql.yml@2026-06-18
+       uses: arillso/.github/.github/workflows/security-codeql.yml@2026-08-09
        with:
          language: python
 
      codeql-javascript:
-       uses: arillso/.github/.github/workflows/security-codeql.yml@2026-06-18
+       uses: arillso/.github/.github/workflows/security-codeql.yml@2026-08-09
        with:
          language: javascript
 
