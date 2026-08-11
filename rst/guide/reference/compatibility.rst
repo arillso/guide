@@ -592,9 +592,15 @@ Best Practices
    {
      "$schema": "https://docs.renovatebot.com/renovate-schema.json",
      "extends": [
-       "github>arillso/.github:renovate-ansible"
+       "github>arillso/.github:renovate-ansible#2026-08-08"
      ]
    }
+
+The ``#<date-tag>`` suffix pins the preset to a fixed revision. Without it
+Renovate resolves the preset against the default branch of
+``arillso/.github``, so a change there takes effect without a pull request and
+without review. A ``customManager`` in the shared presets keeps the tag
+current on its own (``automerge: true``).
 
 Lock Files
 ~~~~~~~~~~

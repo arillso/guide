@@ -276,8 +276,14 @@ Renovate Configuration
 
    {
        "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-       "extends": ["github>arillso/.github:renovate-base"]
+       "extends": ["github>arillso/.github:renovate-base#2026-08-08"]
    }
+
+Pin the preset reference to a date tag. Without the ``#<date-tag>`` suffix
+Renovate resolves the preset against the default branch of
+``arillso/.github``, so a change there reaches every repository without a pull
+request and without review. The ``customManager`` in ``renovate-base`` keeps
+the tag current on its own (``automerge: true``).
 
 **Available presets:**
 
