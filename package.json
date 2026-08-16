@@ -14,6 +14,6 @@
         "esbuild": "0.28.2",
         "postcss": "8.5.26",
         "postcss-cli": "11.0.1",
-        "postcss-import": "16.1.1"
+        "postcss-import": "16.2.0"
     }
 }
