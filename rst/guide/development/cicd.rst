@@ -93,7 +93,7 @@ Standard Linting Workflow
            uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
          - name: Setup Go
-           uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5
+           uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
            with:
              go-version-file: go.mod
              cache: true
