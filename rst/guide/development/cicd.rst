@@ -90,7 +90,7 @@ Standard Linting Workflow
        runs-on: ubuntu-latest
        steps:
          - name: Checkout Code
-           uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+           uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
          - name: Setup Go
            uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
@@ -108,7 +108,7 @@ Standard Linting Workflow
        runs-on: ubuntu-latest
        steps:
          - name: Checkout Code
-           uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+           uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
          - name: Run actionlint
            uses: reviewdog/action-actionlint@a5524e1c19e62881d79c1f1b9b6f09f16356e281 # v1
@@ -121,7 +121,7 @@ Standard Linting Workflow
        runs-on: ubuntu-latest
        steps:
          - name: Checkout Code
-           uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+           uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
          - name: Run ShellCheck
            uses: reviewdog/action-shellcheck@4c07458293ac342d477251099501a718ae5ef86e # v1.32.0
@@ -134,7 +134,7 @@ Standard Linting Workflow
        runs-on: ubuntu-latest
        steps:
          - name: Checkout Code
-           uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+           uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
          - name: Run yamllint
            uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c # v3
@@ -172,7 +172,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
        runs-on: ubuntu-latest
        steps:
          - name: Checkout Code
-           uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+           uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
          - name: Run ansible-lint
            uses: ansible/ansible-lint-action@c37fb7b4bda2c8cb18f4942716bae9f11b0dc9bc # v4
@@ -182,7 +182,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
        runs-on: ubuntu-latest
        steps:
          - name: Checkout Code
-           uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+           uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
          - name: Run yamllint
            uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c # v3
@@ -196,7 +196,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
        needs: [ansible-lint, yaml-lint]
        steps:
          - name: Checkout Code
-           uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+           uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
          - name: Setup Python
            uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
@@ -216,7 +216,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
        needs: [sanity-test]
        steps:
          - name: Checkout Code
-           uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+           uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
          - name: Setup Python
            uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
@@ -239,7 +239,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
            distro: [ubuntu2204, debian12, rockylinux9]
        steps:
          - name: Checkout Code
-           uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+           uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
          - name: Run Molecule
            uses: gofrolist/molecule-action@a56fd09663ec28fbd1143f92db5a3711e9c26dc8 # v2
@@ -254,7 +254,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
        needs: [molecule-test]
        steps:
          - name: Checkout Code
-           uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+           uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
          - name: Setup Python
            uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
@@ -274,7 +274,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
        needs: [integration-test]
        steps:
          - name: Checkout Code
-           uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+           uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
          - name: Build collection
            run: ansible-galaxy collection build
@@ -720,7 +720,7 @@ SHA Pinning
 .. code-block:: yaml
 
    # ✅ Correct - Pinned to SHA with version comment
-   - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+   - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
    # ❌ Wrong - Mutable reference
    - uses: actions/checkout@v4
