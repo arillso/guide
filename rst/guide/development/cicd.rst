@@ -199,7 +199,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Setup Python
-           uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+           uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
            with:
              python-version: "3.11"
 
@@ -219,7 +219,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Setup Python
-           uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+           uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
            with:
              python-version: "3.11"
 
@@ -257,7 +257,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Setup Python
-           uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+           uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
            with:
              python-version: "3.11"
 
