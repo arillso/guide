@@ -280,7 +280,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
            run: ansible-galaxy collection build
 
          - name: Upload artifact
-           uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
+           uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
            with:
              name: collection
              path: "*.tar.gz"
