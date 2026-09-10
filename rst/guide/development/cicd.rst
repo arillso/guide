@@ -111,7 +111,7 @@ Standard Linting Workflow
            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Run actionlint
-           uses: reviewdog/action-actionlint@a5524e1c19e62881d79c1f1b9b6f09f16356e281 # v1
+           uses: reviewdog/action-actionlint@d290e336d5a743810aef4404f757dc862276d2ae # v1.73.4
            with:
              reporter: github-pr-review
              fail_level: error
@@ -124,7 +124,7 @@ Standard Linting Workflow
            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Run ShellCheck
-           uses: reviewdog/action-shellcheck@4c07458293ac342d477251099501a718ae5ef86e # v1.32.0
+           uses: reviewdog/action-shellcheck@0722bbdb0d47f04c1b53b8734d2422ac63a45ec6 # v1.32.1
            with:
              reporter: github-pr-review
              fail_level: warning
@@ -137,7 +137,7 @@ Standard Linting Workflow
            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Run yamllint
-           uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c # v3
+           uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c # v3.1.1
            with:
              config_file: .yamllint.yml
              strict: false
@@ -185,7 +185,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Run yamllint
-           uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c # v3
+           uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c # v3.1.1
            with:
              config_file: .yamllint.yml
 
@@ -242,7 +242,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Run Molecule
-           uses: gofrolist/molecule-action@a56fd09663ec28fbd1143f92db5a3711e9c26dc8 # v2
+           uses: gofrolist/molecule-action@f6757af16d4781d4d9c21e93ef593f5fa0895fa5 # v2.9.10
            with:
              molecule_command: test
              molecule_args: --scenario-name ${{ matrix.distro }}

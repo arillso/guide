@@ -12,5 +12,5 @@
 antsibull-docs==2.26.0
 ansible-pygments==0.1.2
 sphinx-ansible-theme==0.10.4
-sphinxcontrib-mermaid==2.1.0
+sphinxcontrib-mermaid==2.1.1
 sphinx-sitemap==2.9.0
