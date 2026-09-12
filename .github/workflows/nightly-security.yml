@@ -20,20 +20,20 @@ permissions:
 
 jobs:
     codeql-python:
-        uses: arillso/.github/.github/workflows/security-codeql.yml@2026-09-09
+        uses: arillso/.github/.github/workflows/security-codeql.yml@2026-09-10
         with:
             language: python
 
     codeql-javascript:
-        uses: arillso/.github/.github/workflows/security-codeql.yml@2026-09-09
+        uses: arillso/.github/.github/workflows/security-codeql.yml@2026-09-10
         with:
             language: javascript
 
     security-secrets:
-        uses: arillso/.github/.github/workflows/security-secrets.yml@2026-09-09
+        uses: arillso/.github/.github/workflows/security-secrets.yml@2026-09-10
 
     security-sbom:
-        uses: arillso/.github/.github/workflows/security-sbom.yml@2026-09-09
+        uses: arillso/.github/.github/workflows/security-sbom.yml@2026-09-10
         permissions:
             contents: write
         with:
