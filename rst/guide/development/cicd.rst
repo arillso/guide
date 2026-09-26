@@ -111,7 +111,7 @@ Standard Linting Workflow
            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Run actionlint
-           uses: reviewdog/action-actionlint@5be522b94290e249dba9f5daded2f7157733e3d2 # v1.76.1
+           uses: reviewdog/action-actionlint@2085657ab2c7f48c58edcc767fba576f63bea76b # v1.77
            with:
              reporter: github-pr-review
              fail_level: error
