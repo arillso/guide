@@ -111,7 +111,7 @@ Standard Linting Workflow
            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Run actionlint
-           uses: reviewdog/action-actionlint@13465d022aa41c282f730be17574b5ce692d0186 # v1.78.1
+           uses: reviewdog/action-actionlint@1758727be30241166609dad4c97588b6ad411f32 # v1.79.1
            with:
              reporter: github-pr-review
              fail_level: error
@@ -242,7 +242,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Run Molecule
-           uses: gofrolist/molecule-action@375239d5cf0d251875cfb5f797209e65cf3d0943 # v2.9.14
+           uses: gofrolist/molecule-action@4152624b1648c3117fd9c8f1fee1e1609cbb9284 # v2.9.15
            with:
              molecule_command: test
              molecule_args: --scenario-name ${{ matrix.distro }}
