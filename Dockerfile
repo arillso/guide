@@ -14,7 +14,7 @@
 # ---------------------------------------------------------------------------
 # Stage 1: Builder
 # ---------------------------------------------------------------------------
-FROM python:3.14@sha256:be8ccd085666c34273c9dc5607c9842f8b2e3116128aae45148ce164c07ce09d AS builder
+FROM python:3.15@sha256:e748956ccf3f50c9555f236753bbcd5f430d3937e665d3bd6922dd0e6e591a24 AS builder
 
 WORKDIR /usr/src
 
@@ -43,7 +43,7 @@ RUN npm ci --no-audit --no-fund
 # ---------------------------------------------------------------------------
 # Stage 2: Docs runtime
 # ---------------------------------------------------------------------------
-FROM python:3.14@sha256:be8ccd085666c34273c9dc5607c9842f8b2e3116128aae45148ce164c07ce09d AS docs
+FROM python:3.15@sha256:e748956ccf3f50c9555f236753bbcd5f430d3937e665d3bd6922dd0e6e591a24 AS docs
 
 WORKDIR /project
 
