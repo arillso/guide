@@ -111,7 +111,7 @@ Standard Linting Workflow
            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Run actionlint
-           uses: reviewdog/action-actionlint@419a49378266e892f40c773b4f2fc6de9aa87499 # v1.80.4
+           uses: reviewdog/action-actionlint@48e36f54d8da326b83ab061aee2cc5e01b5ca46f # v1.80.6
            with:
              reporter: github-pr-review
              fail_level: error
@@ -199,7 +199,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Setup Python
-           uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+           uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
            with:
              python-version: "3.11"
 
@@ -219,7 +219,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Setup Python
-           uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+           uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
            with:
              python-version: "3.11"
 
@@ -257,7 +257,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Setup Python
-           uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+           uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
            with:
              python-version: "3.11"
 
