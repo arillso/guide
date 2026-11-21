@@ -25,20 +25,19 @@ write_security_txt(datetime.now(timezone.utc))
 project = "arillso"
 copyright = "arillso contributors"
 
-title = "arillso Guide Documentation"
+html_title = "arillso Guide Documentation"
 html_short_title = "arillso Documentation"
 
 extensions = [
-    "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx_antsibull_ext",
     "sphinxcontrib.mermaid",
     "sphinx_sitemap",
 ]
 
-# Mermaid configuration - use default light theme
-mermaid_version = "latest"
-mermaid_params = ["--theme", "default", "--backgroundColor", "white"]
+# Mermaid configuration - use default light theme. Pinned: "latest" would let
+# a Mermaid major release change every diagram without a repo change.
+mermaid_version = "12.3.0"
 mermaid_init_js = "mermaid.initialize({startOnLoad:true,theme:'default'});"
 
 pygments_style = "ansible"
@@ -49,10 +48,6 @@ templates_path = ["_templates"]
 html_theme = "sphinx_ansible_theme"
 html_show_sphinx = False
 
-display_version = False
-
-html_use_smartypants = True
-html_use_modindex = False
 html_use_index = False
 html_copy_source = False
 
@@ -71,7 +66,6 @@ html_favicon = "_static/favicon.ico"
 
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html#confval-intersphinx_mapping for the syntax
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/2/", None),
     "python3": ("https://docs.python.org/3/", None),
     "jinja2": ("https://jinja.palletsprojects.com/en/stable/", None),
     "ansible_devel": ("https://docs.ansible.com/ansible/devel/", None),
