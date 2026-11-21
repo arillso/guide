@@ -23,3 +23,6 @@ _static/custom.js
 __pycache__/
 *.py[cod]
 .pytest_cache/
+
+# Collection cache of the docker-compose environment (ARILLSO_COLLECTIONS_CACHE).
+/.cache/

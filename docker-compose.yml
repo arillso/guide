@@ -3,13 +3,15 @@ services:
         build:
             context: .
             target: docs
+        # Run as the host user so build outputs in the bind mount are not owned
+        # by root. Set UID/GID in the environment or .env if yours is not 1000.
+        user: "${UID:-1000}:${GID:-1000}"
         environment:
-            # The project root is bind-mounted at /project, which shadows the
-            # node_modules baked into the image. NODE_PATH lets Node's require()
-            # resolve the image-installed deps (postcss plugins, esbuild) from
-            # anywhere under /project. PATH exposes their CLI shims.
-            - NODE_PATH=/usr/src/node_modules
-            - PATH=/usr/src/node_modules/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+            # No writable home for an arbitrary UID; npm and ansible need one.
+            - HOME=/tmp
+            # Keep the collection cache in the checkout (git-ignored) so it
+            # survives container restarts instead of re-downloading each time.
+            - ARILLSO_COLLECTIONS_CACHE=/project/.cache/collections
         volumes:
             - ".:/project"
         working_dir: /project
