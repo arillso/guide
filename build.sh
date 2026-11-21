@@ -47,11 +47,11 @@ fi
 python3 scripts/collection_cache.py ensure "${CACHE_ARGS[@]}" > "${CACHE_MANIFEST_FILE}"
 
 # Build ANSIBLE_COLLECTIONS_PATH from the manifest so antsibull-docs sees the
-# cached collection tree. Each cached collection lives in a
-# self-contained <path>/ansible_collections tree (the cache stores every pinned
-# version in its own directory). ansible-doc resolves collections from the
-# parent of an "ansible_collections" directory, so we join those per-collection
-# parents — not the bare cache_root, which has no ansible_collections child.
+# cached collection tree. Each pinned version lives in its own
+# <path>/ansible_collections tree. We join the <path>/ansible_collections
+# directories themselves; ansible accepts that form too (it strips a trailing
+# "ansible_collections" component). The bare cache_root would not work, it has
+# no ansible_collections child.
 ANSIBLE_COLLECTIONS_PATH="$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(':'.join(c['path'] + '/ansible_collections' for c in d['collections']))" "${CACHE_MANIFEST_FILE}")"
 export ANSIBLE_COLLECTIONS_PATH
 

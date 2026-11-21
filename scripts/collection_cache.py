@@ -42,7 +42,9 @@ _VERSIONS_LINE_RE = re.compile(r'^([A-Z][A-Z0-9_]*)="([^"]+)"')
 
 # Marker file placed inside a version directory once the download completed
 # successfully. Presence signals "cache hit"; absence forces a re-download.
-CACHE_COMPLETE_MARKER = ".cache_complete"
+# Renamed when the install layout changes (v2: --no-deps), so stale cache
+# trees from the old layout are re-installed instead of reused.
+CACHE_COMPLETE_MARKER = ".cache_complete_v2"
 
 # Exit codes (see the module docstring for the full contract).
 EXIT_OK = 0
@@ -165,6 +167,10 @@ def ensure_collection(
         "--collections-path",
         str(target),
         "--force",
+        # Without --no-deps, a dependency (e.g. arillso.agent -> arillso.system)
+        # lands in this tree too and can shadow the separately pinned version
+        # on ANSIBLE_COLLECTIONS_PATH.
+        "--no-deps",
     ]
     try:
         result = subprocess.run(
@@ -211,7 +217,7 @@ class AnsibleGalaxyMissingError(CollectionCacheError):
     def __init__(self) -> None:
         super().__init__(
             "ansible-galaxy executable not found on PATH. "
-            "Install it via 'pip install ansible-core' (see requirements.txt) "
+            "Install it via 'pip install -r requirements.txt' "
             "or use the Dockerfile builder stage."
         )
 
@@ -278,25 +284,14 @@ def cmd_ensure(args: argparse.Namespace) -> int:
 
         resolved.append((namespace, name, version, target))
 
-        # Only update the timestamp when we actually downloaded; cache hits
-        # leave the original ``downloaded_at`` intact for auditability.
-        if status == "installed" or full_name not in index:
-            index[full_name] = {
-                "version": version,
-                "downloaded_at": now_iso if status == "installed"
-                else index.get(full_name, {}).get("downloaded_at", now_iso),
-            }
+        # Keep the recorded timestamp only for a cache hit of the same version;
+        # a download or a version switch records now.
+        previous = index.get(full_name, {})
+        if status == "hit" and previous.get("version") == version:
+            downloaded_at = previous.get("downloaded_at", now_iso)
         else:
-            # Cache hit: still ensure the recorded version matches what we
-            # actually used. If a stale entry pointed to a different version
-            # but the on-disk cache had the requested one, prefer the truth
-            # on disk.
-            index[full_name] = {
-                "version": version,
-                "downloaded_at": index.get(full_name, {}).get(
-                    "downloaded_at", now_iso
-                ),
-            }
+            downloaded_at = now_iso
+        index[full_name] = {"version": version, "downloaded_at": downloaded_at}
 
     write_index(cache_dir, index)
 
