@@ -72,3 +72,5 @@ ignore: |
     build/
     temp-rst/
     rst/collections/
+    .cache/
+    node_modules/

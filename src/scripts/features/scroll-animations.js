@@ -1,31 +1,37 @@
 // Fades in feature cards, admonitions, and other surfaced blocks as
-// they enter the viewport. Uses `IntersectionObserver` so we don't
-// burn cycles on scroll-event listeners; inline-styles are used to
-// keep the initial paint hidden without a CSS dependency.
+// they enter the viewport. Skipped entirely for prefers-reduced-motion;
+// print stays readable through the `@media print` override in
+// layout/animations.css.
 
 export function initScrollAnimations() {
-  const observerOptions = {
-    threshold: 0.1,
-    rootMargin: "0px 0px -50px 0px",
-  };
+  if (
+    typeof IntersectionObserver === "undefined" ||
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+    return;
+  }
 
-  const observer = new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      if (entry.isIntersecting) {
-        entry.target.style.opacity = "1";
-        entry.target.style.transform = "translateY(0)";
-      }
-    });
-  }, observerOptions);
-
-  const animatedElements = document.querySelectorAll(
-    ".feature-card, .admonition, .quickstart-path, .community-card, .stat-card",
+  const observer = new IntersectionObserver(
+    function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = "1";
+          entry.target.style.transform = "translateY(0)";
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.1, rootMargin: "0px 0px -50px 0px" },
   );
 
-  animatedElements.forEach(function (element) {
-    element.style.opacity = "0";
-    element.style.transform = "translateY(20px)";
-    element.style.transition = "opacity 0.6s ease, transform 0.6s ease";
-    observer.observe(element);
-  });
+  document
+    .querySelectorAll(
+      ".feature-card, .admonition, .quickstart-path, .community-card, .stat-card",
+    )
+    .forEach(function (element) {
+      element.style.opacity = "0";
+      element.style.transform = "translateY(20px)";
+      element.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+      observer.observe(element);
+    });
 }

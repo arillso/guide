@@ -156,6 +156,12 @@
     height: 8px;
   }
 
+  /* The header collapses to 8px here, so the language badge would overflow
+     into the code and under the copy button. */
+  .highlight[data-language]::before {
+    content: '';
+  }
+
   .code-copy-button {
     top: 12px;
     padding: var(--space-1) var(--space-2);

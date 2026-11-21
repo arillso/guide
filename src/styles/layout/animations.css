@@ -45,3 +45,27 @@
 .wy-nav-content > .section {
   animation: fadeIn 0.5s ease;
 }
+
+/* Smooth in-page anchor scrolling (replaces the former smooth-scroll.js). */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* scroll-animations.js hides blocks until they scroll into view; printing
+   never scrolls, so force them visible. !important beats the inline styles. */
+@media print {
+  .feature-card,
+  .admonition,
+  .quickstart-path,
+  .community-card,
+  .stat-card {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

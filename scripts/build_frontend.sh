@@ -20,10 +20,24 @@ for bindir in /usr/src/node_modules/.bin "$REPO_ROOT/node_modules/.bin"; do
 done
 export PATH
 
+# Single source for the postcss/esbuild command lines; `--watch` reuses them
+# for `npm run build:watch`.
+css() { postcss src/styles/index.css -o _static/custom.css "$@"; }
+js() { esbuild src/scripts/index.js --bundle --target=es2020 --outfile=_static/custom.js "$@"; }
+
+if [ "${1:-}" = "--watch" ]; then
+    echo "Watching CSS and JS (Ctrl-C to stop)..."
+    trap 'kill 0' EXIT
+    css --watch &
+    js --watch &
+    wait
+    exit
+fi
+
 echo "Building CSS..."
-postcss src/styles/index.css -o _static/custom.css
+css
 
 echo "Building JS..."
-esbuild src/scripts/index.js --bundle --target=es2020 --outfile=_static/custom.js
+js
 
 echo "Frontend build complete."

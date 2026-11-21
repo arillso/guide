@@ -1,0 +1,8 @@
+# Keep the build context small: the image only needs the dependency manifests.
+.git/
+.cache/
+build/
+temp-rst/
+rst/collections/
+node_modules/
+_well_known_build/

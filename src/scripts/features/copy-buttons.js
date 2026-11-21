@@ -1,75 +1,61 @@
 // Adds a "Copy" button to every `.highlight` code block. Uses the
 // Async Clipboard API with a hidden-textarea + `execCommand` fallback
-// for browsers without clipboard access. The detected language is
-// reused from `code-language.js` so the analytics payload stays
-// consistent across features.
+// for browsers without clipboard access (older Safari, insecure contexts).
 
-import { detectCodeLanguage } from "./code-language.js";
+function copyWithFallback(text) {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.position = "fixed";
+  textArea.style.opacity = "0";
+  document.body.appendChild(textArea);
+  textArea.select();
+  try {
+    // execCommand reports failure by returning false, not by throwing.
+    return document.execCommand("copy");
+  } catch {
+    return false;
+  } finally {
+    document.body.removeChild(textArea);
+  }
+}
 
 export function initCopyButtons() {
-  const codeBlocks = document.querySelectorAll(".highlight");
+  document.querySelectorAll(".highlight").forEach(function (block) {
+    const pre = block.querySelector("pre");
+    if (!pre) return;
 
-  codeBlocks.forEach(function (block) {
     const copyButton = document.createElement("button");
+    copyButton.type = "button";
     copyButton.className = "code-copy-button";
     copyButton.textContent = "Copy";
     copyButton.setAttribute("aria-label", "Copy code to clipboard");
 
-    copyButton.addEventListener("click", async function () {
-      const code = block.querySelector("pre").textContent;
-      const codeLanguage = detectCodeLanguage(block);
+    let resetTimer;
+    function showState(label, copied) {
+      copyButton.textContent = label;
+      copyButton.classList.toggle("copied", copied);
+      // A repeated click restarts the timer instead of letting the first
+      // one reset the label early.
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(function () {
+        copyButton.textContent = "Copy";
+        copyButton.classList.remove("copied");
+      }, 2000);
+    }
 
+    copyButton.addEventListener("click", async function () {
+      const code = pre.textContent;
+      let ok;
       try {
         await navigator.clipboard.writeText(code);
-
-        copyButton.textContent = "Copied!";
-        copyButton.classList.add("copied");
-
-        trackCopyEvent(codeLanguage, code.length);
-
-        setTimeout(function () {
-          copyButton.textContent = "Copy";
-          copyButton.classList.remove("copied");
-        }, 2000);
-      } catch (err) {
-        // Fallback for browsers without Clipboard API access (older
-        // Safari, insecure contexts).
-        const textArea = document.createElement("textarea");
-        textArea.value = code;
-        textArea.style.position = "fixed";
-        textArea.style.opacity = "0";
-        document.body.appendChild(textArea);
-        textArea.select();
-
-        try {
-          document.execCommand("copy");
-          copyButton.textContent = "Copied!";
-          copyButton.classList.add("copied");
-
-          trackCopyEvent(codeLanguage, code.length);
-
-          setTimeout(function () {
-            copyButton.textContent = "Copy";
-            copyButton.classList.remove("copied");
-          }, 2000);
-        } catch (fallbackErr) {
-          copyButton.textContent = "Failed";
-          setTimeout(function () {
-            copyButton.textContent = "Copy";
-          }, 2000);
-        }
-
-        document.body.removeChild(textArea);
+        ok = true;
+      } catch {
+        ok = copyWithFallback(code);
       }
+      showState(ok ? "Copied!" : "Failed", ok);
     });
 
     block.style.position = "relative";
     block.appendChild(copyButton);
   });
-}
-
-function trackCopyEvent(language, length) {
-  if (typeof window !== "undefined" && typeof window.trackEvent === "function") {
-    window.trackEvent("code-copied", { language, length });
-  }
 }

@@ -14,9 +14,13 @@
 
 /* Code block container - dark terminal background.
    Hex literals (#1e1e1e, #d4d4d4) preserved: domain-specific terminal/Pygments
-   colors are intentionally outside the design-system token palette. */
+   colors are intentionally outside the design-system token palette.
+   Only the inner `div.highlight` is styled; Sphinx wraps it in an outer
+   `div.highlight-<lang>`, and styling both doubles margin and shadow.
+   `.rst-content div.highlight` keeps specificity (0,2,1) above the theme's
+   `.rst-content div[class^=highlight]` (overflow-x, margin, border). */
 .highlight,
-.rst-content div[class^='highlight'],
+.rst-content div.highlight,
 .rst-content pre.literal-block {
   border-radius: var(--radius-xl);
   overflow: hidden;
@@ -25,6 +29,16 @@
   position: relative;
   background: #1e1e1e;
   border: none !important;
+}
+
+/* The outer wrapper still matches the theme's
+   `.rst-content div[class^=highlight]` (1px light border, overflow-x, margin);
+   neutralise it so only the inner block is visible, and let it carry the
+   spacing (the theme zeroes the inner block's margin). */
+.rst-content div[class^='highlight-'] {
+  border: none !important;
+  overflow: visible;
+  margin: var(--space-6) 0;
 }
 
 /* Code Block Header - Terminal Style */
@@ -39,6 +53,18 @@
   );
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
+}
+
+/* Language badge in the header bar (data-language from code-language.js). */
+.highlight[data-language]::before {
+  content: attr(data-language);
+  line-height: 40px;
+  padding-right: 16px;
+  text-align: right;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: lowercase;
 }
 
 .highlight::after {
@@ -271,6 +297,13 @@ code.literal:hover {
 
 .highlight:hover .code-copy-button {
   opacity: 1;
+}
+
+/* Touch devices have no hover: keep the button visible. */
+@media (hover: none) {
+  .code-copy-button {
+    opacity: 1;
+  }
 }
 
 /* Reveal the copy button for keyboard users (focus-visible).

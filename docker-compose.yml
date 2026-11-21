@@ -4,19 +4,24 @@ services:
             context: .
             target: docs
         environment:
-            # The project root is bind-mounted at /project, which shadows the
-            # node_modules baked into the image. NODE_PATH lets Node's require()
-            # resolve the image-installed deps (postcss plugins, esbuild) from
-            # anywhere under /project. PATH exposes their CLI shims.
-            - NODE_PATH=/usr/src/node_modules
-            - PATH=/usr/src/node_modules/.bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+            # No writable home for an arbitrary UID; npm and ansible need one.
+            - HOME=/tmp
+            # Keep the collection cache in the checkout (git-ignored) so it
+            # survives container restarts instead of re-downloading each time.
+            - ARILLSO_COLLECTIONS_CACHE=/project/.cache/collections
         volumes:
             - ".:/project"
         working_dir: /project
         command:
             - bash
             - -c
-            - ./build.sh && python -m http.server 8000 --directory build/html
+            # Drop from root to the owner of the bind-mounted checkout, so build
+            # outputs are not root-owned on the host, whatever the host UID.
+            # `$$` escapes `$` from compose interpolation.
+            - >-
+                exec setpriv --reuid="$$(stat -c %u /project)"
+                --regid="$$(stat -c %g /project)" --clear-groups
+                bash -c './build.sh && python -m http.server 8000 --directory build/html'
         labels:
             - "traefik.enable=true"
             - "traefik.http.routers.arillso-guide-test-arillso-doc-generator.rule=Host(`arillso-guide.test`)"
