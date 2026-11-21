@@ -6,7 +6,8 @@ and instructions. This repository builds the documentation site published at
 
 ## Prerequisites
 
-- Python >= 3.12
+- Python 3.15 (see `.python-version`)
+- Node.js 22.22.3+, 24.15+ or 26+ (`cssnano` engine range; `build.sh` runs `npm ci`)
 - Git
 - Docker (optional, for a containerised build via `docker-compose.yml`)
 
