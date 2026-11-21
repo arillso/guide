@@ -36,7 +36,8 @@ extensions = [
 ]
 
 # Mermaid configuration - use default light theme. Pinned: "latest" would let
-# a Mermaid major release change every diagram without a repo change.
+# a Mermaid major release change every diagram without a repo change. Renovate
+# bumps it (custom manager in .github/renovate.json).
 mermaid_version = "12.3.0"
 mermaid_init_js = "mermaid.initialize({startOnLoad:true,theme:'default'});"
 

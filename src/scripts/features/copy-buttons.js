@@ -30,10 +30,14 @@ export function initCopyButtons() {
     copyButton.textContent = "Copy";
     copyButton.setAttribute("aria-label", "Copy code to clipboard");
 
+    let resetTimer;
     function showState(label, copied) {
       copyButton.textContent = label;
       copyButton.classList.toggle("copied", copied);
-      setTimeout(function () {
+      // A repeated click restarts the timer instead of letting the first
+      // one reset the label early.
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(function () {
         copyButton.textContent = "Copy";
         copyButton.classList.remove("copied");
       }, 2000);

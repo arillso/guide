@@ -28,6 +28,16 @@
   border: none !important;
 }
 
+/* The outer wrapper still matches the theme's
+   `.rst-content div[class^=highlight]` (1px light border, overflow-x, margin);
+   neutralise it so only the inner block is visible, and let it carry the
+   spacing (the theme zeroes the inner block's margin). */
+.rst-content div[class^='highlight-'] {
+  border: none !important;
+  overflow: visible;
+  margin: var(--space-6) 0;
+}
+
 /* Code Block Header - Terminal Style */
 .highlight::before {
   content: '';

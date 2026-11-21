@@ -8,19 +8,23 @@
 # `target: docs`. It carries only the minimal apt packages needed at build
 # time and copies the prepared /usr/local/lib (site-packages, version-agnostic)
 # plus `node_modules` from the builder. Dev dependencies (pytest) are included
-# on purpose so the test suite can run inside the container. Both FROM lines
-# must reference the same image; the CI job `Build Docker Image` catches drift. Antsibull is resolved exclusively via PyPI (requirements.txt);
-# the previous in-image checkouts of antsibull-core, antsibull-docs-parser,
-# and antsibull-docs are no longer required.
+# on purpose so the test suite can run inside the container. Both stages
+# derive from the single `base` stage, so the copied /usr/local tree always
+# matches the runtime's Python. Antsibull is resolved exclusively via PyPI
+# (requirements.txt); the previous in-image checkouts of antsibull-core,
+# antsibull-docs-parser, and antsibull-docs are no longer required.
 
 # Node runtime source. Debian's apt nodejs is too old for the frontend
 # toolchain (cssnano needs Node >= 22), so node + npm come from here.
 FROM node:24-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54 AS node
 
+# Shared Python base for builder and docs; one place to bump the digest.
+FROM python:3.15@sha256:46837ed3105db0029b6d656816185c6258e3b39690532fb782428e0a5fd76182 AS base
+
 # ---------------------------------------------------------------------------
 # Stage 1: Builder
 # ---------------------------------------------------------------------------
-FROM python:3.15@sha256:46837ed3105db0029b6d656816185c6258e3b39690532fb782428e0a5fd76182 AS builder
+FROM base AS builder
 
 WORKDIR /usr/src
 
@@ -55,7 +59,7 @@ RUN npm ci --no-audit --no-fund
 # ---------------------------------------------------------------------------
 # Stage 2: Docs runtime
 # ---------------------------------------------------------------------------
-FROM python:3.15@sha256:46837ed3105db0029b6d656816185c6258e3b39690532fb782428e0a5fd76182 AS docs
+FROM base AS docs
 
 WORKDIR /project
 
