@@ -45,6 +45,8 @@ jobs:
               uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
               with:
                   path: ./build/html
+                  # Otherwise .well-known/security.txt is dropped from the site.
+                  include-hidden-files: true
 
             - name: Deploy to GitHub Pages
               id: deployment
