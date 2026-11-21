@@ -15,7 +15,7 @@ in der ausgelieferten HTML-Doku eingeführt haben.
 
 ## Wann ausführen?
 
-- **Vor jedem Release-Tag** (Pflicht-Gate gemäß Requirement 5.7).
+- **Vor jedem Release-Tag** (Pflicht-Gate gemäss Requirement 5.7).
 - Nach grösseren Frontend-Änderungen
   (z. B. Token-Refaktorierung, neue Komponente, Build-Pipeline-Umbau).
 - Nach Änderungen an `_templates/`, `src/styles/` oder `src/scripts/`.
@@ -25,16 +25,16 @@ in der ausgelieferten HTML-Doku eingeführt haben.
 
 1. Sauberen Build erzeugen:
 
-    ```bash
-    ./build.sh
-    ```
+   ```bash
+   ./build.sh
+   ```
 
 2. Output im lokalen Browser öffnen:
 
-    ```bash
-    xdg-open build/html/index.html   # Linux
-    open build/html/index.html       # macOS
-    ```
+   ```bash
+   xdg-open build/html/index.html   # Linux
+   open build/html/index.html       # macOS
+   ```
 
 3. Diese Checkliste sequenziell durchgehen und jeden Punkt
    abhaken. Falls ein Punkt fehlschlägt: Befund unter dem
@@ -93,7 +93,7 @@ Interaktion mit Sidebar, Breadcrumbs und Link-Verhalten.
 
 - [ ] **Sidebar Expand/Collapse**: auf `build/html/index.html`
       die ausklappbaren Sidebar-Knoten (Guide, Containers,
-      Libraries, GitHub) per Klick öffnen und schließen — Pfeil
+      Libraries, GitHub) per Klick öffnen und schliessen — Pfeil
       rotiert, Unterpunkte erscheinen ohne Layout-Sprung.
 - [ ] **Breadcrumbs**: auf
       `build/html/guide/best-practices/security.html`
@@ -139,9 +139,9 @@ typischer Code-Blöcke: jede Quickstart- oder Tutorial-Seite.
       Sprache (z. B. `yaml`, `bash`, `python`) als kleines
       Label oder Datatag oben am Block.
 - [ ] **Inline-Code-Styling**: Inline-`monospace`-Snippets
-      in Fließtext (z. B. Modul-Namen, Pfade in
+      in Fliesstext (z. B. Modul-Namen, Pfade in
       `build/html/guide/reference/troubleshooting.html`)
-      haben subtilen Hintergrund und sind klar vom Fließtext
+      haben subtilen Hintergrund und sind klar vom Fliesstext
       abgesetzt.
 - [ ] **Long-Line-Verhalten**: Code-Block mit Zeile > 100
       Zeichen scrollt horizontal innerhalb des Blocks
@@ -158,7 +158,7 @@ Chrome DevTools → Device Toolbar → iPhone SE / 375 × 667 px.
       Viewport-Breite.
 - [ ] **Hamburger-Menü (falls vorhanden)**: Sidebar ist bei
       < 768 px hinter Hamburger-Icon versteckt; Klick öffnet
-      Sidebar als Overlay/Drawer; Schließen via X oder Klick
+      Sidebar als Overlay/Drawer; Schliessen via X oder Klick
       auf Backdrop funktioniert.
 - [ ] **Code-Blöcke wrappen oder scrollen sauber**: auf
       `build/html/guide/getting-started/quickstart.html`
@@ -200,7 +200,7 @@ Mausunabhängige Bedienung — Voraussetzung für A11y und Power-User.
       einen Skip-Link „Zum Hauptinhalt springen" (oder
       „Skip to content"); Aktivierung springt zum Main-Content
       und überspringt die Sidebar.
-- [ ] **Escape schließt Overlays**: falls Mobile-Drawer oder
+- [ ] **Escape schliesst Overlays**: falls Mobile-Drawer oder
       Modal vorhanden, `Esc` schliesst diese und stellt Fokus
       auf den auslösenden Trigger zurück.
 

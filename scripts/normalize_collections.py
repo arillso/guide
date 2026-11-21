@@ -4,7 +4,7 @@
 Ersetzt die bisherige ``sed``-Pipeline. Liest alle ``*.rst``-Dateien unter dem
 angegebenen ``--root``-Verzeichnis und normalisiert Namespace-Tokens
 (``Arillso`` -> ``arillso``, ``.System``/``.Agent``/``.Container`` -> lowercase)
-**nur an Wortgrenzen**. Das heißt: ``ArillsoCustomThing`` bleibt unverändert,
+**nur an Wortgrenzen**. Das heisst: ``ArillsoCustomThing`` bleibt unverändert,
 während ``Arillso``, ``Arillso.System``, ``arillso.Agent`` etc. zur kanonischen
 Kleinschreibung normalisiert werden.
 
@@ -49,7 +49,7 @@ PLACEHOLDER_SUBS: frozenset = frozenset({"collection"})
 # Wird genutzt, um (a) Casing-Normalisierung durchzuführen und (b) zu prüfen,
 # ob ``<Sub>`` (lowercased) in der Whitelist erscheint.
 #
-# Das vorangestellte ``(?<![\w@./-])`` schließt URL-, E-Mail- und Subdomain-
+# Das vorangestellte ``(?<![\w@./-])`` schliesst URL-, E-Mail- und Subdomain-
 # Kontexte aus: vor einem echten Collection-Token (z. B. ``arillso.system``)
 # steht nie ``@`` (E-Mail), ``/`` (URL-Pfad), ``.`` (Subdomain wie
 # ``guide.arillso.io``) oder ``-``. Dadurch werden ``hello@arillso.io``,
@@ -61,9 +61,9 @@ _DOTTED_RE = re.compile(
     r"(?<![\w@./-])(?:arillso)\.([A-Za-z][A-Za-z0-9_]*)\b", re.IGNORECASE
 )
 
-# Regex 2: standalone ``Arillso`` an Wortgrenzen mit Großbuchstaben am Anfang.
+# Regex 2: standalone ``Arillso`` an Wortgrenzen mit Grossbuchstaben am Anfang.
 # Greift NICHT in zusammengesetzten Wörtern wie ``ArillsoCustomThing`` (folgt
-# Großbuchstabe ohne Wortgrenze) -- ``\b`` stellt zusammen mit ``(?![A-Za-z0-9_])``
+# Grossbuchstabe ohne Wortgrenze) -- ``\b`` stellt zusammen mit ``(?![A-Za-z0-9_])``
 # sicher, dass nach dem Token entweder ein Nicht-Wortzeichen oder Dateiende kommt.
 # Wir kombinieren beides explizit, um robust gegen alle Eingabevarianten zu sein.
 _STANDALONE_ARILLSO_RE = re.compile(r"\bArillso\b(?![A-Za-z0-9_])")
