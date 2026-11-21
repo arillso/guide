@@ -12,12 +12,11 @@ concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
+# Build jobs run PR code (npm ci, build.sh, docker build) and only need read
+# access; write scopes are granted per job below.
 permissions:
     contents: read
     actions: read
-    pull-requests: write
-    issues: read
-    id-token: write
 
 jobs:
     build-docs:
@@ -34,7 +33,10 @@ jobs:
                   cache: "pip"
 
             - name: Install Dependencies
-              run: pip install -r requirements.txt
+              run: pip install -r requirements.txt -r requirements-dev.txt
+
+            - name: Run Tests
+              run: pytest
 
             - name: Build Documentation
               run: ./build.sh
@@ -45,6 +47,31 @@ jobs:
             # build above; this catches dead external URLs.
             - name: Check Links
               run: sphinx-build -b linkcheck rst build/linkcheck -c .
+
+    build-image:
+        name: Build Docker Image
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+            # Catches base-image bumps that break the local docker-compose
+            # environment (target docs).
+            - name: Build Image
+              run: docker build --target docs -t arillso-guide:ci .
+
+            # The image builds even when its toolchain cannot run (wrong
+            # site-packages path, Node too old for cssnano), so exercise it.
+            # Non-root user and HOME=/tmp mirror docker-compose.yml.
+            - name: Smoke Test Image
+              run: >-
+                  docker run --rm -v "$PWD:/project"
+                  --user "$(id -u):$(id -g)" -e HOME=/tmp
+                  arillso-guide:ci
+                  bash -c 'scripts/build_frontend.sh
+                  && antsibull-docs --version
+                  && sphinx-build --version
+                  && ansible-galaxy --version'
 
     security-secrets:
         name: Secret Detection Scan
@@ -61,5 +88,10 @@ jobs:
     claude-review:
         name: Claude Code Review
         uses: arillso/.github/.github/workflows/ai-claude-review.yml@2026-11-14
+        permissions:
+            contents: read
+            pull-requests: write
+            issues: read
+            id-token: write
         secrets:
             CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
