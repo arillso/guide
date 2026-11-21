@@ -1,222 +1,125 @@
-# Manuelle Regressions-Checkliste
+# Manual Regression Checklist
 
-## Zweck
+Manual check of the rendered site for what the CI build cannot catch:
+pixel layout, browser interaction, keyboard focus, and mobile behaviour.
+For whoever changes the frontend, the theme, or the doc toolchain.
 
-Diese Checkliste verifiziert die **visuelle und funktionale Parität**
-der gebauten Dokumentation gegenüber der Pre-Refactoring-Baseline
-(Requirement 1.6, 5.7, 3.7). Sie dient als manuelles Test-Surrogat
-für Aspekte, die sich nicht sinnvoll automatisieren lassen
-(Pixel-Layout, Browser-Interaktion, Tastatur-Fokus,
-Mobile-Verhalten).
+## When to run
 
-Konkret stellt sie sicher, dass die Phasen 2 (Frontend-Modularisierung)
-und 3 (Build-Pipeline-Integration) keine sichtbaren Regressionen
-in der ausgelieferten HTML-Doku eingeführt haben.
+- After changes to `_templates/`, `src/styles/`, or `src/scripts/`.
+- After upgrading Sphinx, `sphinx-ansible-theme`, or antsibull-docs.
 
-## Wann ausführen?
+## How to run
 
-- **Vor jedem Release-Tag** (Pflicht-Gate gemäss Requirement 5.7).
-- Nach grösseren Frontend-Änderungen
-  (z. B. Token-Refaktorierung, neue Komponente, Build-Pipeline-Umbau).
-- Nach Änderungen an `_templates/`, `src/styles/` oder `src/scripts/`.
-- Nach Upgrade von Sphinx, Furo-Theme oder antsibull-docs.
-
-## Wie ausführen?
-
-1. Sauberen Build erzeugen:
+1. Build the site:
 
    ```bash
    ./build.sh
    ```
 
-2. Output im lokalen Browser öffnen:
+2. Open the output in a browser:
 
    ```bash
    xdg-open build/html/index.html   # Linux
    open build/html/index.html       # macOS
    ```
 
-3. Diese Checkliste sequenziell durchgehen und jeden Punkt
-   abhaken. Falls ein Punkt fehlschlägt: Befund unter dem
-   jeweiligen Abschnitt notieren und Release blockieren, bis
-   behoben.
-
-4. Browser-DevTools-Konsole offen halten (F12) — JS-Konsolenfehler
-   sind ein Fail-Kriterium (Requirement 3.7).
-
-5. Nach Abschluss: Datei mit abgehakten Boxen committen, damit
-   der Lauf nachvollziehbar bleibt (`git commit -m "test: pre-release regression check vX.Y.Z"`).
-
-## Baseline-Build-Zeit
-
-Vor dem ersten Refactoring-Merge auf `main` festzuhalten:
-
-- Lokale Wallclock-Zeit `./build.sh`: _TBD_
-- CI-Wallclock-Zeit Build-Job: _TBD_
-
-Aktueller Lauf darf nicht signifikant (> 20 %) über der Baseline
-liegen.
+3. Keep the DevTools console open (F12). Any JS console error is a fail.
+4. Walk the list top to bottom. Log every failure in the findings log and
+   fix it before merging.
 
 ---
 
-## Layout-Stichproben
+## Layout
 
-Visuelle Inspektion repräsentativer Seitenklassen. Browser:
-Aktueller Chrome/Firefox, Desktop-Viewport ≥ 1280 px.
+Current Chrome or Firefox, desktop viewport ≥ 1280 px.
 
-- [ ] **Index-Seite** `build/html/index.html` lädt vollständig:
-      Logo links oben, Hauptüberschrift, Sidebar links sichtbar,
-      Inhaltsbereich gefüllt, Footer am unteren Rand.
-- [ ] **Guide-Landing** `build/html/guide/index.html` rendert
-      Sektionsübersicht (Getting Started, Best Practices,
-      Development, Reference, Tutorials) als Karten/Listen
-      ohne Überlappung.
-- [ ] **Einzelne Guide-Seite** `build/html/guide/getting-started/quickstart.html`
-      zeigt Headings (H1, H2, H3) in korrekter Hierarchie,
-      Absatzabstände konsistent mit Token-Definitionen.
-- [ ] **Code-Block-Beispiel** auf `build/html/guide/getting-started/quickstart.html`
-      oder `build/html/containers/docker_ansible.html`: monospaced
-      Schrift, dunkler/heller Hintergrund je Theme, kein
-      Overflow-Cutoff über volle Container-Breite.
-- [ ] **Collection-Landing** unter
-      `build/html/collections/arillso/system/index.html`
-      (oder analoger antsibull-docs-Output) listet Module/Rollen
-      mit Beschreibungstabelle ohne Layout-Bruch.
-- [ ] **404-Seite** (falls vom Theme bereitgestellt — manuell URL
-      `build/html/does-not-exist.html` aufrufen): zeigt
-      Fehlerseite mit Navigation zurück zur Index, nicht eine
-      kaputte Skeleton-Seite.
+- [ ] **Index page** `build/html/index.html` loads fully: logo top left,
+      main heading, sidebar visible, content area filled, footer at the
+      bottom.
+- [ ] **Guide page** `build/html/guide/getting-started/quickstart.html`
+      shows H1, H2, H3 in the right hierarchy with consistent paragraph
+      spacing.
+- [ ] **Code block** on the quickstart page or
+      `build/html/containers/docker_ansible.html`: monospaced font,
+      background matching the theme, no overflow cut-off.
+- [ ] **Collection landing** `build/html/collections/arillso/system/index.html`
+      lists modules and roles with the description table intact.
+- [ ] **404 page** (if the theme provides one — open
+      `build/html/does-not-exist.html`): shows an error page with
+      navigation back to the index, not a broken skeleton.
 
-## Navigations-Stichproben
+## Navigation
 
-Interaktion mit Sidebar, Breadcrumbs und Link-Verhalten.
+- [ ] **Sidebar expand/collapse** on `build/html/index.html`: open and
+      close the Guide, Containers, Libraries, and GitHub nodes — the arrow
+      rotates, children appear without layout jumps.
+- [ ] **Breadcrumbs** on `build/html/guide/best-practices/security.html`
+      are visible (`Home › Guide › Best Practices › Security`); every crumb
+      is a working link.
+- [ ] **Internal links**: from `build/html/index.html` open at least three
+      internal targets (e.g. Quickstart, Architecture, Troubleshooting) —
+      all load without 404 at the right scroll position.
+- [ ] **Active sidebar entry** on the quickstart page is visually
+      highlighted (bold, accent colour, or indicator bar).
+- [ ] **External links** (e.g. to `https://github.com/arillso/`) show the
+      external-link icon and open in a new tab (`target="_blank"`).
+- [ ] **Anchors**: on `build/html/guide/best-practices/standards.html`,
+      clicking a TOC entry scrolls to the right H2/H3 without hiding it
+      under the sticky header.
 
-- [ ] **Sidebar Expand/Collapse**: auf `build/html/index.html`
-      die ausklappbaren Sidebar-Knoten (Guide, Containers,
-      Libraries, GitHub) per Klick öffnen und schliessen — Pfeil
-      rotiert, Unterpunkte erscheinen ohne Layout-Sprung.
-- [ ] **Breadcrumbs**: auf
-      `build/html/guide/best-practices/security.html`
-      sind Breadcrumbs sichtbar
-      (`Home › Guide › Best Practices › Security`); jeder
-      Crumb ist ein funktionierender Link.
-- [ ] **Interne Links**: auf `build/html/guide/index.html` zu
-      mindestens drei internen Zielen (z. B. Quickstart,
-      Architecture, Troubleshooting) klicken — alle laden ohne
-      404 und mit korrekter Scrollposition (Anker oder Top).
-- [ ] **Sidebar-Aktiv-Status**: auf
-      `build/html/guide/getting-started/quickstart.html`
-      ist der entsprechende Sidebar-Eintrag visuell als „aktiv"
-      hervorgehoben (z. B. Bold, Akzentfarbe, Indikator-Bar).
-- [ ] **Externe Links mit Icon**: Externer Link (z. B. zu
-      `https://github.com/arillso/`) auf einer Guide-Seite zeigt
-      das External-Link-Icon (↗ oder ähnlich) und öffnet in
-      neuem Tab (`target="_blank"`).
-- [ ] **Anker-Sprungmarken**: in einem längeren Dokument
-      (z. B. `build/html/guide/best-practices/standards.html`)
-      klick auf TOC-Eintrag → Browser scrollt zur korrekten
-      H2/H3 ohne Versatz unter den Sticky-Header.
+## Code blocks
 
-## Code-Block-Rendering
+- [ ] **Copy button appears** on every code block of the quickstart page
+      (on hover, or always on mobile), top right.
+- [ ] **Copy button works**: the block content lands in the clipboard
+      (paste to verify) and the button shows short feedback ("Copied").
+- [ ] **Syntax highlighting**: YAML blocks on
+      `build/html/github/action_playbook.html` colour keys, values,
+      strings, and comments.
+- [ ] **Language badge**: every code block shows its language (`yaml`,
+      `bash`, `python`) as a small label.
+- [ ] **Inline code** on `build/html/guide/reference/troubleshooting.html`
+      has a subtle background and stands out from body text.
+- [ ] **Long lines** (> 100 characters) scroll horizontally inside the
+      block or wrap — the page itself never scrolls horizontally.
 
-Funktion und Erscheinungsbild der Code-Komponente. Quelle
-typischer Code-Blöcke: jede Quickstart- oder Tutorial-Seite.
-
-- [ ] **Copy-Button erscheint**: auf
-      `build/html/guide/getting-started/quickstart.html` zeigt
-      jeder Code-Block beim Hover (oder permanent auf Mobile)
-      einen Copy-Button in der rechten oberen Ecke.
-- [ ] **Copy-Button funktioniert**: Klick auf Copy-Button
-      kopiert den Block-Inhalt in die Zwischenablage —
-      Verifikation durch Einfügen in ein Terminal oder
-      Text-Editor; Button zeigt kurzes Erfolgs-Feedback
-      („Copied" o. ä.).
-- [ ] **Syntax-Highlighting korrekt**: YAML-Blöcke
-      (typisch in `build/html/github/action_playbook.html`)
-      heben Schlüssel, Werte, Strings, Kommentare farblich
-      ab — kein einfarbiger Plaintext.
-- [ ] **Language-Badge**: jeder Code-Block zeigt die
-      Sprache (z. B. `yaml`, `bash`, `python`) als kleines
-      Label oder Datatag oben am Block.
-- [ ] **Inline-Code-Styling**: Inline-`monospace`-Snippets
-      in Fliesstext (z. B. Modul-Namen, Pfade in
-      `build/html/guide/reference/troubleshooting.html`)
-      haben subtilen Hintergrund und sind klar vom Fliesstext
-      abgesetzt.
-- [ ] **Long-Line-Verhalten**: Code-Block mit Zeile > 100
-      Zeichen scrollt horizontal innerhalb des Blocks
-      (oder bricht um, je nach Konvention) — kein Bruch des
-      Seitenlayouts, kein Page-Scroll horizontal.
-
-## Mobile-Stichprobe (Viewport 375 px)
+## Mobile (375 px viewport)
 
 Chrome DevTools → Device Toolbar → iPhone SE / 375 × 667 px.
 
-- [ ] **Kein horizontaler Scroll auf Index**:
-      `build/html/index.html` bei 375 px zeigt keinen
-      horizontalen Scrollbalken am Body; Inhalte passen in
-      Viewport-Breite.
-- [ ] **Hamburger-Menü (falls vorhanden)**: Sidebar ist bei
-      < 768 px hinter Hamburger-Icon versteckt; Klick öffnet
-      Sidebar als Overlay/Drawer; Schliessen via X oder Klick
-      auf Backdrop funktioniert.
-- [ ] **Code-Blöcke wrappen oder scrollen sauber**: auf
-      `build/html/guide/getting-started/quickstart.html`
-      bei 375 px brechen Code-Blöcke entweder um oder
-      scrollen intern — der Page-Body bleibt 375 px breit.
-- [ ] **Touch-Targets ≥ 44 × 44 px**: Sidebar-Links und
-      Buttons (z. B. Copy-Button, Hamburger) sind mit dem
-      Finger treffbar — visuell prüfen, kein 12-px-Mini-Link.
-- [ ] **Typografie skaliert**: Body-Text bleibt lesbar
-      (≥ 14 px effektiv), H1 nicht so gross dass er den
-      gesamten Viewport-First-View einnimmt; Line-Length
-      bleibt im lesbaren Bereich (≈ 30–75 Zeichen pro Zeile).
-- [ ] **Tabellen-Verhalten**: Modul-Tabellen auf
-      `build/html/collections/arillso/system/index.html`
-      bei 375 px brechen entweder um, scrollen intern oder
-      stapeln responsive — kein Page-Layout-Bruch.
+- [ ] **No horizontal scroll** on `build/html/index.html`.
+- [ ] **Hamburger menu** (if present): below 768 px the sidebar hides
+      behind the icon, opens as overlay or drawer, and closes via X or a
+      backdrop click.
+- [ ] **Code blocks** on the quickstart page wrap or scroll internally; the
+      body stays 375 px wide.
+- [ ] **Touch targets ≥ 44 × 44 px** for sidebar links, copy button, and
+      hamburger.
+- [ ] **Typography**: body text ≥ 14 px effective, H1 does not fill the
+      first view, line length roughly 30–75 characters.
+- [ ] **Tables** on `build/html/collections/arillso/system/index.html` wrap,
+      scroll internally, or stack — no broken page layout.
 
-## Tastatur-Navigation
+## Keyboard
 
-Mausunabhängige Bedienung — Voraussetzung für A11y und Power-User.
-
-- [ ] **Tab durch Index**: ab `build/html/index.html`
-      `Tab` gedrückt halten bzw. zyklisch betätigen — Fokus
-      durchläuft Skip-Link, Logo-Link, Sidebar-Items,
-      Hauptinhalt-Links, Footer-Links in sichtbarer,
-      logischer Reihenfolge.
-- [ ] **Sichtbarer Fokus auf jedem interaktiven Element**:
-      jeder Tab-Stop zeigt einen sichtbaren Fokus-Indikator
-      (Outline, Underline oder Background-Change) — kein
-      verschwundener Fokus, kein nur-Browser-Default falls
-      Custom-Outlines verwendet werden.
-- [ ] **Keine Fokus-Fallen**: in der Sidebar
-      (z. B. ausklappbarer Knoten „Guide") kein Punkt, an dem
-      Tab/Shift+Tab den Fokus nicht mehr weiterbewegen kann.
-- [ ] **Enter aktiviert Links/Buttons**: auf einem fokussierten
-      Sidebar-Link `Enter` navigiert; auf einem fokussierten
-      Copy-Button `Enter` oder `Space` kopiert.
-- [ ] **Skip-Link funktioniert**: erstes `Tab` von oben zeigt
-      einen Skip-Link „Zum Hauptinhalt springen" (oder
-      „Skip to content"); Aktivierung springt zum Main-Content
-      und überspringt die Sidebar.
-- [ ] **Escape schliesst Overlays**: falls Mobile-Drawer oder
-      Modal vorhanden, `Esc` schliesst diese und stellt Fokus
-      auf den auslösenden Trigger zurück.
+- [ ] **Tab order** from `build/html/index.html`: skip link, logo, sidebar
+      items, content links, footer links, in a visible, logical order.
+- [ ] **Visible focus** on every interactive element (outline, underline,
+      or background change).
+- [ ] **No focus traps** in the sidebar, e.g. on the expandable "Guide"
+      node: Tab and Shift+Tab always move on.
+- [ ] **Enter activates** a focused sidebar link; Enter or Space on a
+      focused copy button copies.
+- [ ] **Skip link**: the first Tab shows "Skip to content"; activating it
+      jumps past the sidebar to the main content.
+- [ ] **Escape closes overlays** (mobile drawer, modal) and returns focus
+      to the trigger.
 
 ---
 
-## Befund-Log
+## Findings log
 
-Wenn ein Punkt fehlschlägt, hier protokollieren:
-
-| Datum | Punkt | Befund | Fix-Issue/PR |
-| ----- | ----- | ------ | ------------ |
-|       |       |        |              |
-
-## Sign-Off
-
-- [ ] Alle Punkte oben abgehakt oder Befunde dokumentiert.
-- Ausgeführt von: ______________________
-- Datum: ______________________
-- Release-Tag: ______________________
+| Date | Item | Finding | Fix issue/PR |
+| ---- | ---- | ------- | ------------ |
+|      |      |         |              |
