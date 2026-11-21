@@ -24,7 +24,7 @@ themed with the custom CSS/JS bundle in `_static/`.
 
 ## Local Development
 
-Prerequisites: Python 3.15 (see `.python-version`), Node.js 24 (≥ 24.15, `cssnano` engine range), and `ansible-galaxy` on `PATH`
+Prerequisites: Python 3.15 (see `.python-version`), Node.js 22.22.3+, 24.15+ or 26+ (`cssnano` engine range), and `ansible-galaxy` on `PATH`
 (only needed when the collection cache is cold and you are online).
 
 The repository ships a [dde](https://github.com/whatwedo/dde) v2 setup, so
@@ -78,7 +78,9 @@ npm run build:watch       # PostCSS + esbuild, rebuild on change
 4. **Normalisation** — `scripts/normalize_collections.py --root rst`
    rewrites collection names to the canonical short form.
 5. **Sphinx** — `sphinx-build -M html rst build -c . -W --keep-going`
-   renders the site into `build/html/`. Warnings fail the build.
+   renders the site into `build/html/`. Warnings fail the build. While
+   reading `conf.py`, Sphinx first renders `_well_known_build/security.txt`
+   (see Security below), which `html_extra_path` publishes.
 
 ## Contributing
 
@@ -103,7 +105,9 @@ The site serves the same contact as an RFC 9116
 rendered at build time from `_well_known/security.txt.in` by
 `scripts/security_txt.py`, which fills the `Expires` field with the build date
 plus 364 days — under the one year RFC 9116 §2.5.5 recommends. Every merge to
-`main` redeploys the site and so refreshes the date.
+`main` redeploys the site and so refreshes the date. Keep the `{EXPIRES}`
+placeholder — a fixed date expires, and an expired `security.txt` is invalid
+under RFC 9116.
 
 ## License
 

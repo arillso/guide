@@ -25,8 +25,9 @@ For whoever changes the frontend, the theme, or the doc toolchain.
    ```
 
 3. Keep the DevTools console open (F12). Any JS console error is a fail.
-4. Walk the list top to bottom. Log every failure in the findings log and
-   fix it before merging.
+4. Walk the list top to bottom. Report each failure in the PR that
+   triggered the run (or a new issue) and fix it before merging. The
+   checkboxes here stay unchecked; this file is the template, not a log.
 
 ---
 
@@ -52,11 +53,10 @@ Current Chrome or Firefox, desktop viewport ≥ 1280 px.
 ## Navigation
 
 - [ ] **Sidebar expand/collapse** on `build/html/index.html`: open and
-      close the Guide, Containers, Libraries, and GitHub nodes — the arrow
-      rotates, children appear without layout jumps.
+      close expandable entries under the toctree captions (e.g. Getting
+      Started, Ansible Collections) — children appear without layout jumps.
 - [ ] **Breadcrumbs** on `build/html/guide/best-practices/security.html`
-      are visible (`Home › Guide › Best Practices › Security`); every crumb
-      is a working link.
+      are visible and every crumb is a working link.
 - [ ] **Internal links**: from `build/html/index.html` open at least three
       internal targets (e.g. Quickstart, Architecture, Troubleshooting) —
       all load without 404 at the right scroll position.
@@ -77,8 +77,9 @@ Current Chrome or Firefox, desktop viewport ≥ 1280 px.
 - [ ] **Syntax highlighting**: YAML blocks on
       `build/html/github/action_playbook.html` colour keys, values,
       strings, and comments.
-- [ ] **Language badge**: every code block shows its language (`yaml`,
-      `bash`, `python`) as a small label.
+- [ ] **Language badge**: every code block with a real language (`yaml`,
+      `bash`, `python`) shows it as a small label; `none`, `text`, and
+      `default` blocks stay unlabelled.
 - [ ] **Inline code** on `build/html/guide/reference/troubleshooting.html`
       has a subtle background and stands out from body text.
 - [ ] **Long lines** (> 100 characters) scroll horizontally inside the
@@ -103,23 +104,13 @@ Chrome DevTools → Device Toolbar → iPhone SE / 375 × 667 px.
 
 ## Keyboard
 
-- [ ] **Tab order** from `build/html/index.html`: skip link, logo, sidebar
+- [ ] **Tab order** from `build/html/index.html`: logo, sidebar
       items, content links, footer links, in a visible, logical order.
 - [ ] **Visible focus** on every interactive element (outline, underline,
       or background change).
-- [ ] **No focus traps** in the sidebar, e.g. on the expandable "Guide"
-      node: Tab and Shift+Tab always move on.
+- [ ] **No focus traps** in the sidebar, including expandable entries:
+      Tab and Shift+Tab always move on.
 - [ ] **Enter activates** a focused sidebar link; Enter or Space on a
       focused copy button copies.
-- [ ] **Skip link**: the first Tab shows "Skip to content"; activating it
-      jumps past the sidebar to the main content.
 - [ ] **Escape closes overlays** (mobile drawer, modal) and returns focus
       to the trigger.
-
----
-
-## Findings log
-
-| Date | Item | Finding | Fix issue/PR |
-| ---- | ---- | ------- | ------------ |
-|      |      |         |              |
