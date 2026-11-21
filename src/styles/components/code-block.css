@@ -14,9 +14,10 @@
 
 /* Code block container - dark terminal background.
    Hex literals (#1e1e1e, #d4d4d4) preserved: domain-specific terminal/Pygments
-   colors are intentionally outside the design-system token palette. */
+   colors are intentionally outside the design-system token palette.
+   Only the inner `div.highlight` is styled; Sphinx wraps it in an outer
+   `div.highlight-<lang>`, and styling both doubles margin and shadow. */
 .highlight,
-.rst-content div[class^='highlight'],
 .rst-content pre.literal-block {
   border-radius: var(--radius-xl);
   overflow: hidden;
@@ -39,6 +40,18 @@
   );
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
+}
+
+/* Language badge in the header bar (data-language from code-language.js). */
+.highlight[data-language]::before {
+  content: attr(data-language);
+  line-height: 40px;
+  padding-right: 16px;
+  text-align: right;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: lowercase;
 }
 
 .highlight::after {
@@ -271,6 +284,13 @@ code.literal:hover {
 
 .highlight:hover .code-copy-button {
   opacity: 1;
+}
+
+/* Touch devices have no hover: keep the button visible. */
+@media (hover: none) {
+  .code-copy-button {
+    opacity: 1;
+  }
 }
 
 /* Reveal the copy button for keyboard users (focus-visible).

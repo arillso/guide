@@ -1,34 +1,34 @@
-// Strips " – " (em dash) or " - " (long hyphen-dash) descriptions from
-// breadcrumbs, vertical-menu links, and headings. Original text is kept
-// on the `title` attribute so hover still reveals the full label.
+// Strips " – " (en dash, U+2013, what Sphinx smartquotes makes of "--") and
+// long " - " descriptions from breadcrumb and sidebar labels, e.g.
+// "arillso.system.users role – Manage users" -> "arillso.system.users role".
+// Only direct text nodes are touched, so child links and the theme's
+// toctree-expand buttons survive. Headings are left alone on purpose: the
+// page title keeps its full description. The original label stays on `title`.
 
 export function initTruncateDescriptions() {
   const elements = document.querySelectorAll(
-    ".wy-breadcrumbs li a, " +
-      ".wy-breadcrumbs li, " +
-      ".breadcrumb-item, " +
-      ".wy-menu-vertical a, " +
-      "h1, h2, h3, h4, h5, h6",
+    ".wy-breadcrumbs li a, .wy-breadcrumbs li, .breadcrumb-item, .wy-menu-vertical a",
   );
 
   elements.forEach(function (element) {
-    const text = element.textContent;
+    element.childNodes.forEach(function (node) {
+      if (node.nodeType !== Node.TEXT_NODE) return;
+      const text = node.nodeValue;
+      let head = null;
 
-    // Em dash: always treated as a description separator.
-    if (text.includes(" – ")) {
-      const parts = text.split(" – ");
-      const shortName = parts[0].trim();
-      element.setAttribute("title", text);
-      element.textContent = shortName;
-    } else if (text.includes(" - ")) {
-      // Hyphen-dash: only split when the tail looks like a description
-      // (> 20 chars) so we don't mangle compound names.
-      const parts = text.split(" - ");
-      if (parts.length === 2 && parts[1].length > 20) {
-        const shortName = parts[0].trim();
-        element.setAttribute("title", text);
-        element.textContent = shortName;
+      if (text.includes(" – ")) {
+        head = text.split(" – ")[0];
+      } else if (text.includes(" - ")) {
+        // Only split when the tail looks like a description (> 20 chars),
+        // so compound names stay intact.
+        const parts = text.split(" - ");
+        if (parts.length === 2 && parts[1].length > 20) head = parts[0];
       }
-    }
+
+      if (head !== null) {
+        element.setAttribute("title", element.textContent.trim());
+        node.nodeValue = head.trimEnd();
+      }
+    });
   });
 }
