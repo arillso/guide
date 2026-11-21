@@ -3,9 +3,6 @@ services:
         build:
             context: .
             target: docs
-        # Run as the host user so build outputs in the bind mount are not owned
-        # by root. Set UID/GID in the environment or .env if yours is not 1000.
-        user: "${UID:-1000}:${GID:-1000}"
         environment:
             # No writable home for an arbitrary UID; npm and ansible need one.
             - HOME=/tmp
@@ -18,7 +15,13 @@ services:
         command:
             - bash
             - -c
-            - ./build.sh && python -m http.server 8000 --directory build/html
+            # Drop from root to the owner of the bind-mounted checkout, so build
+            # outputs are not root-owned on the host, whatever the host UID.
+            # `$$` escapes `$` from compose interpolation.
+            - >-
+                exec setpriv --reuid="$$(stat -c %u /project)"
+                --regid="$$(stat -c %g /project)" --clear-groups
+                bash -c './build.sh && python -m http.server 8000 --directory build/html'
         labels:
             - "traefik.enable=true"
             - "traefik.http.routers.arillso-guide-test-arillso-doc-generator.rule=Host(`arillso-guide.test`)"

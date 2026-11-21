@@ -284,14 +284,15 @@ def cmd_ensure(args: argparse.Namespace) -> int:
 
         resolved.append((namespace, name, version, target))
 
-        # Keep the recorded timestamp only for a cache hit of the same version;
-        # a download or a version switch records now.
-        previous = index.get(full_name, {})
-        if status == "hit" and previous.get("version") == version:
-            downloaded_at = previous.get("downloaded_at", now_iso)
+        # One entry per cached version (the cache keeps every version on disk),
+        # so switching back to an older pin keeps its original download time.
+        key = f"{full_name}@{version}"
+        previous = index.get(key, {})
+        if status == "hit" and "downloaded_at" in previous:
+            downloaded_at = previous["downloaded_at"]
         else:
             downloaded_at = now_iso
-        index[full_name] = {"version": version, "downloaded_at": downloaded_at}
+        index[key] = {"version": version, "downloaded_at": downloaded_at}
 
     write_index(cache_dir, index)
 

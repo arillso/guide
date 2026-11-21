@@ -45,23 +45,23 @@ def test_install_skips_dependencies(tmp_path, monkeypatch, capsys):
     assert "--no-deps" in calls[0]
 
 
-def test_index_keeps_timestamp_only_for_same_version_hit(tmp_path, monkeypatch, capsys):
+def test_index_keeps_download_time_per_version(tmp_path, monkeypatch, capsys):
     calls = []
     _fake_galaxy(monkeypatch, calls)
+    old = "2000-01-01T00:00:00+00:00"
 
-    first = _ensure(tmp_path, "2.0.4")["arillso.system"]
-    # Pretend the first download happened long ago.
+    _ensure(tmp_path, "2.0.4")
+    # Pretend the 2.0.4 download happened long ago.
     index_path = tmp_path / "cache" / "index.json"
     index = json.loads(index_path.read_text(encoding="utf-8"))
-    index["arillso.system"]["downloaded_at"] = "2000-01-01T00:00:00+00:00"
+    index["arillso.system@2.0.4"]["downloaded_at"] = old
     index_path.write_text(json.dumps(index), encoding="utf-8")
 
-    hit = _ensure(tmp_path, "2.0.4")["arillso.system"]
-    assert len(calls) == 1  # cache hit, no second install
-    assert hit == {"version": first["version"], "downloaded_at": "2000-01-01T00:00:00+00:00"}
+    switched = _ensure(tmp_path, "2.0.5")
+    assert switched["arillso.system@2.0.5"]["downloaded_at"] != old
 
-    switched = _ensure(tmp_path, "2.0.5")["arillso.system"]
+    # Back to the cached 2.0.4: a hit, and it keeps its original time.
+    back = _ensure(tmp_path, "2.0.4")
     capsys.readouterr()
-    assert len(calls) == 2
-    assert switched["version"] == "2.0.5"
-    assert switched["downloaded_at"] != "2000-01-01T00:00:00+00:00"
+    assert len(calls) == 2  # 2.0.4 and 2.0.5 installed once each
+    assert back["arillso.system@2.0.4"] == {"version": "2.0.4", "downloaded_at": old}

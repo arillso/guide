@@ -57,8 +57,7 @@ overridden with `ARILLSO_COLLECTIONS_CACHE` (defaults to
 Watch mode while editing the frontend:
 
 ```bash
-npm run build:watch:css   # PostCSS, in one shell
-npm run build:watch:js    # esbuild, in another shell
+npm run build:watch       # PostCSS + esbuild, rebuild on change
 ```
 
 ## Build Steps

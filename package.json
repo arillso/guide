@@ -2,8 +2,7 @@
     "private": true,
     "scripts": {
         "build": "scripts/build_frontend.sh",
-        "build:watch:css": "postcss src/styles/index.css -o _static/custom.css --watch",
-        "build:watch:js": "esbuild src/scripts/index.js --bundle --target=es2020 --outfile=_static/custom.js --watch"
+        "build:watch": "scripts/build_frontend.sh --watch"
     },
     "devDependencies": {
         "autoprefixer": "10.6.2",

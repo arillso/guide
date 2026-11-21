@@ -16,8 +16,11 @@
    Hex literals (#1e1e1e, #d4d4d4) preserved: domain-specific terminal/Pygments
    colors are intentionally outside the design-system token palette.
    Only the inner `div.highlight` is styled; Sphinx wraps it in an outer
-   `div.highlight-<lang>`, and styling both doubles margin and shadow. */
+   `div.highlight-<lang>`, and styling both doubles margin and shadow.
+   `.rst-content div.highlight` keeps specificity (0,2,1) above the theme's
+   `.rst-content div[class^=highlight]` (overflow-x, margin, border). */
 .highlight,
+.rst-content div.highlight,
 .rst-content pre.literal-block {
   border-radius: var(--radius-xl);
   overflow: hidden;

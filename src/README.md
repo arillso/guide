@@ -68,8 +68,7 @@ All commands run from the repository root.
 | Command                       | Purpose                                                                    |
 | ----------------------------- | -------------------------------------------------------------------------- |
 | `npm run build`               | Build CSS + JS once (runs `scripts/build_frontend.sh`).                    |
-| `npm run build:watch:css`     | PostCSS on `src/styles/index.css`, rebuild on change.                      |
-| `npm run build:watch:js`      | esbuild on `src/scripts/index.js`, rebuild on change.                      |
+| `npm run build:watch`         | CSS + JS, rebuild on change (`build_frontend.sh --watch`).                 |
 | `./scripts/build_frontend.sh` | Equivalent to `npm run build`. Used by the top-level `build.sh` as step 1. |
 
 The PostCSS config in `postcss.config.js` enables `postcss-import`,
