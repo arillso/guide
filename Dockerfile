@@ -16,7 +16,7 @@
 
 # Node runtime source. Debian's apt nodejs is too old for the frontend
 # toolchain (cssnano needs Node >= 22), so node + npm come from here.
-FROM node:24-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54 AS node
+FROM node:24.22.3-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54 AS node
 
 # Shared base for builder and docs: Python plus Node/npm from the node stage.
 # One place to bump the digests.
