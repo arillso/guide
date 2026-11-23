@@ -10,11 +10,14 @@ upstream `arillso.*` collections at build time.
 | -------------------------------------------- | ---------------------------------------------------------- |
 | `rst/` (hand-written pages)                  | `rst/collections/`, `temp-rst/` (antsibull-docs)           |
 | `src/styles/`, `src/scripts/` (theme CSS/JS) | `_static/custom.css`, `_static/custom.js` (frontend build) |
+| `_theme/arillso/` (theme templates)          | —                                                          |
 | `_well_known/security.txt.in`                | `_well_known_build/` (`scripts/security_txt.py`)           |
 | upstream collection repo                     | collection pages under `rst/collections/`                  |
 
-`_static/favicon.ico` and `_static/logo.svg` are tracked sources; the two
-`custom.*` bundles are overwritten on every build.
+`_static/favicon.ico`, `_static/logo.svg` and `_static/fonts/` are tracked
+sources; the two `custom.*` bundles are overwritten on every build. The theme
+is the repo's own (`_theme/arillso/`, `html_theme = "arillso"`), inheriting
+only Sphinx's `basic` templates; there is no third-party Sphinx theme.
 
 ## Traps
 
@@ -34,6 +37,10 @@ upstream `arillso.*` collections at build time.
   once per clone, and `claude plugin update impeccable@impeccable` after a
   Renovate bump of its `ref` (auto-update is off for third-party
   marketplaces; turn it on in `/plugin` → Marketplaces if wanted).
+- `conf.py` reads `versions.env` and counts the generated
+  `rst/collections/arillso/<c>/*_<kind>.rst` files into `rst_epilog`
+  substitutions (`|system_version|`, `|system_roles|`, …) for the start
+  page. Rename a variable in `versions.env` and the start page breaks.
 - `build.sh` runs `npm ci` itself when neither `node_modules/.bin/postcss`
   nor `/usr/src/node_modules/.bin/postcss` exists; the Docker image ships
   the latter.
@@ -55,7 +62,8 @@ A change to `Dockerfile` or `docker-compose.yml` must keep the smoke test in
 
 ## Further docs
 
-- Before changing `src/` or `_templates/`: read `src/README.md`.
+- Before changing `src/` or `_theme/`: read `src/README.md` (design rules,
+  banned patterns, token contract).
 - After larger frontend or theme changes: walk `docs/regression-checklist.md`.
 - Code review scope and severity levels: `REVIEW.md`.
 - Setup and lint hooks (`lefthook install`): `CONTRIBUTING.md`. Local

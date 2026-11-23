@@ -6,28 +6,31 @@ For whoever changes the frontend, the theme, or the doc toolchain.
 
 ## When to run
 
-- After changes to `_templates/`, `src/styles/`, or `src/scripts/`.
-- After upgrading Sphinx, `sphinx-ansible-theme`, or antsibull-docs.
+- After changes to `_theme/`, `src/styles/`, `src/scripts/` or `_static/fonts/`.
+- After upgrading Sphinx or antsibull-docs.
 
 ## How to run
 
-1. Build the site:
+1. Build and serve the site. In the dde environment the container builds on
+   start and serves <https://arillso-guide.test/>; rebuild without restart:
 
    ```bash
-   ./build.sh
+   docker compose exec -u "$(id -u):$(id -g)" arillso-doc-generator ./build.sh
    ```
 
-2. Open the output in a browser:
+   Without dde: `./build.sh`, then `python -m http.server -d build/html`.
+   Opening `build/html/index.html` from disk works too, except search.
 
-   ```bash
-   xdg-open build/html/index.html   # Linux
-   open build/html/index.html       # macOS
-   ```
+   After a change under `src/`, delete `build/` first. Sphinx rewrites only
+   changed pages, so the others keep the old `custom.css?v=` hash and the
+   browser serves the cached stylesheet. CI always builds from scratch.
 
-3. Keep the DevTools console open (F12). Any JS console error is a fail.
-4. Walk the list top to bottom. Report each failure in the PR that
-   triggered the run (or a new issue) and fix it before merging. The
-   checkboxes here stay unchecked; this file is the template, not a log.
+2. Keep the DevTools console open (F12). Any JS console error is a fail.
+3. Walk the list top to bottom, once in the light and once in the dark
+   scheme (switch in the masthead, or the system setting). Report each
+   failure in the PR that triggered the run (or a new issue) and fix it
+   before merging. The checkboxes here stay unchecked; this file is the
+   template, not a log.
 
 ---
 
@@ -35,82 +38,76 @@ For whoever changes the frontend, the theme, or the doc toolchain.
 
 Current Chrome or Firefox, desktop viewport ≥ 1280 px.
 
-- [ ] **Index page** `build/html/index.html` loads fully: logo top left,
-      main heading, sidebar visible, content area filled, footer at the
-      bottom.
-- [ ] **Guide page** `build/html/guide/getting-started/quickstart.html`
-      shows H1, H2, H3 in the right hierarchy with consistent paragraph
-      spacing.
-- [ ] **Code block** on the quickstart page or
-      `build/html/containers/docker_ansible.html`: monospaced font,
-      background matching the theme, no overflow cut-off.
-- [ ] **Collection landing** `build/html/collections/arillso/system/index.html`
-      lists modules and roles with the description table intact.
-- [ ] **404 page** (if the theme provides one — open
-      `build/html/does-not-exist.html`): shows an error page with
-      navigation back to the index, not a broken skeleton.
+- [ ] **Start page** `index.html`: masthead (logo, arillso/guide, search,
+      GitHub, Galaxy, scheme switch), contents navigation left, "arillso"
+      lowercase everywhere, figure strip with non-zero counts, the example
+      playbook and its three run variants without horizontal scrolling,
+      numbered sections 01–03, collection table shows versions from
+      `versions.env`.
+- [ ] **Guide page** `guide/getting-started/quickstart.html`: H1, numbered
+      H2 rules, H3 in the right hierarchy, consistent paragraph spacing.
+- [ ] **Role page** `collections/arillso/system/firewall_role.html`: option
+      table with nested sub-options, type line under each name, defaults
+      readable, "#" permalink on hover.
+- [ ] **Module page** `collections/arillso/system/apt_update_info_module.html`:
+      attributes table, return value table, link buttons at the end.
+- [ ] **Code block** on the quickstart page: Plex Mono, sunk background,
+      signal rule on the left, no overflow cut-off.
+- [ ] **Collection landing** `collections/arillso/system/index.html` lists
+      modules, filters, lookups and roles.
+- [ ] **Search** `search.html?q=firewall` lists numbered results with
+      context; the masthead search field lands there.
+
+## Dark mode
+
+- [ ] Scheme switch toggles light/dark; the choice survives a reload and a
+      page change (stored as `arillso-theme` in `localStorage`).
+- [ ] Without a stored choice the page follows the system setting.
+- [ ] Code highlighting, option tables, admonitions and Mermaid diagrams
+      stay readable in dark.
 
 ## Navigation
 
-- [ ] **Sidebar expand/collapse** on `build/html/index.html`: open and
-      close expandable entries under the toctree captions (e.g. Getting
-      Started, Ansible Collections) — children appear without layout jumps.
-- [ ] **Breadcrumbs** on `build/html/guide/best-practices/security.html`
-      are visible and every crumb is a working link.
-- [ ] **Internal links**: from `build/html/index.html` open at least three
-      internal targets (e.g. Quickstart, Architecture, Troubleshooting) —
-      all load without 404 at the right scroll position.
-- [ ] **Active sidebar entry** on the quickstart page is visually
-      highlighted (bold, accent colour, or indicator bar).
-- [ ] **External links** (e.g. to `https://github.com/arillso/`) show the
-      external-link icon and open in a new tab (`target="_blank"`).
-- [ ] **Anchors**: on `build/html/guide/best-practices/standards.html`,
-      clicking a TOC entry scrolls to the right H2/H3 without hiding it
-      under the sticky header.
+- [ ] **Contents navigation**: the current page is marked with the signal
+      bar; only the current branch is expanded.
+- [ ] **Breadcrumb trail** on `guide/best-practices/security.html`: every
+      crumb except the last is a working link.
+- [ ] **Pager** at the bottom: previous and next link to the neighbours in
+      the contents order.
+- [ ] **External links** (e.g. to `https://github.com/arillso/`) open in a
+      new tab (`target="_blank"`).
+- [ ] **Anchors**: clicking an entry of a page's contents scrolls to the
+      heading without hiding it under the sticky masthead.
 
 ## Code blocks
 
-- [ ] **Copy button appears** on every code block of the quickstart page
-      (on hover, or always on mobile), top right.
-- [ ] **Copy button works**: the block content lands in the clipboard
-      (paste to verify) and the button shows short feedback ("Copied").
-- [ ] **Syntax highlighting**: YAML blocks on
-      `build/html/github/action_playbook.html` colour keys, values,
-      strings, and comments.
-- [ ] **Language badge**: every code block with a real language (`yaml`,
-      `bash`, `python`) shows it as a small label; `none`, `text`, and
-      `default` blocks stay unlabelled.
-- [ ] **Inline code** on `build/html/guide/reference/troubleshooting.html`
-      has a subtle background and stands out from body text.
-- [ ] **Long lines** (> 100 characters) scroll horizontally inside the
-      block or wrap — the page itself never scrolls horizontally.
+- [ ] **Copy button** top right on every code block; copies the content
+      and shows "Copied" for two seconds.
+- [ ] **Language label** next to the copy button for `yaml`, `bash`,
+      `python`; `none`, `text`, `default` stay unlabelled.
+- [ ] **Inline code** has a sunk background and stands out from text.
+- [ ] **Long lines** scroll inside the block; the page never scrolls
+      horizontally.
 
-## Mobile (375 px viewport)
+## Mobile (360 px viewport)
 
-Chrome DevTools → Device Toolbar → iPhone SE / 375 × 667 px.
+Chrome DevTools → Device Toolbar → 360 × 740 px.
 
-- [ ] **No horizontal scroll** on `build/html/index.html`.
-- [ ] **Hamburger menu** (if present): below 768 px the sidebar hides
-      behind the icon, opens as overlay or drawer, and closes via X or a
-      backdrop click.
-- [ ] **Code blocks** on the quickstart page wrap or scroll internally; the
-      body stays 375 px wide.
-- [ ] **Touch targets ≥ 44 × 44 px** for sidebar links, copy button, and
-      hamburger.
-- [ ] **Typography**: body text ≥ 14 px effective, H1 does not fill the
-      first view, line length roughly 30–75 characters.
-- [ ] **Tables** on `build/html/collections/arillso/system/index.html` wrap,
-      scroll internally, or stack — no broken page layout.
+- [ ] **No horizontal scroll** on the start page, the quickstart and a role
+      page.
+- [ ] **Contents drawer**: the hamburger opens the navigation over the
+      page; the button or Escape closes it and focus returns to the button.
+- [ ] **Option tables** on role pages stack (antsibull narrow layout)
+      instead of overflowing.
+- [ ] **Tables** on the start page scroll inside their box.
+- [ ] **Touch targets ≥ 44 × 44 px** for the hamburger, scheme switch and
+      copy button.
 
 ## Keyboard
 
-- [ ] **Tab order** from `build/html/index.html`: logo, sidebar
-      items, content links, footer links, in a visible, logical order.
-- [ ] **Visible focus** on every interactive element (outline, underline,
-      or background change).
-- [ ] **No focus traps** in the sidebar, including expandable entries:
-      Tab and Shift+Tab always move on.
-- [ ] **Enter activates** a focused sidebar link; Enter or Space on a
-      focused copy button copies.
-- [ ] **Escape closes overlays** (mobile drawer, modal) and returns focus
-      to the trigger.
+- [ ] **Skip link**: first Tab shows "Skip to content"; Enter moves focus
+      to the main column.
+- [ ] **Tab order**: skip link, masthead, contents navigation, content,
+      pager, footer.
+- [ ] **Visible focus**: 3 px signal outline on every interactive element.
+- [ ] **No focus traps** in the navigation or the drawer.
