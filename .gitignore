@@ -26,3 +26,13 @@ __pycache__/
 
 # Collection cache of the docker-compose environment (ARILLSO_COLLECTIONS_CACHE).
 /.cache/
+
+# impeccable plugin (.claude/settings.json): local config and runtime state.
+# The skill expects live/config.json and critique/ignore.md to be committed.
+.impeccable/config.local.json
+.impeccable/history/
+**/.impeccable/hook.*.json
+.impeccable/live/*
+!.impeccable/live/config.json
+.impeccable/critique/*
+!.impeccable/critique/ignore.md

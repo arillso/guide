@@ -16,6 +16,16 @@
             "matchStrings": ["mermaid_version = \"(?<currentValue>[^\"]+)\""],
             "datasourceTemplate": "npm",
             "depNameTemplate": "mermaid"
+        },
+        {
+            "customType": "regex",
+            "managerFilePatterns": ["/^\\.claude/settings\\.json$/"],
+            "matchStrings": [
+                "\"repo\": \"pbakaus/impeccable\",\\s*\"ref\": \"skill-v(?<currentValue>[^\"]+)\""
+            ],
+            "datasourceTemplate": "github-tags",
+            "depNameTemplate": "pbakaus/impeccable",
+            "extractVersionTemplate": "^skill-v(?<version>.+)$"
         }
     ]
 }
