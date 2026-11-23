@@ -18,14 +18,14 @@ GitHub Actions maintained by arillso.
      - Release
      - Purpose
    * - :ref:`action.playbook <action_playbook>`
-     - ``0.5.0``
+     - ``@ACTION_PLAYBOOK_VERSION@``
      - Runs ``ansible-playbook`` in a Docker container action; installs Galaxy
        requirements, loads SSH keys into ``ssh-agent``, passes Vault passwords
        through a temporary file
 
 .. code-block:: yaml
 
-   - uses: arillso/action.playbook@0.5.0
+   - uses: arillso/action.playbook@@ACTION_PLAYBOOK_VERSION@
      with:
        playbook: site.yml
        inventory: inventory.yml

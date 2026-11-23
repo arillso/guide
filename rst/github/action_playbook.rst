@@ -28,9 +28,9 @@ Facts
    * - Action name
      - ``Play Ansible Playbook``
    * - Latest release
-     - ``0.5.0`` (2026-03-15); tags have no ``v`` prefix
+     - ``@ACTION_PLAYBOOK_VERSION@``; tags have no ``v`` prefix
    * - Runner
-     - ``docker``, image ``ghcr.io/arillso/action.playbook:0.5.0``
+     - ``docker``, image ``ghcr.io/arillso/action.playbook:@ACTION_PLAYBOOK_VERSION@``
    * - Image base
      - ``arillso/ansible`` (``0.5.0``: ``2.20.3``; ``main``: ``2.22.0``); the
        ``ansible`` user is moved to UID/GID ``1001``
@@ -54,7 +54,7 @@ Usage
 
          - name: Run playbook
            id: ansible
-           uses: arillso/action.playbook@0.5.0
+           uses: arillso/action.playbook@@ACTION_PLAYBOOK_VERSION@
            with:
              playbook: site.yml
              inventory: inventory.yml
@@ -68,7 +68,7 @@ Check mode for pull requests:
 
 .. code-block:: yaml
 
-   - uses: arillso/action.playbook@0.5.0
+   - uses: arillso/action.playbook@@ACTION_PLAYBOOK_VERSION@
      with:
        playbook: site.yml
        inventory: inventory.yml

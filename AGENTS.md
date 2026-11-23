@@ -37,6 +37,12 @@ only Sphinx's `basic` templates; there is no third-party Sphinx theme.
   once per clone, and `claude plugin update impeccable@impeccable` after a
   Renovate bump of its `ref` (auto-update is off for third-party
   marketplaces; turn it on in `/plugin` → Marketplaces if wanted).
+- Release versions of the collections, `action.playbook` and `go.ansible`
+  live only in `versions.env` (Renovate bumps them). In `rst/`, usage
+  examples write `@ACTION_PLAYBOOK_VERSION@`, `@ARILLSO_SYSTEM_VERSION@` etc.;
+  `conf.py` replaces the tokens on `source-read`, code blocks included, and
+  an unknown `@…_VERSION@` token fails the build. Sentences about one
+  specific release ("not in 0.5.0") keep the literal number on purpose.
 - `conf.py` reads `versions.env` and counts the generated
   `rst/collections/arillso/<c>/*_<kind>.rst` files into `rst_epilog`
   substitutions (`|system_version|`, `|system_roles|`, …) for the start

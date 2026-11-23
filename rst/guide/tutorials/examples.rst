@@ -9,8 +9,8 @@ Examples
 
 Complete playbook projects: directory layout, ``requirements.yml``, inventory and
 playbook. Variable names follow the role documentation of the collection
-versions this guide documents (``arillso.system`` 2.0.4, ``arillso.container``
-2.2.0, ``arillso.agent`` 2.1.0). Shorter single-purpose snippets, including the
+versions this guide documents (``arillso.system`` @ARILLSO_SYSTEM_VERSION@, ``arillso.container``
+@ARILLSO_CONTAINER_VERSION@, ``arillso.agent`` @ARILLSO_AGENT_VERSION@). Shorter single-purpose snippets, including the
 container image, the GitHub Action and the Go library, are in :ref:`use-cases`.
 
 .. contents::
@@ -40,11 +40,11 @@ Docker with ``json-file`` log rotation, an nftables input filter and Tailscale.
    ---
    collections:
      - name: arillso.container
-       version: ">=2.2.0"
+       version: ">=@ARILLSO_CONTAINER_VERSION@"
      - name: arillso.system
-       version: ">=2.0.4"
+       version: ">=@ARILLSO_SYSTEM_VERSION@"
      - name: arillso.agent
-       version: ">=2.1.0"
+       version: ">=@ARILLSO_AGENT_VERSION@"
 
 **ansible.cfg**
 
@@ -159,9 +159,9 @@ Alloy on all nodes.
    ---
    collections:
      - name: arillso.container
-       version: ">=2.2.0"
+       version: ">=@ARILLSO_CONTAINER_VERSION@"
      - name: arillso.agent
-       version: ">=2.1.0"
+       version: ">=@ARILLSO_AGENT_VERSION@"
 
 **inventory.ini**
 
@@ -294,7 +294,7 @@ role's levels ``firewall_tables``, ``firewall_global``, ``firewall_group`` and
    ---
    collections:
      - name: arillso.system
-       version: ">=2.0.4"
+       version: ">=@ARILLSO_SYSTEM_VERSION@"
 
 **inventory.ini**
 
@@ -389,7 +389,7 @@ Install the ``bws`` CLI on the control node and resolve secrets with the
    ---
    collections:
      - name: arillso.system
-       version: ">=2.0.4"
+       version: ">=@ARILLSO_SYSTEM_VERSION@"
      - name: community.general
 
 **playbook.yml**

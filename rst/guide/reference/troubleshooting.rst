@@ -29,7 +29,7 @@ what is installed and where:
 .. code-block:: bash
 
    ansible-galaxy collection list
-   ansible-galaxy collection install arillso.system:2.0.4 --force
+   ansible-galaxy collection install arillso.system:@ARILLSO_SYSTEM_VERSION@ --force
 
 Pin the versions in a ``requirements.yml`` so every environment resolves the
 same set:
@@ -39,9 +39,9 @@ same set:
    ---
    collections:
      - name: arillso.system
-       version: "2.0.4"
+       version: "@ARILLSO_SYSTEM_VERSION@"
      - name: arillso.container
-       version: "2.2.0"
+       version: "@ARILLSO_CONTAINER_VERSION@"
 
 .. code-block:: bash
 

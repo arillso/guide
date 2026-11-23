@@ -573,7 +573,7 @@ Structure
    ---
    namespace: arillso
    name: system
-   version: 2.0.4
+   version: @ARILLSO_SYSTEM_VERSION@
    readme: README.md
    authors:
        - Simon Baerlocher (@sbaerlocher) <s.baerlocher@sbaerlocher.ch>

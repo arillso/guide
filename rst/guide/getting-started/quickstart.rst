@@ -231,7 +231,7 @@ Run from GitHub Actions
          - uses: actions/checkout@v4
 
          - name: Run playbook
-           uses: arillso/action.playbook@0.5.0
+           uses: arillso/action.playbook@@ACTION_PLAYBOOK_VERSION@
            with:
              playbook: site.yml
              inventory: inventory.ini

@@ -30,7 +30,7 @@ Facts
    * - Package name
      - ``ansible``
    * - Latest release
-     - ``v2.0.0`` (2026-03-13)
+     - ``@GO_ANSIBLE_VERSION@``
    * - Go version (``go.mod``)
      - ``v2.0.0``: ``go 1.26.1``; ``main``: ``go 1.27.4``
    * - Dependencies
@@ -45,7 +45,7 @@ Installation
 
 .. code-block:: bash
 
-   go get github.com/arillso/go.ansible/v2@v2.0.0
+   go get github.com/arillso/go.ansible/v2@@GO_ANSIBLE_VERSION@
 
 .. code-block:: go
 

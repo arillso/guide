@@ -65,7 +65,7 @@ environment variables of the step:
 .. code-block:: yaml
 
    - name: Run playbook
-     uses: arillso/action.playbook@0.5.0
+     uses: arillso/action.playbook@@ACTION_PLAYBOOK_VERSION@
      with:
        playbook: deploy.yml
        inventory: inventory/production.ini

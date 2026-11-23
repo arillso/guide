@@ -60,7 +60,7 @@ GitHub workflow or Go. Open source, MIT licensed.
       .. code-block:: yaml
          :caption: GitHub Actions
 
-         - uses: arillso/action.playbook@0.5.0
+         - uses: arillso/action.playbook@@ACTION_PLAYBOOK_VERSION@
            with:
              playbook: site.yml
              inventory: inventory.ini

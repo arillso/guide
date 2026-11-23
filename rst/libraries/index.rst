@@ -18,13 +18,13 @@ Libraries maintained by arillso.
      - Release
      - Purpose
    * - :ref:`go.ansible <go_ansible>`
-     - ``v2.0.0``
+     - ``@GO_ANSIBLE_VERSION@``
      - Go package that builds and runs ``ansible-galaxy`` and
        ``ansible-playbook`` commands from a ``Config`` struct
 
 .. code-block:: bash
 
-   go get github.com/arillso/go.ansible/v2@v2.0.0
+   go get github.com/arillso/go.ansible/v2@@GO_ANSIBLE_VERSION@
 
 .. code-block:: go
 

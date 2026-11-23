@@ -8,6 +8,7 @@
 # documentation:
 # http://www.sphinx-doc.org/en/master/config
 
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -15,6 +16,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent / "scripts"))
 
 from security_txt import write_security_txt  # noqa: E402
+from sphinx.util import logging as sphinx_logging  # noqa: E402
+
+logger = sphinx_logging.getLogger(__name__)
 
 # Render .well-known/security.txt here, at config-read time, rather than from a
 # builder-inited handler: Sphinx validates html_extra_path while reading this
@@ -31,7 +35,7 @@ _ROOT = Path(__file__).resolve().parent
 _versions = dict(
     line.split("=", 1)
     for line in (_ROOT / "versions.env").read_text(encoding="utf-8").splitlines()
-    if line.startswith("ARILLSO_")
+    if re.match(r"^[A-Z][A-Z0-9_]*=", line)
 )
 _subs = []
 for _name in ("system", "container", "agent"):
@@ -46,6 +50,27 @@ _subs.append(f".. |total_roles| replace:: **{len(list(_gen.glob('*/*_role.rst'))
 _plugins = [p for p in _gen.glob("*/*.rst") if not p.name.endswith("_role.rst") and p.name != "index.rst"]
 _subs.append(f".. |total_plugins| replace:: **{len(_plugins)}**")
 rst_epilog = "\n".join(_subs) + "\n"
+
+
+def _fill_versions(app, docname, source):
+    """Replace @KEY@ tokens with versions.env values, code blocks included.
+
+    RST substitutions do not reach literal blocks, so usage examples such as
+    ``uses: arillso/action.playbook@@ACTION_PLAYBOOK_VERSION@`` use tokens.
+    Statements about one specific release keep the literal version.
+    """
+    text = source[0]
+    for key, value in _versions.items():
+        text = text.replace(f"@{key}@", value.strip('"'))
+    # A typo or a key missing from versions.env would otherwise render the raw
+    # token; a warning fails the build (-W).
+    for token in sorted(set(re.findall(r"@[A-Z][A-Z0-9_]*_VERSION@", text))):
+        logger.warning("unknown version token %s in %s", token, docname)
+    source[0] = text
+
+
+def setup(app):
+    app.connect("source-read", _fill_versions)
 copyright = "arillso contributors"
 
 html_title = "arillso guide"
