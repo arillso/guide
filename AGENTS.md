@@ -24,10 +24,16 @@ upstream `arillso.*` collections at build time.
 - `security.txt` gets its `Expires` date from the build date via the
   `{EXPIRES}` placeholder. Keep the placeholder; a fixed date expires, and
   the date stays valid only because every merge to `main` redeploys.
-- Renovate updates `versions.env` (collection versions) and
-  `mermaid_version` in `conf.py` through custom regex managers in
+- Renovate updates `versions.env` (collection versions),
+  `mermaid_version` in `conf.py` and the impeccable marketplace `ref` in
+  `.claude/settings.json` through custom regex managers in
   `.github/renovate.json`. Keep the `# renovate:` comment line directly
   above each `versions.env` entry, or the manager stops matching.
+- `.claude/settings.json` enables the impeccable design plugin but does not
+  install it. Run `claude plugin install impeccable@impeccable --scope project`
+  once per clone, and `claude plugin update impeccable@impeccable` after a
+  Renovate bump of its `ref` (auto-update is off for third-party
+  marketplaces; turn it on in `/plugin` → Marketplaces if wanted).
 - `build.sh` runs `npm ci` itself when neither `node_modules/.bin/postcss`
   nor `/usr/src/node_modules/.bin/postcss` exists; the Docker image ships
   the latter.
