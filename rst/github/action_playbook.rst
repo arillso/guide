@@ -1,77 +1,50 @@
 .. meta::
-  :description: GitHub Action for running Ansible Playbooks with comprehensive configuration options
+  :description: arillso/action.playbook: Docker-based GitHub Action that runs ansible-playbook; inputs, outputs and behaviour from action.yml and main.go
 
 .. _action_playbook:
 
 action.playbook
 ===============
 
-GitHub Action for running Ansible Playbooks with advanced configuration support for Galaxy, SSH, Vault, and privilege escalation.
+Docker-based GitHub Action that runs ``ansible-playbook``. It is a Go program
+(``main.go``) on top of :ref:`go.ansible <go_ansible>`, packaged in an image
+derived from :ref:`arillso/ansible <docker_ansible>`. All facts on this page come
+from ``action.yml``, ``main.go``, ``Dockerfile`` and ``CHANGELOG.md`` in
+https://github.com/arillso/action.playbook.
 
 .. contents::
    :local:
    :depth: 2
 
-Overview
---------
+Facts
+-----
 
-``action.playbook`` is a Docker-based GitHub Action that executes Ansible playbooks in CI/CD pipelines with extensive configuration options and automatic credential handling.
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
-**Repository:** https://github.com/arillso/action.playbook
+   * - Property
+     - Value
+   * - Action name
+     - ``Play Ansible Playbook``
+   * - Latest release
+     - ``0.5.0`` (2026-03-15); tags have no ``v`` prefix
+   * - Runner
+     - ``docker``, image ``ghcr.io/arillso/action.playbook:0.5.0``
+   * - Image base
+     - ``arillso/ansible`` (``0.5.0``: ``2.20.3``; ``main``: ``2.22.0``); the
+       ``ansible`` user is moved to UID/GID ``1001``
+   * - Image platforms
+     - ``linux/amd64``, ``linux/arm64`` (``tag.yml``)
+   * - Go library
+     - ``github.com/arillso/go.ansible/v2`` ``v2.0.0``
+   * - License
+     - MIT
 
-**GitHub Marketplace:** https://github.com/marketplace/actions/play-ansible-playbook
-
-**Latest Version:** v1.2.0+
-
-Features
---------
-
-Ansible Galaxy Support
-~~~~~~~~~~~~~~~~~~~~~~
-
-* Automatic role and collection installation
-* Custom Galaxy server configuration
-* Offline mode support
-* GPG signature verification
-* Dependency management
-
-SSH Authentication
-~~~~~~~~~~~~~~~~~~
-
-* Automatic SSH key normalization (v1.2.0+)
-* CRLF → LF conversion
-* Trailing newline handling
-* Format validation (RSA, OpenSSH, EC, DSA)
-* Bastion host support via ProxyCommand
-
-Vault Integration
-~~~~~~~~~~~~~~~~~
-
-* Multiple vault identity support
-* Secure password handling via GitHub Secrets
-* Vault file management
-
-Comprehensive Options
-~~~~~~~~~~~~~~~~~~~~~
-
-* All ansible-playbook flags supported
-* Privilege escalation (sudo, become)
-* Check mode (dry-run)
-* Diff mode
-* Tag filtering
-* Host limiting
-* Verbosity control
-
-Quick Start
------------
-
-Basic Usage
-~~~~~~~~~~~
+Usage
+-----
 
 .. code-block:: yaml
-
-   name: Deploy Application
-   on: [push]
 
    jobs:
      deploy:
@@ -79,685 +52,432 @@ Basic Usage
        steps:
          - uses: actions/checkout@v4
 
-         - name: Run Ansible Playbook
-           uses: arillso/action.playbook@v1.2.0
+         - name: Run playbook
+           id: ansible
+           uses: arillso/action.playbook@0.5.0
            with:
-             playbook: deploy.yml
+             playbook: site.yml
              inventory: inventory.yml
-           env:
-             ANSIBLE_HOST_KEY_CHECKING: 'false'
-
-With SSH Key
-~~~~~~~~~~~~
-
-.. code-block:: yaml
-
-   - name: Deploy with SSH
-     uses: arillso/action.playbook@v1.2.0
-     with:
-       playbook: deploy.yml
-       inventory: production.yml
-       private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-     env:
-       ANSIBLE_HOST_KEY_CHECKING: 'false'
-
-With Galaxy Requirements
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: yaml
-
-   - name: Deploy with Galaxy Roles
-     uses: arillso/action.playbook@v1.2.0
-     with:
-       playbook: site.yml
-       inventory: hosts.yml
-       galaxy_file: requirements.yml
-     env:
-       ANSIBLE_HOST_KEY_CHECKING: 'false'
-
-Input Parameters
-----------------
-
-Required Inputs
-~~~~~~~~~~~~~~~
-
-**playbook** (required)
-  List of playbooks to execute.
-
-  .. code-block:: yaml
-
-     playbook: deploy.yml
-
-  Multiple playbooks:
-
-  .. code-block:: yaml
-
-     playbook: |
-       prepare.yml
-       deploy.yml
-       verify.yml
-
-**inventory** (required)
-  One or more inventory files or inline inventory.
-
-  .. code-block:: yaml
-
-     inventory: production.yml
-
-  Multiple inventories:
-
-  .. code-block:: yaml
-
-     inventory: |
-       group_vars/
-       production.yml
-
-  Inline inventory:
-
-  .. code-block:: yaml
-
-     inventory: |
-       [webservers]
-       web1.example.com
-       web2.example.com
-
-Galaxy Options
-~~~~~~~~~~~~~~
-
-**galaxy_file**
-  Path to Galaxy requirements file (``requirements.yml``).
-
-**galaxy_force**
-  Force reinstallation of roles/collections.
-
-  .. code-block:: yaml
-
-     galaxy_force: 'true'
-
-**galaxy_api_key**
-  API key for Ansible Galaxy authentication.
-
-  .. code-block:: yaml
-
-     galaxy_api_key: ${{ secrets.GALAXY_API_KEY }}
-
-**galaxy_api_server_url**
-  Custom Galaxy server URL.
-
-**galaxy_collections_path**
-  Path to collections directory.
-
-**galaxy_disable_gpg_verify**
-  Disable GPG signature verification.
-
-**galaxy_ignore_certs**
-  Ignore SSL certificate validation.
-
-**galaxy_offline**
-  Enable offline mode (no Galaxy requests).
-
-**galaxy_timeout**
-  Galaxy operation timeout in seconds.
-
-SSH Authentication
-~~~~~~~~~~~~~~~~~~
-
-**private_key**
-  SSH private key content (stored in GitHub Secrets).
-
-  .. code-block:: yaml
-
-     private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-  .. note::
-     Starting with v1.2.0, SSH keys are automatically normalized:
-
-     * Line endings converted (CRLF → LF)
-     * Trailing newlines added if missing
-     * Format validated
-
-**user**
-  SSH connection username.
-
-  .. code-block:: yaml
-
-     user: deploy
-
-**ssh_common_args**
-  Common arguments for all SSH connections.
-
-  .. code-block:: yaml
-
-     ssh_common_args: '-o StrictHostKeyChecking=no'
-
-**ssh_extra_args**
-  Extra arguments for SSH only.
-
-**scp_extra_args**
-  Extra arguments for SCP only.
-
-**sftp_extra_args**
-  Extra arguments for SFTP only.
-
-Execution Control
-~~~~~~~~~~~~~~~~~
-
-**limit**
-  Limit execution to specific hosts.
-
-  .. code-block:: yaml
-
-     limit: 'webservers'
-
-**tags**
-  Only run tasks with specific tags.
-
-  .. code-block:: yaml
-
-     tags: 'deploy,configure'
-
-**skip_tags**
-  Skip tasks with specific tags.
-
-  .. code-block:: yaml
-
-     skip_tags: 'debug,testing'
-
-**start_at_task**
-  Start execution at specific task.
-
-  .. code-block:: yaml
-
-     start_at_task: 'Deploy Application'
-
-**extra_vars**
-  Set additional variables (key=value format).
-
-  .. code-block:: yaml
-
-     extra_vars: |
-       version=1.2.3
-       environment=production
-
-**check**
-  Run in check mode (dry-run, no changes).
-
-  .. code-block:: yaml
-
-     check: 'true'
-
-**diff**
-  Show differences when changing files.
-
-  .. code-block:: yaml
-
-     diff: 'true'
-
-Vault Options
-~~~~~~~~~~~~~
-
-**vault_id**
-  Vault identity to use.
-
-  .. code-block:: yaml
-
-     vault_id: 'production@vault'
-
-**vault_password**
-  Vault password (stored in GitHub Secrets).
-
-  .. code-block:: yaml
-
-     vault_password: ${{ secrets.VAULT_PASSWORD }}
-
-Privilege Escalation
-~~~~~~~~~~~~~~~~~~~~~
-
-**become**
-  Enable privilege escalation.
-
-  .. code-block:: yaml
-
-     become: 'true'
-
-**become_method**
-  Escalation method (sudo, su, etc.).
-
-  .. code-block:: yaml
-
-     become_method: 'sudo'
-
-**become_user**
-  User to escalate to.
-
-  .. code-block:: yaml
-
-     become_user: 'root'
-
-Advanced Options
-~~~~~~~~~~~~~~~~
-
-**verbose**
-  Verbosity level (0-4).
-
-  .. code-block:: yaml
-
-     verbose: 2
-
-**forks**
-  Number of parallel processes.
-
-  .. code-block:: yaml
-
-     forks: 10
-
-**syntax_check**
-  Only perform syntax check.
-
-  .. code-block:: yaml
-
-     syntax_check: 'true'
-
-**list_hosts**
-  Only list matching hosts.
-
-**list_tasks**
-  Only list tasks that would execute.
-
-**list_tags**
-  List all available tags.
-
-**flush_cache**
-  Clear fact cache.
-
-**force_handlers**
-  Run handlers even if tasks fail.
-
-Complete Examples
------------------
-
-Production Deployment
-~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: yaml
-
-   name: Production Deployment
-
-   on:
-     push:
-       branches: [main]
-
-   jobs:
-     deploy:
-       runs-on: ubuntu-latest
-       environment: production
-
-       steps:
-         - uses: actions/checkout@v4
-
-         - name: Deploy to Production
-           uses: arillso/action.playbook@v1.2.0
-           with:
-             playbook: site.yml
-             inventory: production.yml
-             galaxy_file: requirements.yml
              private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+             known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
              vault_password: ${{ secrets.VAULT_PASSWORD }}
-             extra_vars: |
-               version=${{ github.sha }}
-               environment=production
-             become: 'true'
-             diff: 'true'
-           env:
-             ANSIBLE_HOST_KEY_CHECKING: 'false'
 
-Staging with Check Mode
-~~~~~~~~~~~~~~~~~~~~~~~~
+         - run: echo "status=${{ steps.ansible.outputs.status }} exit=${{ steps.ansible.outputs.exit_code }}"
+
+Check mode for pull requests:
 
 .. code-block:: yaml
 
-   name: Staging Check
-
-   on:
-     pull_request:
-       branches: [main]
-
-   jobs:
-     check:
-       runs-on: ubuntu-latest
-
-       steps:
-         - uses: actions/checkout@v4
-
-         - name: Check Staging Changes
-           uses: arillso/action.playbook@v1.2.0
-           with:
-             playbook: deploy.yml
-             inventory: staging.yml
-             private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-             check: 'true'
-             diff: 'true'
-             verbose: 2
-           env:
-             ANSIBLE_HOST_KEY_CHECKING: 'false'
-
-Multi-Environment Deployment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: yaml
-
-   name: Multi-Environment Deploy
-
-   on:
-     workflow_dispatch:
-       inputs:
-         environment:
-           description: 'Environment to deploy'
-           required: true
-           type: choice
-           options:
-             - development
-             - staging
-             - production
-
-   jobs:
-     deploy:
-       runs-on: ubuntu-latest
-       environment: ${{ github.event.inputs.environment }}
-
-       steps:
-         - uses: actions/checkout@v4
-
-         - name: Deploy to ${{ github.event.inputs.environment }}
-           uses: arillso/action.playbook@v1.2.0
-           with:
-             playbook: site.yml
-             inventory: ${{ github.event.inputs.environment }}.yml
-             galaxy_file: requirements.yml
-             private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-             extra_vars: |
-               environment=${{ github.event.inputs.environment }}
-               version=${{ github.sha }}
-             become: 'true'
-           env:
-             ANSIBLE_HOST_KEY_CHECKING: 'false'
-
-Kubernetes Deployment
-~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: yaml
-
-   name: Deploy to Kubernetes
-
-   on:
-     push:
-       tags: ['v*']
-
-   jobs:
-     deploy:
-       runs-on: ubuntu-latest
-
-       steps:
-         - uses: actions/checkout@v4
-
-         - name: Deploy to K8s
-           uses: arillso/action.playbook@v1.2.0
-           with:
-             playbook: k8s-deploy.yml
-             inventory: localhost,
-             galaxy_file: requirements.yml
-             extra_vars: |
-               k8s_context=production
-               app_version=${{ github.ref_name }}
-               namespace=default
-           env:
-             ANSIBLE_HOST_KEY_CHECKING: 'false'
-             K8S_AUTH_KUBECONFIG: ${{ secrets.KUBECONFIG }}
-
-SSH Key Management
-------------------
-
-Storing SSH Keys in GitHub Secrets
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-1. Navigate to repository **Settings** → **Secrets and variables** → **Actions**
-2. Click **New repository secret**
-3. Name: ``SSH_PRIVATE_KEY``
-4. Value: Paste your complete private key including headers
-
-   .. code-block:: text
-
-      -----BEGIN RSA PRIVATE KEY-----
-      MIIEpAIBAAKCAQEA...
-      ...
-      -----END RSA PRIVATE KEY-----
-
-5. Click **Add secret**
-
-.. warning::
-   NEVER commit private SSH keys to your repository!
-
-Automatic Normalization (v1.2.0+)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The action automatically handles:
-
-* **Line Endings:** Windows (CRLF) → Unix (LF)
-* **Trailing Newlines:** Added if missing
-* **Format Validation:** Verifies PEM format
-
-Supported key formats:
-
-* RSA (``-----BEGIN RSA PRIVATE KEY-----``)
-* OpenSSH (``-----BEGIN OPENSSH PRIVATE KEY-----``)
-* EC (``-----BEGIN EC PRIVATE KEY-----``)
-* DSA (``-----BEGIN DSA PRIVATE KEY-----``)
-
-Bastion Host / ProxyCommand
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-For bastion hosts (versions < 1.2.0 or edge cases):
-
-.. code-block:: yaml
-
-   - name: Setup SSH Key
-     run: |
-       mkdir -p ~/.ssh
-       echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-       chmod 600 ~/.ssh/deploy_key
-
-   - name: Deploy via Bastion
-     uses: arillso/action.playbook@v1.2.0
-     with:
-       playbook: deploy.yml
-       inventory: production.yml
-       ssh_common_args: '-o ProxyCommand="ssh -W %h:%p bastion.example.com"'
-       extra_vars: ansible_ssh_private_key_file=~/.ssh/deploy_key
-
-Troubleshooting
----------------
-
-SSH Connection Issues
-~~~~~~~~~~~~~~~~~~~~~
-
-Enable verbose SSH debugging:
-
-.. code-block:: yaml
-
-   - name: Debug SSH
-     uses: arillso/action.playbook@v1.2.0
-     with:
-       playbook: debug.yml
-       inventory: hosts.yml
-       private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-       verbose: 4
-       ssh_common_args: '-vvv'
-
-Galaxy Installation Fails
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Use force reinstall:
-
-.. code-block:: yaml
-
-   - name: Force Galaxy Install
-     uses: arillso/action.playbook@v1.2.0
+   - uses: arillso/action.playbook@0.5.0
      with:
        playbook: site.yml
-       inventory: hosts.yml
-       galaxy_file: requirements.yml
-       galaxy_force: 'true'
+       inventory: inventory.yml
+       dry_run: 'true'          # --check --diff
+       output_file: ansible.log # keep stdout and stderr for a PR comment
 
-Permission Denied Errors
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Inputs
+------
 
-Check SSH key permissions and format:
+Exactly as declared in ``action.yml`` on ``main``. Inputs marked *Unreleased*
+were added after ``0.5.0`` and are not available with ``@0.5.0``.
 
-.. code-block:: yaml
+.. list-table::
+   :header-rows: 1
+   :widths: 24 8 8 60
 
-   - name: Verify SSH Key
-     run: |
-       echo "${{ secrets.SSH_PRIVATE_KEY }}" | head -1
-       echo "${{ secrets.SSH_PRIVATE_KEY }}" | tail -1
+   * - Name
+     - Required
+     - Default
+     - Description
+   * - ``execution_timeout``
+     - no
+     - ``30``
+     - Timeout in minutes for the playbook execution (1-1440, default: 30).
+   * - ``retries``
+     - no
+     - ``0``
+     - Number of times to retry on failure (0-100, 0 = no retries, default: 0).
+   * - ``retry_delay``
+     - no
+     - ``30``
+     - Delay in seconds between retries (0-3600, default: 30).
+   * - ``galaxy_file``
+     - no
+     - —
+     - Name of the galaxy file in your workspace.
+   * - ``galaxy_force``
+     - no
+     - —
+     - Forces the reinstallation of roles or collections from the Galaxy file.
+   * - ``galaxy_api_key``
+     - no
+     - —
+     - Sets the API key used for authenticating to Ansible Galaxy.
+   * - ``galaxy_api_server_url``
+     - no
+     - —
+     - Defines the URL of the Ansible Galaxy API server to interact with.
+   * - ``galaxy_collections_path``
+     - no
+     - —
+     - Sets the path to the directory where Galaxy collections are stored.
+   * - ``galaxy_disable_gpg_verify``
+     - no
+     - —
+     - Disables GPG signature verification for Ansible Galaxy operations.
+   * - ``galaxy_force_with_deps``
+     - no
+     - —
+     - Forces the installation of collections with their dependencies from Galaxy.
+   * - ``galaxy_ignore_certs``
+     - no
+     - —
+     - Ignores SSL certificate validation for Ansible Galaxy requests.
+   * - ``galaxy_ignore_signature_status_codes``
+     - no
+     - —
+     - Lists HTTP status codes to ignore during Galaxy signature validation.
+   * - ``galaxy_keyring``
+     - no
+     - —
+     - Specifies the path to the GPG keyring used with Ansible Galaxy.
+   * - ``galaxy_offline``
+     - no
+     - —
+     - Enables offline mode, preventing any requests to Ansible Galaxy.
+   * - ``galaxy_pre``
+     - no
+     - —
+     - Allows the installation of pre-release versions from Ansible Galaxy.
+   * - ``galaxy_required_valid_signature_count``
+     - no
+     - —
+     - Sets the required number of valid GPG signatures for Galaxy content.
+   * - ``galaxy_requirements_file``
+     - no
+     - —
+     - Defines the path to the Ansible Galaxy requirements file.
+   * - ``galaxy_signature``
+     - no
+     - —
+     - Specifies a specific GPG signature to verify for Galaxy content.
+   * - ``galaxy_timeout``
+     - no
+     - —
+     - Sets the timeout in seconds for Ansible Galaxy operations.
+   * - ``galaxy_upgrade``
+     - no
+     - —
+     - Enables automatic upgrading of Galaxy collections to the latest version.
+   * - ``galaxy_no_deps``
+     - no
+     - —
+     - Disables automatic resolution of dependencies in Ansible Galaxy.
+   * - ``inventory``
+     - yes
+     - —
+     - One or more inventory host files. Supports comma-separated ('inv1.yml,inv2.yml') or multiline YAML syntax.
+   * - ``playbook``
+     - yes
+     - —
+     - One or more playbooks to apply. Supports comma-separated ('play1.yml,play2.yml') or multiline YAML syntax.
+   * - ``limit``
+     - no
+     - —
+     - Limits the playbook execution to a specific group of hosts.
+   * - ``skip_tags``
+     - no
+     - —
+     - Only run plays and tasks whose tags do not match these values.
+   * - ``start_at_task``
+     - no
+     - —
+     - Start the playbook at the task matching this name.
+   * - ``tags``
+     - no
+     - —
+     - Executes only tasks and plays with specified tags.
+   * - ``extra_vars``
+     - no
+     - —
+     - Additional variables in key=value format. Supports comma-separated or multiline YAML syntax for multiple values.
+   * - ``module_path``
+     - no
+     - —
+     - Prepend directories to the module library path. Supports comma-separated or multiline YAML syntax for multiple paths.
+   * - ``lint``
+     - no
+     - ``false``
+     - Run ansible-lint on playbooks before execution.
+   * - ``output_file``
+     - no
+     - —
+     - Save Ansible stdout to a file (useful for capturing diff output for PR comments).
+   * - ``check``
+     - no
+     - —
+     - Executes a dry run, showing what changes would be made without making them.
+   * - ``diff``
+     - no
+     - —
+     - Shows the differences in files and templates when changing them.
+   * - ``dry_run``
+     - no
+     - ``false``
+     - Enables both check and diff mode for a dry run without making changes.
+   * - ``flush_cache``
+     - no
+     - —
+     - Clears the fact cache for every host in the inventory.
+   * - ``force_handlers``
+     - no
+     - —
+     - Runs all handlers even if a task fails.
+   * - ``list_hosts``
+     - no
+     - —
+     - Outputs a list of matching hosts.
+   * - ``list_tags``
+     - no
+     - —
+     - List all available tags.
+   * - ``list_tasks``
+     - no
+     - —
+     - List all tasks that would be executed.
+   * - ``syntax_check``
+     - no
+     - —
+     - Performs a syntax check on the playbook, without executing it.
+   * - ``forks``
+     - no
+     - —
+     - Defines the number of parallel processes to use during playbook execution (1-1000, default: 5).
+   * - ``vault_id``
+     - no
+     - —
+     - Specifies the identity to use when accessing an Ansible Vault.
+   * - ``vault_password``
+     - no
+     - —
+     - Sets the password to use for decrypting an Ansible Vault.
+   * - ``verbose``
+     - no
+     - —
+     - Sets the verbosity level, ranging from 0 (minimal output) to 4 (maximum verbosity).
+   * - ``private_key``
+     - no
+     - —
+     - Specifies the SSH private key content for connections. The key is loaded into ssh-agent, making it available to ProxyCommand and bastion host connections. Should be stored in a GitHub Secret.
+   * - ``private_key_passphrase``
+     - no
+     - —
+     - Passphrase for the SSH private key. If provided, the passphrase is used to unlock the key when adding it to ssh-agent. Should be stored in a GitHub Secret.
+   * - ``additional_private_keys``
+     - no
+     - —
+     - Additional SSH private keys to load into ssh-agent. Supports multiline YAML syntax for multiple keys. Requires private_key to be set.
+   * - ``user``
+     - no
+     - —
+     - Defines the username for making connections.
+   * - ``connection``
+     - no
+     - —
+     - Sets the type of connection to use (e.g., SSH).
+   * - ``timeout``
+     - no
+     - —
+     - Overrides the default connection timeout in seconds.
+   * - ``ssh_common_args``
+     - no
+     - —
+     - Specifies common arguments to pass to all SSH-based connection methods (SSH, SCP, SFTP).
+   * - ``sftp_extra_args``
+     - no
+     - —
+     - Provides extra arguments to pass only to SFTP.
+   * - ``scp_extra_args``
+     - no
+     - —
+     - Provides extra arguments to pass only to SCP.
+   * - ``ssh_extra_args``
+     - no
+     - —
+     - Provides extra arguments to pass only to SSH.
+   * - ``known_hosts``
+     - no
+     - —
+     - SSH known hosts entries for host key verification. Supports multiline YAML syntax.
+   * - ``become``
+     - no
+     - —
+     - Enables privilege escalation, allowing operations to run as another user.
+   * - ``become_method``
+     - no
+     - —
+     - Specifies the method to use for privilege escalation (e.g., sudo).
+   * - ``become_user``
+     - no
+     - —
+     - Sets the user to impersonate when using privilege escalation.
+   * - ``config_file``
+     - no
+     - —
+     - Path to an ansible.cfg configuration file to use (sets ANSIBLE_CONFIG). *Unreleased (not in 0.5.0).*
+   * - ``no_color``
+     - no
+     - —
+     - Disables colorized output. *Unreleased (not in 0.5.0).*
+   * - ``output_callback``
+     - no
+     - —
+     - Sets the stdout callback plugin for Ansible output (e.g. 'yaml', 'json', 'minimal'). *Unreleased (not in 0.5.0).*
+   * - ``callbacks_enabled``
+     - no
+     - —
+     - Comma-separated list of enabled callback plugins (e.g. 'profile_tasks,timer'). *Unreleased (not in 0.5.0).*
+   * - ``strategy_plugin``
+     - no
+     - —
+     - Specifies the strategy plugin to use (e.g. 'linear', 'free', 'mitogen_linear'). *Unreleased (not in 0.5.0).*
+   * - ``gather_subset``
+     - no
+     - —
+     - Limits the scope of gathered facts (e.g. '!all,!min,network'). *Unreleased (not in 0.5.0).*
+   * - ``gather_timeout``
+     - no
+     - —
+     - Timeout in seconds for gathering facts (0-3600, 0 = ansible default). *Unreleased (not in 0.5.0).*
+   * - ``fact_path``
+     - no
+     - —
+     - Path to local fact files loaded as host facts. *Unreleased (not in 0.5.0).*
+   * - ``fact_caching``
+     - no
+     - —
+     - Caching method to use for facts (e.g. 'jsonfile', 'redis', 'memory'). *Unreleased (not in 0.5.0).*
+   * - ``fact_caching_timeout``
+     - no
+     - —
+     - Timeout in seconds for the fact cache (0 = no expiry). *Unreleased (not in 0.5.0).*
+   * - ``poll_interval``
+     - no
+     - —
+     - Interval in seconds for polling async tasks (0-3600, 0 = ansible default). *Unreleased (not in 0.5.0).*
+   * - ``max_fail_percentage``
+     - no
+     - —
+     - Maximum percentage of hosts that can fail before the playbook aborts (0-100). *Unreleased (not in 0.5.0).*
+   * - ``any_errors_fatal``
+     - no
+     - —
+     - Treats any task error as fatal, aborting the whole play. *Unreleased (not in 0.5.0).*
+   * - ``ssh_transfer_method``
+     - no
+     - —
+     - Method for file transfer over SSH (e.g. 'scp' or 'sftp'). *Unreleased (not in 0.5.0).*
+   * - ``vault_password_file``
+     - no
+     - —
+     - Path to a file containing the vault password (alternative to vault_password). *Unreleased (not in 0.5.0).*
+   * - ``private_key_file``
+     - no
+     - —
+     - Path to a file containing the SSH private key (alternative to private_key). *Unreleased (not in 0.5.0).*
+   * - ``temp_dir``
+     - no
+     - —
+     - Directory for Ansible temporary files. *Unreleased (not in 0.5.0).*
 
-Expected output:
+.. note::
 
-.. code-block:: text
+   ``main.go`` reads ``galaxy_file`` and ``galaxy_force`` from the action input.
+   All other ``galaxy_*`` inputs are read only from environment variables named
+   ``ANSIBLE_GALAXY_<NAME>`` (for example ``ANSIBLE_GALAXY_API_KEY``); a value
+   given under ``with:`` does not reach them. Set them under ``env:`` instead.
+   This applies to ``0.5.0`` and ``main``.
 
-   -----BEGIN RSA PRIVATE KEY-----
-   -----END RSA PRIVATE KEY-----
-
-Environment Variables
----------------------
-
-Common Ansible environment variables:
-
-.. code-block:: yaml
-
-   env:
-     # Disable host key checking (use with caution)
-     ANSIBLE_HOST_KEY_CHECKING: 'false'
-
-     # Disable deprecation warnings
-     ANSIBLE_DEPRECATION_WARNINGS: 'false'
-
-     # Set callback plugin
-     ANSIBLE_STDOUT_CALLBACK: 'yaml'
-
-     # Configure retry files
-     ANSIBLE_RETRY_FILES_ENABLED: 'false'
-
-     # Set fact gathering
-     ANSIBLE_GATHERING: 'smart'
-
-Container Image
----------------
-
-The action uses the ``arillso/ansible`` container image.
-
-**Registry:** ghcr.io/arillso/action.playbook
-
-**Features:**
-
-* Mitogen-optimized Ansible
-* Pre-installed Kubernetes tools
-* Multi-platform support (amd64, arm64)
-
-See :ref:`docker.ansible <docker_ansible>` for container details.
-
-Best Practices
---------------
-
-Security
-~~~~~~~~
-
-1. **Always use GitHub Secrets for credentials**
-
-   .. code-block:: yaml
-
-      # Good
-      private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      # Bad - NEVER do this
-      private_key: '-----BEGIN RSA PRIVATE KEY-----...'
-
-2. **Use environment-specific secrets**
-
-   .. code-block:: yaml
-
-      environment: production
-      steps:
-        - uses: arillso/action.playbook@v1.2.0
-          with:
-            private_key: ${{ secrets.PRODUCTION_SSH_KEY }}
-
-3. **Enable manual approval for production**
-
-   .. code-block:: yaml
-
-      environment:
-        name: production
-        url: https://example.com
-
-Testing
-~~~~~~~
-
-1. **Use check mode in pull requests**
-
-   .. code-block:: yaml
-
-      on: pull_request
-      steps:
-        - uses: arillso/action.playbook@v1.2.0
-          with:
-            check: 'true'
-            diff: 'true'
-
-2. **Run syntax checks first**
-
-   .. code-block:: yaml
-
-      - name: Syntax Check
-        uses: arillso/action.playbook@v1.2.0
-        with:
-          playbook: site.yml
-          inventory: hosts.yml
-          syntax_check: 'true'
-
-Performance
-~~~~~~~~~~~
-
-1. **Increase forks for large inventories**
-
-   .. code-block:: yaml
-
-      forks: 20
-
-2. **Use fact caching**
-
-   .. code-block:: yaml
-
-      env:
-        ANSIBLE_GATHERING: 'smart'
-        ANSIBLE_FACT_CACHING: 'jsonfile'
-
-CI/CD Integration
------------------
-
-The project includes automated workflows:
-
-* **CI** - Linting with golangci-lint
-* **Testing** - Comprehensive test playbooks
-* **Release** - Automated Docker image publishing
-* **Security** - CodeQL and Trivy scanning
-
-License
+Outputs
 -------
 
-MIT License - Copyright (c) 2020-2026, arillso
+.. list-table::
+   :header-rows: 1
+   :widths: 20 80
+
+   * - Name
+     - Description
+   * - ``status``
+     - ``success`` or ``failed``
+   * - ``exit_code``
+     - Exit code of the failed Ansible command, taken from
+       ``ansible.AnsibleError``; ``1`` for errors outside Ansible (for example
+       a missing playbook file); ``0`` on success
+
+The exit code values follow the ``ExitCode*`` constants of
+:ref:`go.ansible <go_ansible>`: ``2`` host failed, ``3`` unreachable, ``4``
+parser error, ``99`` user abort, ``250`` unexpected error.
+
+Behaviour
+---------
+
+Taken from ``run()`` in ``main.go``:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Topic
+     - Behaviour
+   * - Lists
+     - ``playbook``, ``inventory``, ``extra_vars`` and ``module_path`` accept
+       comma-separated or multiline values.
+   * - File checks
+     - Every ``inventory`` and ``playbook`` entry and the Galaxy file must exist
+       in the workspace; inline inventories such as ``localhost,`` are rejected.
+   * - Galaxy file
+     - Without ``galaxy_file``, ``requirements.yml`` or ``requirements.yaml`` in
+       the workspace root is used if present. Roles and collections are then
+       installed before the playbook runs.
+   * - SSH key
+     - ``private_key`` gets ``CRLF`` converted to ``LF`` and a trailing newline,
+       then is loaded into a new ``ssh-agent`` (unlocked with
+       ``private_key_passphrase`` if set). ``SSH_AUTH_SOCK`` is passed to
+       Ansible, so ``ProxyCommand`` and bastion hops can use the key.
+       ``additional_private_keys`` go into the same agent and are ignored
+       without ``private_key``.
+   * - Known hosts
+     - ``known_hosts`` is appended to ``~/.ssh/known_hosts``.
+   * - Vault
+     - ``vault_password`` is written to a temporary file with mode ``0600`` and
+       passed as ``--vault-password-file``; the file is removed afterwards.
+   * - Dry run
+     - ``dry_run: 'true'`` sets both ``check`` and ``diff``.
+   * - Timeout and retries
+     - The whole run is cancelled after ``execution_timeout`` minutes. On
+       failure it is repeated ``retries`` times, ``retry_delay`` seconds apart.
+   * - Lint
+     - ``lint: 'true'`` runs ``ansible-lint`` on the playbooks first. The action
+       image does not install ``ansible-lint``, so the step fails with
+       ``ansible-lint is not installed``.
+   * - Numeric inputs
+     - Out-of-range values abort the run, e.g. ``forks`` 1-1000, ``verbose``
+       0-4, ``timeout`` 0-3600.
+   * - Environment
+     - Every input can also be set as ``ANSIBLE_<INPUT_NAME>`` under ``env:``.
+   * - Step summary
+     - Playbooks, status and duration are written to
+       ``$GITHUB_STEP_SUMMARY``.
+
+Release Process
+---------------
+
+Pushing a tag runs ``tag.yml``: it checks that the image tag in ``action.yml``
+matches the release version, builds and pushes
+``ghcr.io/arillso/action.playbook`` for ``linux/amd64`` and ``linux/arm64``, and
+creates the GitHub release.
 
 .. seealso::
 
-   * :ref:`docker.ansible <docker_ansible>` - Container image used by this action
-   * :ref:`go.ansible <go_ansible>` - Go library with similar functionality
-   * GitHub Marketplace: https://github.com/marketplace/actions/play-ansible-playbook
+   * :ref:`docker.ansible <docker_ansible>` - base image of the action image
+   * :ref:`go.ansible <go_ansible>` - library that builds and runs the Ansible commands

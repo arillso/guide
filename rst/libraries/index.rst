@@ -8,35 +8,23 @@
 Libraries Index
 ===============
 
-Programming libraries for integrating Ansible automation into applications.
+Libraries maintained by arillso.
 
-.. contents::
-   :local:
-   :depth: 1
+.. list-table::
+   :header-rows: 1
+   :widths: 25 15 60
 
-Go Libraries
-------------
-
-:ref:`go.ansible <go_ansible>`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Go module for programmatically executing Ansible playbooks with Galaxy integration and secure credential management.
-
-**Key Features:**
-
-* Execute Ansible playbooks from Go applications
-* Automatic Galaxy role/collection installation
-* Secure SSH key and Vault password handling
-* Context-based execution with cancellation support
-* Comprehensive error handling with wrapped errors
-
-**Installation:**
+   * - Library
+     - Release
+     - Purpose
+   * - :ref:`go.ansible <go_ansible>`
+     - ``v2.0.0``
+     - Go package that builds and runs ``ansible-galaxy`` and
+       ``ansible-playbook`` commands from a ``Config`` struct
 
 .. code-block:: bash
 
-   go get github.com/arillso/go.ansible
-
-**Quick Start:**
+   go get github.com/arillso/go.ansible/v2@v2.0.0
 
 .. code-block:: go
 
@@ -45,9 +33,8 @@ Go module for programmatically executing Ansible playbooks with Galaxy integrati
    pb.Config.Inventories = []string{"inventory.yml"}
    err := pb.Exec(context.Background())
 
-**Documentation:** https://pkg.go.dev/github.com/arillso/go.ansible
-
-**Repository:** https://github.com/arillso/go.ansible
+Source: https://github.com/arillso/go.ansible ·
+API reference: https://pkg.go.dev/github.com/arillso/go.ansible/v2
 
 .. toctree::
    :maxdepth: 1

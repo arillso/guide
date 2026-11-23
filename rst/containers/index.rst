@@ -6,42 +6,23 @@
 .. _list_of_containers:
 
 Container Index
-================
+===============
 
-Production-ready container images for Ansible automation.
+Container images maintained by arillso.
 
-.. contents::
-   :local:
-   :depth: 1
+.. list-table::
+   :header-rows: 1
+   :widths: 25 35 40
 
-Docker Images
--------------
+   * - Image
+     - Registries
+     - Contents
+   * - :ref:`docker.ansible <docker_ansible>`
+     - ``arillso/ansible``, ``ghcr.io/arillso/ansible``
+     - ansible-core on Alpine Linux, ``linux/amd64`` and ``linux/arm64``,
+       runs as UID 1000
 
-:ref:`docker.ansible <docker_ansible>`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Alpine-based Docker container for running Ansible with Mitogen optimization, Kubernetes tools, and multi-platform support.
-
-**Key Features:**
-
-* Mitogen-optimized Ansible (2-7x faster execution)
-* Pre-installed Kubernetes tools (kubectl, helm, kustomize)
-* Multi-platform support (amd64, arm64)
-* Non-root user for enhanced security
-* Minimal Alpine Linux base
-
-**Registry:**
-
-* Docker Hub: ``arillso/ansible``
-* GitHub Container Registry: ``ghcr.io/arillso/ansible``
-
-**Quick Start:**
-
-.. code-block:: bash
-
-   docker run --rm arillso/ansible ansible-playbook --version
-
-**Repository:** https://github.com/arillso/docker.ansible
+Source: https://github.com/arillso/docker.ansible
 
 .. toctree::
    :maxdepth: 1
