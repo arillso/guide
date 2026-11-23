@@ -1,31 +1,36 @@
 .. meta::
-  :description: Complete playbook examples for arillso collections
-  :keywords: arillso, examples, playbooks, ansible, complete
+  :description: Complete playbook projects that use the arillso collections
+  :keywords: arillso, examples, playbooks, ansible
 
 .. _examples:
 
-Complete Examples
-=================
+Examples
+========
 
-Ready-to-use playbook examples for common infrastructure tasks.
+Complete playbook projects: directory layout, ``requirements.yml``, inventory and
+playbook. Variable names follow the role documentation of the collection
+versions this guide documents (``arillso.system`` 2.0.4, ``arillso.container``
+2.2.0, ``arillso.agent`` 2.1.0). Shorter single-purpose snippets, including the
+container image, the GitHub Action and the Go library, are in :ref:`use-cases`.
 
 .. contents::
    :local:
-   :depth: 2
+   :depth: 1
 
-Example 1: Docker Server Setup
--------------------------------
+Docker Hosts
+------------
 
-Complete setup for a Docker application server with firewall and Tailscale.
-
-**Files:**
+Docker with ``json-file`` log rotation, an nftables input filter and Tailscale.
 
 .. code-block:: text
 
-   docker-server/
+   docker-hosts/
    ├── ansible.cfg
    ├── inventory.ini
    ├── requirements.yml
+   ├── group_vars/
+   │   └── all/
+   │       └── vault.yml        # ansible-vault encrypted
    └── playbook.yml
 
 **requirements.yml**
@@ -35,11 +40,11 @@ Complete setup for a Docker application server with firewall and Tailscale.
    ---
    collections:
      - name: arillso.container
-       version: ">=1.0.0"
+       version: ">=2.2.0"
      - name: arillso.system
-       version: ">=1.0.0"
+       version: ">=2.0.4"
      - name: arillso.agent
-       version: ">=1.0.0"
+       version: ">=2.1.0"
 
 **ansible.cfg**
 
@@ -47,7 +52,6 @@ Complete setup for a Docker application server with firewall and Tailscale.
 
    [defaults]
    inventory = inventory.ini
-   remote_user = root
 
 **inventory.ini**
 
@@ -57,12 +61,19 @@ Complete setup for a Docker application server with firewall and Tailscale.
    app1.example.com
    app2.example.com
 
+**group_vars/all/vault.yml** (encrypted)
+
+.. code-block:: yaml
+
+   ---
+   vault_tailscale_auth_key: "tskey-auth-..."
+
 **playbook.yml**
 
 .. code-block:: yaml
 
    ---
-   - name: Setup Docker servers
+   - name: Configure Docker hosts
      hosts: docker_servers
      become: true
 
@@ -72,36 +83,45 @@ Complete setup for a Docker application server with firewall and Tailscale.
            name: arillso.container.docker
          vars:
            docker_daemon:
-             log-driver: "json-file"
+             log-driver: json-file
              log-opts:
                max-size: "10m"
                max-file: "3"
 
-       - name: Configure firewall
+       - name: Configure nftables
          ansible.builtin.include_role:
            name: arillso.system.firewall
          vars:
-           firewall:
+           firewall_tables:
              - table:
-                 family: inet
                  name: filter
+                 family: inet
                  chains:
                    - name: input
+                     type: filter
                      hook: input
-                     policy: drop
                      priority: 0
+                     policy: drop
                      rules:
-                       - iifname lo accept
-                       - ct state established,related accept
-                       - tcp dport 22 accept comment "SSH"
-                       - tcp dport 80 accept comment "HTTP"
-                       - tcp dport 443 accept comment "HTTPS"
+                       - iifname: "lo"
+                         action: accept
+                       - ct_state: ["established", "related"]
+                         action: accept
+                       - comment: "New SSH connections, rate-limited"
+                         tcp_dport: 22
+                         ct_state: ["new"]
+                         limit: "10/minute"
+                         burst: 5
+                         action: accept
+                       - comment: "HTTP and HTTPS"
+                         tcp_dport: [80, 443]
+                         action: accept
 
-       - name: Install Tailscale
+       - name: Join the tailnet
          ansible.builtin.include_role:
            name: arillso.agent.tailscale
          vars:
-           tailscale_auth_key: "{{ lookup('env', 'TAILSCALE_KEY') }}"
+           tailscale_auth_key: "{{ vault_tailscale_auth_key }}"
            tailscale_accept_dns: "true"
 
 **Run:**
@@ -109,15 +129,17 @@ Complete setup for a Docker application server with firewall and Tailscale.
 .. code-block:: bash
 
    ansible-galaxy collection install -r requirements.yml
-   export TAILSCALE_KEY="tskey-auth-xxxxx"
-   ansible-playbook playbook.yml
+   ansible-playbook playbook.yml --ask-vault-pass
 
-Example 2: K3s Cluster
-----------------------
+The ruleset defines no ``forward`` chain on purpose: the firewall role's default
+ruleset has a ``forward`` chain with policy ``drop``, which would also drop
+traffic that Docker forwards to containers. See :ref:`usecase-docker-server`.
 
-Deploy a lightweight Kubernetes cluster with K3s.
+K3s Cluster with Fleet and Alloy
+--------------------------------
 
-**Files:**
+One K3s server, one agent, Fleet GitRepos registered on the server, and Grafana
+Alloy on all nodes.
 
 .. code-block:: text
 
@@ -125,6 +147,9 @@ Deploy a lightweight Kubernetes cluster with K3s.
    ├── ansible.cfg
    ├── inventory.ini
    ├── requirements.yml
+   ├── group_vars/
+   │   └── all/
+   │       └── vault.yml        # vault_k3s_token
    └── playbook.yml
 
 **requirements.yml**
@@ -134,23 +159,22 @@ Deploy a lightweight Kubernetes cluster with K3s.
    ---
    collections:
      - name: arillso.container
-       version: ">=1.0.0"
-     - name: arillso.system
-       version: ">=1.0.0"
+       version: ">=2.2.0"
+     - name: arillso.agent
+       version: ">=2.1.0"
 
 **inventory.ini**
 
 .. code-block:: ini
 
-   [k3s_server]
-   k3s-master.example.com
+   [k3s_servers]
+   k3s-1.example.com
 
    [k3s_agents]
    k3s-worker-1.example.com
-   k3s-worker-2.example.com
 
    [k3s_all:children]
-   k3s_server
+   k3s_servers
    k3s_agents
 
 **playbook.yml**
@@ -158,38 +182,8 @@ Deploy a lightweight Kubernetes cluster with K3s.
 .. code-block:: yaml
 
    ---
-   - name: Prepare K3s nodes
-     hosts: k3s_all
-     become: true
-
-     tasks:
-       - name: Configure kernel parameters
-         ansible.builtin.include_role:
-           name: arillso.system.tuning
-         vars:
-           tuning_sysctl:
-             net.ipv4.ip_forward: 1
-             net.bridge.bridge-nf-call-iptables: 1
-
-       - name: Configure firewall
-         ansible.builtin.include_role:
-           name: arillso.system.firewall
-         vars:
-           firewall:
-             - table:
-                 family: inet
-                 name: filter
-                 chains:
-                   - name: input
-                     hook: input
-                     policy: accept
-                     priority: 0
-                     rules:
-                       - tcp dport 6443 accept comment "K3s API"
-                       - tcp dport 10250 accept comment "Kubelet"
-
-   - name: Install K3s server
-     hosts: k3s_server
+   - name: Install the K3s server
+     hosts: k3s_servers
      become: true
 
      tasks:
@@ -197,12 +191,13 @@ Deploy a lightweight Kubernetes cluster with K3s.
          ansible.builtin.include_role:
            name: arillso.container.k3s
          vars:
+           k3s_role: server
+           k3s_server_init: true
            k3s_node_name: "{{ inventory_hostname }}"
-           k3s_version: "v1.28.5+k3s1"
-           k3s_server_url: ""
-           k3s_token: "my-secret-token-123"
+           k3s_version: "v1.35.2+k3s1"
+           k3s_token: "{{ vault_k3s_token }}"
 
-   - name: Install K3s agents
+   - name: Join the K3s agents
      hosts: k3s_agents
      become: true
 
@@ -211,432 +206,34 @@ Deploy a lightweight Kubernetes cluster with K3s.
          ansible.builtin.include_role:
            name: arillso.container.k3s
          vars:
+           k3s_role: agent
            k3s_node_name: "{{ inventory_hostname }}"
-           k3s_version: "v1.28.5+k3s1"
-           k3s_server_url: "https://{{ hostvars[groups['k3s_server'][0]].ansible_host }}:6443"
-           k3s_token: "my-secret-token-123"
-
-**Run:**
-
-.. code-block:: bash
-
-   ansible-galaxy collection install -r requirements.yml
-   ansible-playbook playbook.yml
-
-Example 3: Developer Workstation
----------------------------------
-
-Set up a local development environment.
-
-**Files:**
-
-.. code-block:: text
-
-   dev-setup/
-   ├── requirements.yml
-   └── playbook.yml
-
-**requirements.yml**
-
-.. code-block:: yaml
-
-   ---
-   collections:
-     - name: arillso.system
-       version: ">=1.0.0"
-     - name: arillso.container
-       version: ">=1.0.0"
-
-**playbook.yml**
-
-.. code-block:: yaml
-
-   ---
-   - name: Setup development workstation
-     hosts: localhost
-     become: true
-
-     tasks:
-       - name: Install Python packages
-         ansible.builtin.include_role:
-           name: arillso.system.python
-         vars:
-           python_packages:
-             - ansible
-             - ansible-lint
-             - molecule
-             - pytest
-
-       - name: Install Docker
-         ansible.builtin.include_role:
-           name: arillso.container.docker
-
-       - name: Install Docker Compose
-         ansible.builtin.include_role:
-           name: arillso.container.docker_compose_v2
-
-**Run:**
-
-.. code-block:: bash
-
-   ansible-galaxy collection install -r requirements.yml
-   ansible-playbook playbook.yml -K
-
-Example 4: Multi-Server Tailscale Mesh
----------------------------------------
-
-Connect multiple servers across different cloud providers.
-
-**Files:**
-
-.. code-block:: text
-
-   tailscale-mesh/
-   ├── ansible.cfg
-   ├── inventory.ini
-   ├── requirements.yml
-   └── playbook.yml
-
-**requirements.yml**
-
-.. code-block:: yaml
-
-   ---
-   collections:
-     - name: arillso.agent
-       version: ">=1.0.0"
-
-**inventory.ini**
-
-.. code-block:: ini
-
-   [aws_servers]
-   aws-web-1.example.com
-   aws-db-1.example.com
-
-   [azure_servers]
-   azure-app-1.example.com
-
-   [do_servers]
-   do-cache-1.example.com
-
-   [all_servers:children]
-   aws_servers
-   azure_servers
-   do_servers
-
-**playbook.yml**
-
-.. code-block:: yaml
-
-   ---
-   - name: Setup Tailscale mesh network
-     hosts: all_servers
-     become: true
-
-     tasks:
-       - name: Install Tailscale
-         ansible.builtin.include_role:
-           name: arillso.agent.tailscale
-         vars:
-           tailscale_auth_key: "{{ lookup('env', 'TAILSCALE_KEY') }}"
-           tailscale_accept_dns: "true"
-           tailscale_accept_routes: "true"
-
-**Run:**
-
-.. code-block:: bash
-
-   ansible-galaxy collection install -r requirements.yml
-   export TAILSCALE_KEY="tskey-auth-xxxxx"
-   ansible-playbook playbook.yml
-
-Example 5: Helm Chart Deployment
----------------------------------
-
-Deploy applications to Kubernetes using Helm.
-
-**Files:**
-
-.. code-block:: text
-
-   helm-deploy/
-   ├── requirements.yml
-   └── playbook.yml
-
-**requirements.yml**
-
-.. code-block:: yaml
-
-   ---
-   collections:
-     - name: arillso.container
-       version: ">=1.0.0"
-
-**playbook.yml**
-
-.. code-block:: yaml
-
-   ---
-   - name: Deploy Helm charts
-     hosts: k3s_server[0]
-     become: true
-
-     tasks:
-       - name: Deploy applications
-         ansible.builtin.include_role:
-           name: arillso.container.helm
-         vars:
-           helm_enable_charts: true
-           helm_repositories:
-             bitnami: "https://charts.bitnami.com/bitnami"
-             ingress-nginx: "https://kubernetes.github.io/ingress-nginx"
-
-           helm_charts:
-             - name: nginx-ingress
-               chart: ingress-nginx/ingress-nginx
-               namespace: ingress-nginx
-               create_namespace: true
-               version: "4.8.0"
-               values:
-                 controller:
-                   replicaCount: 2
-
-             - name: postgresql
-               chart: bitnami/postgresql
-               namespace: database
-               create_namespace: true
-               version: "13.2.0"
-               values:
-                 auth:
-                   username: appuser
-                   database: appdb
-                   password: "changeme"
-
-**Run:**
-
-.. code-block:: bash
-
-   ansible-galaxy collection install -r requirements.yml
-   ansible-playbook playbook.yml
-
-Example 6: Docker Container Execution
---------------------------------------
-
-Run Ansible playbooks in a container without local installation.
-
-**Files:**
-
-.. code-block:: text
-
-   docker-ansible/
-   ├── playbook.yml
-   └── inventory.ini
-
-**Run with Docker:**
-
-.. code-block:: bash
-
-   # Pull image
-   docker pull arillso/ansible:latest
-
-   # Run playbook
-   docker run --rm \
-     -v $(pwd):/workspace \
-     -v ~/.ssh:/root/.ssh:ro \
-     arillso/ansible ansible-playbook playbook.yml
-
-   # With inventory
-   docker run --rm \
-     -v $(pwd):/workspace \
-     -v ~/.ssh:/root/.ssh:ro \
-     arillso/ansible ansible-playbook -i inventory.ini playbook.yml
-
-   # With extra vars
-   docker run --rm \
-     -v $(pwd):/workspace \
-     -v ~/.ssh:/root/.ssh:ro \
-     arillso/ansible ansible-playbook playbook.yml -e "env=production"
-
-Example 7: Go Application Integration
---------------------------------------
-
-Execute Ansible from Go applications.
-
-**main.go:**
-
-.. code-block:: go
-
-   package main
-
-   import (
-       "context"
-       "fmt"
-       "log"
-
-       "github.com/arillso/go.ansible/pkg/ansible"
-   )
-
-   func main() {
-       executor := ansible.NewExecutor()
-
-       ctx := context.Background()
-       result, err := executor.RunPlaybook(ctx, ansible.PlaybookOptions{
-           Playbook:  "deploy.yml",
-           Inventory: "production.ini",
-           ExtraVars: map[string]string{
-               "app_version": "v1.2.3",
-               "environment": "production",
-           },
-       })
-
-       if err != nil {
-           log.Fatalf("Failed: %v", err)
-       }
-
-       fmt.Printf("Status: %s\n", result.Status)
-   }
-
-**Run:**
-
-.. code-block:: bash
-
-   go mod init myapp
-   go get github.com/arillso/go.ansible
-   go run main.go
-
-Example 8: GitHub Actions Deployment
--------------------------------------
-
-Automated deployment on git push.
-
-**.github/workflows/deploy.yml:**
-
-.. code-block:: yaml
-
-   name: Deploy
-
-   on:
-     push:
-       branches: [main]
-
-   jobs:
-     deploy:
-       runs-on: ubuntu-latest
-
-       steps:
-         - uses: actions/checkout@v4
-
-         - name: Deploy Infrastructure
-           uses: arillso/action.playbook@v1.2.0
-           with:
-             playbook: playbooks/site.yml
-             inventory: inventory/production.ini
-             private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-             vault_password: ${{ secrets.VAULT_PASSWORD }}
-             requirements: requirements.yml
-             extra_vars: |
-               app_version=${{ github.sha }}
-               deployed_by=${{ github.actor }}
-
-**Run:**
-
-Push to main branch to trigger deployment.
-
-Example 9: K3s + Fleet + Monitoring
-------------------------------------
-
-Bootstrap a K3s cluster, register GitOps workloads with Fleet and ship
-metrics and logs with Grafana Alloy.
-
-**Files:**
-
-.. code-block:: text
-
-   k3s-fleet-monitoring/
-   ├── ansible.cfg
-   ├── inventory.ini
-   ├── requirements.yml
-   └── playbook.yml
-
-**requirements.yml**
-
-.. code-block:: yaml
-
-   ---
-   collections:
-     - name: arillso.container
-       version: ">=1.0.0"
-     - name: arillso.agent
-       version: ">=1.0.0"
-
-**inventory.ini**
-
-.. code-block:: ini
-
-   [k3s_server]
-   k3s-master.example.com
-
-   [k3s_agents]
-   k3s-worker-1.example.com
-
-   [k3s_all:children]
-   k3s_server
-   k3s_agents
-
-**playbook.yml**
-
-.. code-block:: yaml
-
-   ---
-   - name: Install K3s control plane
-     hosts: k3s_server
-     become: true
-
-     tasks:
-       - name: Deploy K3s server
-         ansible.builtin.include_role:
-           name: arillso.container.k3s
-         vars:
-           k3s_node_name: "{{ inventory_hostname }}"
-           k3s_server_url: ""
-           k3s_token: "{{ lookup('env', 'K3S_TOKEN') }}"
-
-   - name: Join K3s agents to the cluster
-     hosts: k3s_agents
-     become: true
-
-     tasks:
-       - name: Deploy K3s agent
-         ansible.builtin.include_role:
-           name: arillso.container.k3s
-         vars:
-           k3s_node_name: "{{ inventory_hostname }}"
-           k3s_server_url: "https://{{ hostvars[groups['k3s_server'][0]].ansible_host }}:6443"
-           k3s_token: "{{ lookup('env', 'K3S_TOKEN') }}"
+           k3s_version: "v1.35.2+k3s1"
+           k3s_server_url: "https://{{ groups['k3s_servers'][0] }}:6443"
+           k3s_token: "{{ vault_k3s_token }}"
 
    - name: Register GitOps workloads with Fleet
-     hosts: k3s_server
+     hosts: k3s_servers
      become: true
 
      tasks:
-       - name: Deploy Fleet GitRepos
+       - name: Create Fleet GitRepos
          ansible.builtin.include_role:
            name: arillso.container.fleet
          vars:
            fleet_enable_gitrepos: true
            fleet_gitrepos:
-             - name: "platform-apps"
-               namespace: "fleet-default"
+             - name: platform-apps
+               namespace: fleet-default
                repository: "https://github.com/example/platform-apps.git"
-               branch: "main"
+               branch: main
                paths:
-                 - "manifests/"
+                 - manifests/
                targets:
-                 - name: "production"
+                 - name: production
                    cluster_selector:
                      matchLabels:
-                       env: "prod"
+                       env: prod
 
    - name: Ship metrics and logs with Alloy
      hosts: k3s_all
@@ -647,40 +244,47 @@ metrics and logs with Grafana Alloy.
          ansible.builtin.include_role:
            name: arillso.agent.alloy
          vars:
-           alloy_enable_prometheus: true
-           alloy_enable_advanced_node_exporter: true
-           alloy_enable_loki: true
+           alloy_prometheus_enabled: true
+           alloy_advanced_node_exporter_enabled: true
+           alloy_loki_enabled: true
            alloy_loki_file_sources:
-             - name: "syslog"
+             - name: syslog
                targets:
-                 - path: "/var/log/syslog"
-               write_to: "default"
+                 - path: /var/log/syslog
+               write_to: default
 
 **Run:**
 
 .. code-block:: bash
 
    ansible-galaxy collection install -r requirements.yml
-   export K3S_TOKEN="my-secret-token-123"
-   ansible-playbook playbook.yml
+   ansible-playbook playbook.yml --ask-vault-pass
 
-Example 10: Multi-Host Firewall
---------------------------------
+**Notes:**
 
-Apply a consistent nftables baseline across a fleet of hosts and open
-extra ports only where a role group needs them.
+* ``arillso.container.fleet`` creates Fleet resources (GitRepos, Bundles,
+  Clusters, Workspaces, registration tokens) through ``kubernetes.core.k8s``. It
+  does not install the Fleet controller; that must already run in the cluster.
+  The kubeconfig defaults to ``/etc/rancher/k3s/k3s.yaml``.
+* ``alloy_loki_file_sources`` entries take ``name``, ``targets`` (each with
+  ``path`` and optional ``labels``) and ``write_to``, which names an entry of
+  ``alloy_loki_clients``.
 
-**Files:**
+Multi-Host Firewall
+-------------------
+
+A baseline for every host and extra ports for one group, using the firewall
+role's levels ``firewall_tables``, ``firewall_global``, ``firewall_group`` and
+``firewall_host``.
 
 .. code-block:: text
 
-   firewall-fleet/
-   ├── ansible.cfg
+   firewall/
    ├── inventory.ini
+   ├── requirements.yml
    ├── group_vars/
    │   ├── all.yml
    │   └── web.yml
-   ├── requirements.yml
    └── playbook.yml
 
 **requirements.yml**
@@ -690,7 +294,7 @@ extra ports only where a role group needs them.
    ---
    collections:
      - name: arillso.system
-       version: ">=1.0.0"
+       version: ">=2.0.4"
 
 **inventory.ini**
 
@@ -708,68 +312,73 @@ extra ports only where a role group needs them.
 .. code-block:: yaml
 
    ---
-   # Baseline applied to every host.
-   firewall_base_rules:
-     - iifname lo accept
-     - ct state established,related accept
-     - tcp dport 22 accept comment "SSH"
+   fw_base_rules:
+     - iifname: "lo"
+       action: accept
+     - ct_state: ["established", "related"]
+       action: accept
+     - comment: "New SSH connections, rate-limited"
+       tcp_dport: 22
+       ct_state: ["new"]
+       limit: "10/minute"
+       burst: 5
+       action: accept
+
+   fw_extra_rules: []
+
+   firewall_global:
+     - table:
+         name: filter
+         family: inet
+         chains:
+           - name: input
+             type: filter
+             hook: input
+             priority: 0
+             policy: drop
+             rules: "{{ fw_base_rules + fw_extra_rules }}"
 
 **group_vars/web.yml**
 
 .. code-block:: yaml
 
    ---
-   # Extra ports only for the web group.
-   firewall_extra_rules:
-     - tcp dport 80 accept comment "HTTP"
-     - tcp dport 443 accept comment "HTTPS"
+   fw_extra_rules:
+     - comment: "HTTP and HTTPS"
+       tcp_dport: [80, 443]
+       action: accept
 
 **playbook.yml**
 
 .. code-block:: yaml
 
    ---
-   - name: Apply firewall baseline to all hosts
+   - name: Apply the firewall
      hosts: all
      become: true
 
-     tasks:
-       - name: Configure nftables firewall
-         ansible.builtin.include_role:
-           name: arillso.system.firewall
-         vars:
-           firewall:
-             - table:
-                 family: inet
-                 name: filter
-                 chains:
-                   - name: input
-                     hook: input
-                     policy: drop
-                     priority: 0
-                     rules: "{{ firewall_base_rules + (firewall_extra_rules | default([])) }}"
+     roles:
+       - role: arillso.system.firewall
 
-**Run:**
+**Notes:**
 
-.. code-block:: bash
+* The levels do not merge rule by rule. The role's
+  ``to_nftables_hierarchy`` filter takes the last non-empty level in the order
+  ``firewall_tables`` → ``firewall_global`` → ``firewall_group`` →
+  ``firewall_host`` and uses it as the complete ruleset. A non-empty
+  ``firewall_host`` therefore replaces everything set at the lower levels.
+* This example keeps one table definition in ``firewall_global`` and varies only
+  the rule list per group, so the baseline is written once.
 
-   ansible-galaxy collection install -r requirements.yml
-   ansible-playbook playbook.yml
+Secrets from Bitwarden Secrets Manager
+--------------------------------------
 
-Example 11: Secret Management
-------------------------------
-
-Install the Bitwarden Secrets Manager CLI and combine it with Ansible
-Vault instead of hard-coding credentials in playbooks.
-
-**Files:**
+Install the ``bws`` CLI on the control node and resolve secrets with the
+``community.general.bitwarden_secrets_manager`` lookup.
 
 .. code-block:: text
 
-   secret-management/
-   ├── group_vars/
-   │   └── all/
-   │       └── vault.yml        # encrypted with ansible-vault
+   secrets/
    ├── requirements.yml
    └── playbook.yml
 
@@ -780,103 +389,68 @@ Vault instead of hard-coding credentials in playbooks.
    ---
    collections:
      - name: arillso.system
-       version: ">=1.0.0"
+       version: ">=2.0.4"
      - name: community.general
-       version: ">=8.0.0"
-
-**group_vars/all/vault.yml** (encrypted)
-
-.. code-block:: yaml
-
-   ---
-   # ansible-vault encrypt group_vars/all/vault.yml
-   vault_db_password: "super-secret-db-password"
 
 **playbook.yml**
 
 .. code-block:: yaml
 
    ---
-   - name: Deploy with managed secrets
-     hosts: all
+   - name: Install the bws CLI on the control node
+     hosts: localhost
+     connection: local
      become: true
 
      tasks:
-       # The role installs the `bws` CLI; secrets are then resolved at
-       # runtime via the community.general lookup.
        - name: Install Bitwarden Secrets Manager CLI
          ansible.builtin.include_role:
            name: arillso.system.bitwarden_secrets
 
-       - name: Resolve an API key from Bitwarden Secrets Manager
+   - name: Use a secret on the managed hosts
+     hosts: all
+     become: true
+
+     tasks:
+       - name: Resolve the API key
          ansible.builtin.set_fact:
-           api_key: >-
+           app_api_key: >-
              {{ lookup('community.general.bitwarden_secrets_manager',
                        '00000000-0000-0000-0000-000000000000',
                        bws_access_token=lookup('env', 'BWS_ACCESS_TOKEN')).value }}
          no_log: true
-
-       - name: Use a Vault-encrypted value
-         ansible.builtin.debug:
-           msg: "DB password length is {{ vault_db_password | length }} characters"
 
 **Run:**
 
 .. code-block:: bash
 
    ansible-galaxy collection install -r requirements.yml
-   export BWS_ACCESS_TOKEN="0.your-bitwarden-access-token"
-   ansible-playbook playbook.yml --ask-vault-pass
+   export BWS_ACCESS_TOKEN="..."
+   ansible-playbook playbook.yml -K
 
-Tips & Best Practices
-----------------------
+**Notes:**
 
-**Secrets Management**
+* Lookups run on the control node, so ``bws`` has to be installed there, not on
+  the managed hosts.
+* ``arillso.system.bitwarden_secrets`` installs ``bws`` (default version
+  ``bitwarden_secrets_version: 1.0.0``) to ``/usr/local/bin``.
 
-Use environment variables or Ansible Vault for sensitive data:
-
-.. code-block:: bash
-
-   # Environment variable
-   export TAILSCALE_KEY="tskey-auth-xxxxx"
-
-   # Or Ansible Vault
-   ansible-vault create secrets.yml
-   ansible-playbook playbook.yml --vault-password-file .vault-pass
-
-**Testing**
-
-Test playbooks in check mode first:
+Useful Flags
+------------
 
 .. code-block:: bash
 
-   ansible-playbook playbook.yml --check
+   # Dry run with diff
+   ansible-playbook playbook.yml --check --diff
 
-**Limiting Hosts**
+   # Limit to one host
+   ansible-playbook playbook.yml --limit web-1.example.com
 
-Run on specific hosts:
-
-.. code-block:: bash
-
-   ansible-playbook playbook.yml --limit web1.example.com
-
-**Verbose Output**
-
-Debug with verbose mode:
-
-.. code-block:: bash
-
+   # Verbose output
    ansible-playbook playbook.yml -vvv
-
-Next Steps
-----------
-
-* Review :ref:`use-cases` for more scenarios
-* Check :ref:`quickstart` for getting started
-* Explore :ref:`architecture` for design patterns
 
 .. seealso::
 
-   * :ref:`use-cases` - Use Cases & Scenarios
-   * :ref:`quickstart` - Quick Start Guide
-   * :ref:`architecture` - Architecture Guide
+   * :ref:`use-cases` - shorter scenarios, container image, GitHub Action, Go
+   * :ref:`quickstart` - first steps
+   * :ref:`security` - secrets and hardening

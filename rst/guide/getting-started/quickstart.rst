@@ -1,520 +1,224 @@
 .. meta::
-  :description: Quick start guide for getting started with arillso
-  :keywords: arillso, ansible, quickstart, getting started, tutorial
+  :description: Install the arillso Ansible collections and run a first playbook
+  :keywords: arillso, ansible, quickstart, getting started, collections
 
 .. _quickstart:
 
-Quick Start Guide
-=================
+Quick Start
+===========
 
-Get up and running with arillso in minutes. This guide walks you through your first steps with arillso collections.
+Install the arillso collections, run a first playbook and find the other
+arillso tools.
 
 .. contents::
    :local:
    :depth: 2
 
-What is arillso?
-----------------
+What arillso provides
+---------------------
 
-arillso is a comprehensive automation platform that provides:
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
-* **Production-ready Ansible Collections** for system, container, and agent management
-* **Container images** optimized for Ansible automation
-* **Go libraries** for programmatic Ansible execution
-* **GitHub Actions** for CI/CD integration
-
-Choose Your Path
-----------------
-
-.. raw:: html
-
-   <div class="quickstart-paths">
-     <div class="path">
-       <h3>🖥️ System Configuration</h3>
-       <p>Manage system configuration, packages, firewall, networking, security hardening, and service orchestration</p>
-       <a href="#path-system-admin">Start Here →</a>
-     </div>
-     <div class="path">
-       <h3>🐳 Container & Orchestration</h3>
-       <p>Docker, Docker Compose, Kubernetes (K3s), Helm, Fleet, Tailscale with security hardening and GitOps support</p>
-       <a href="#path-containers">Start Here →</a>
-     </div>
-     <div class="path">
-       <h3>📊 Monitoring & Networking Agents</h3>
-       <p>Grafana Alloy (observability), DigitalOcean Agent (Droplet monitoring), Tailscale (VPN mesh networking)</p>
-       <a href="#path-monitoring">Start Here →</a>
-     </div>
-   </div>
+   * - Project
+     - Content
+   * - :ref:`arillso.system <plugins_in_arillso.system>`
+     - Roles for users and SSH (``access``), packages, nftables firewall,
+       logging, network, systemd, tuning, zram and more; filters for TOML
+       and nftables; modules ``apt_update_info`` and ``reboot_info``.
+   * - :ref:`arillso.container <plugins_in_arillso.container>`
+     - Roles ``docker``, ``docker_compose_v2``, ``docker_login``, ``k3s``,
+       ``helm``, ``fleet`` and ``tailscale`` (Tailscale Kubernetes
+       resources).
+   * - :ref:`arillso.agent <plugins_in_arillso.agent>`
+     - Roles ``alloy`` (Grafana Alloy), ``do`` (DigitalOcean agent) and
+       ``tailscale`` (Tailscale client on the host).
+   * - :ref:`arillso/ansible <docker_ansible>`
+     - Alpine-based container image with ``ansible-core``, Mitogen,
+       ``kubectl``, ``helm`` and ``kustomize``.
+   * - :ref:`action.playbook <action_playbook>`
+     - GitHub Action that runs ``ansible-playbook``.
+   * - :ref:`go.ansible <go_ansible>`
+     - Go module that builds and runs ``ansible-playbook`` commands.
 
 Prerequisites
 -------------
 
-Before starting, ensure you have:
+* ``ansible-core`` 2.18 or newer on the control node. All three
+  collections declare ``requires_ansible: ">=2.18.0"`` in
+  ``meta/runtime.yml``.
+* SSH access and privilege escalation on the target hosts.
+* Target hosts running Debian, Ubuntu or Enterprise Linux. The supported
+  releases differ per role and are listed under ``platforms`` in each
+  role's ``meta/main.yml``. The ``packages``, ``ready``, ``thermal`` and
+  ``zram`` roles of ``arillso.system`` support Debian and Ubuntu only.
 
-**Required:**
-
-* Ansible >= 2.15
-* Python >= 3.9
-* SSH access to target hosts
-
-**Optional:**
-
-* Docker (for container images)
-* Go >= 1.25 (for Go library)
-* GitHub account (for Actions)
-
-Installation
-------------
-
-Install Ansible Collections
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Install the collections
+-----------------------
 
 .. code-block:: bash
 
-   # Install all arillso collections
-   ansible-galaxy collection install arillso.system
-   ansible-galaxy collection install arillso.container
-   ansible-galaxy collection install arillso.agent
+   ansible-galaxy collection install arillso.system arillso.container arillso.agent
 
-   # Or install from requirements file
-   cat > requirements.yml <<EOF
+Or pin versions in ``requirements.yml``:
+
+.. code-block:: yaml
+
    ---
    collections:
      - name: arillso.system
-       version: ">=1.0.0"
+       version: ">=2.0.0"
      - name: arillso.container
-       version: ">=1.0.0"
+       version: ">=2.0.0"
      - name: arillso.agent
-       version: ">=1.0.0"
-   EOF
-
-   ansible-galaxy collection install -r requirements.yml
-
-Verify Installation
-~~~~~~~~~~~~~~~~~~~
+       version: ">=2.0.0"
 
 .. code-block:: bash
 
-   # List installed collections
+   ansible-galaxy collection install -r requirements.yml
+
+``ansible-galaxy`` also installs the dependencies declared in each
+``galaxy.yml``:
+
+* ``arillso.system``: ``ansible.posix``, ``community.general``,
+  ``community.crypto``
+* ``arillso.container``: ``arillso.system``, ``community.docker``
+* ``arillso.agent``: ``arillso.system``
+
+Check the installed versions:
+
+.. code-block:: bash
+
    ansible-galaxy collection list | grep arillso
 
-   # Expected output:
-   # arillso.agent        1.0.0
-   # arillso.container    1.0.0
-   # arillso.system       1.0.0
+First playbook
+--------------
 
-.. _path-system-admin:
-
-Path 1: System Administration
-------------------------------
-
-Manage system configuration, packages, firewall, and services.
-
-Your First Playbook
-~~~~~~~~~~~~~~~~~~~
-
-Create a playbook to configure a basic server:
+Install packages with :ref:`arillso.system.packages
+<ansible_collections.arillso.system.packages_role>` and join the hosts to
+a tailnet with :ref:`arillso.agent.tailscale
+<ansible_collections.arillso.agent.tailscale_role>`:
 
 .. code-block:: yaml
 
    ---
    # site.yml
-   - name: Configure web server
-     hosts: webservers
-     become: true
-
-     tasks:
-       - name: Install and configure packages
-         ansible.builtin.include_role:
-           name: arillso.system.packages
-         vars:
-           packages_install:
-             - nginx
-             - htop
-             - vim
-
-       - name: Configure firewall
-         ansible.builtin.include_role:
-           name: arillso.system.firewall
-         vars:
-           firewall_enabled: true
-           firewall_rules:
-             - name: "Allow HTTP"
-               port: 80
-               protocol: tcp
-               action: accept
-             - name: "Allow HTTPS"
-               port: 443
-               protocol: tcp
-               action: accept
-
-       - name: Configure logging
-         ansible.builtin.include_role:
-           name: arillso.system.logging
-         vars:
-           logging_remote_enabled: true
-           logging_remote_host: "logs.example.com"
-
-Create your inventory:
-
-.. code-block:: ini
-
-   # inventory.ini
-   [webservers]
-   web1.example.com ansible_user=ubuntu
-   web2.example.com ansible_user=ubuntu
-
-Run the playbook:
-
-.. code-block:: bash
-
-   ansible-playbook -i inventory.ini site.yml
-
-Next Steps
-~~~~~~~~~~
-
-* Explore :ref:`arillso.system roles <plugins_in_arillso.system>`
-* Learn about :ref:`network configuration <ansible_collections.arillso.system.network_role>`
-* Set up :ref:`system tuning <ansible_collections.arillso.system.tuning_role>`
-
-.. _path-containers:
-
-Path 2: Container Orchestration
---------------------------------
-
-Deploy and manage Docker, Kubernetes, and container workloads.
-
-K3s Cluster Setup
-~~~~~~~~~~~~~~~~~
-
-Deploy a lightweight Kubernetes cluster:
-
-.. code-block:: yaml
-
-   ---
-   # k3s-cluster.yml
-   - name: Deploy K3s cluster
-     hosts: k3s_servers
-     become: true
-
-     tasks:
-       - name: Install K3s server
-         ansible.builtin.include_role:
-           name: arillso.container.k3s
-         vars:
-           k3s_server: true
-           k3s_cluster_init: true
-           k3s_disable:
-             - traefik  # We'll use our own ingress
-
-   - name: Join K3s agents
-     hosts: k3s_agents
-     become: true
-
-     tasks:
-       - name: Install K3s agent
-         ansible.builtin.include_role:
-           name: arillso.container.k3s
-         vars:
-           k3s_server: false
-           k3s_url: "https://{{ hostvars[groups['k3s_servers'][0]]['ansible_default_ipv4']['address'] }}:6443"
-           k3s_token: "{{ k3s_cluster_token }}"
-
-Docker with Fleet GitOps
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Set up Docker with Fleet for GitOps deployments:
-
-.. code-block:: yaml
-
-   ---
-   # docker-fleet.yml
-   - name: Configure Docker and Fleet
-     hosts: docker_hosts
-     become: true
-
-     tasks:
-       - name: Install Docker
-         ansible.builtin.include_role:
-           name: arillso.container.docker
-         vars:
-           docker_edition: "ce"
-           docker_users:
-             - "{{ ansible_user }}"
-
-       - name: Deploy Fleet
-         ansible.builtin.include_role:
-           name: arillso.container.fleet
-         vars:
-           fleet_repo_url: "https://github.com/myorg/fleet-configs"
-           fleet_targets:
-             - name: production
-               cluster_group: prod
-
-Inventory:
-
-.. code-block:: ini
-
-   # inventory.ini
-   [k3s_servers]
-   k3s-master.example.com
-
-   [k3s_agents]
-   k3s-worker1.example.com
-   k3s-worker2.example.com
-
-   [docker_hosts]
-   docker1.example.com
-   docker2.example.com
-
-Run the deployment:
-
-.. code-block:: bash
-
-   ansible-playbook -i inventory.ini k3s-cluster.yml
-   ansible-playbook -i inventory.ini docker-fleet.yml
-
-Next Steps
-~~~~~~~~~~
-
-* Configure :ref:`Helm <ansible_collections.arillso.container.helm_role>`
-* Set up :ref:`Tailscale networking <ansible_collections.arillso.container.tailscale_role>`
-* Learn :ref:`Docker Compose v2 <ansible_collections.arillso.container.docker_compose_v2_role>`
-
-.. _path-monitoring:
-
-Path 3: Monitoring & Observability
------------------------------------
-
-Deploy Grafana Alloy for metrics, logs, and traces collection.
-
-Grafana Alloy Setup
-~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: yaml
-
-   ---
-   # monitoring.yml
-   - name: Deploy Grafana Alloy
-     hosts: monitoring
-     become: true
-
-     tasks:
-       - name: Install Grafana Alloy
-         ansible.builtin.include_role:
-           name: arillso.agent.alloy
-         vars:
-           alloy_prometheus_enabled: true
-           alloy_prometheus_remote_write_url: "https://prometheus.example.com/api/v1/write"
-
-           alloy_loki_enabled: true
-           alloy_loki_url: "https://loki.example.com/loki/api/v1/push"
-
-           alloy_tempo_enabled: true
-           alloy_tempo_endpoint: "tempo.example.com:4317"
-
-           # Node exporter metrics
-           alloy_node_exporter_enabled: true
-
-           # Custom scrape configs
-           alloy_custom_scrape_configs:
-             - job_name: "custom_app"
-               static_configs:
-                 - targets:
-                     - "app1.example.com:9090"
-                     - "app2.example.com:9090"
-
-DigitalOcean Monitoring
-~~~~~~~~~~~~~~~~~~~~~~~
-
-For DigitalOcean droplets:
-
-.. code-block:: yaml
-
-   ---
-   # do-monitoring.yml
-   - name: Install DO Agent
-     hosts: digitalocean
-     become: true
-
-     tasks:
-       - name: Install DigitalOcean Agent
-         ansible.builtin.include_role:
-           name: arillso.agent.do
-
-Tailscale VPN
-~~~~~~~~~~~~~
-
-Secure your infrastructure with Tailscale:
-
-.. code-block:: yaml
-
-   ---
-   # tailscale.yml
-   - name: Configure Tailscale
-     hosts: all
-     become: true
-
-     tasks:
-       - name: Install Tailscale
-         ansible.builtin.include_role:
-           name: arillso.agent.tailscale
-         vars:
-           tailscale_authkey: "{{ vault_tailscale_authkey }}"
-           tailscale_args: "--accept-routes --advertise-exit-node"
-
-Run the setup:
-
-.. code-block:: bash
-
-   ansible-playbook -i inventory.ini monitoring.yml
-
-Next Steps
-~~~~~~~~~~
-
-* Configure :ref:`advanced Alloy features <ansible_collections.arillso.agent.alloy_role>`
-* Learn about :ref:`Tailscale mesh networking <ansible_collections.arillso.agent.tailscale_role>`
-
-Complete Example: Full Stack Deployment
-----------------------------------------
-
-Combine all components for a complete infrastructure:
-
-.. code-block:: yaml
-
-   ---
-   # full-stack.yml
-   - name: Base system configuration
+   - name: Base configuration
      hosts: all
      become: true
      roles:
        - role: arillso.system.packages
          vars:
-           packages_install:
-             - htop
-             - vim
-             - curl
-
-       - role: arillso.system.firewall
-         vars:
-           firewall_enabled: true
+           packages_list:
+             - name: git
+             - name: htop
+               state: latest
 
        - role: arillso.agent.tailscale
          vars:
-           tailscale_authkey: "{{ vault_tailscale_authkey }}"
+           tailscale_auth_key: "{{ vault_tailscale_auth_key }}"
+           tailscale_accept_routes: "true"
 
-   - name: Deploy K3s cluster
+.. code-block:: ini
+
+   # inventory.ini
+   [all]
+   web1.example.com
+   web2.example.com
+
+Run it in check mode first, then for real:
+
+.. code-block:: bash
+
+   ansible-playbook -i inventory.ini site.yml --check --diff
+   ansible-playbook -i inventory.ini site.yml
+
+More role examples
+------------------
+
+K3s cluster
+~~~~~~~~~~~
+
+:ref:`arillso.container.k3s <ansible_collections.arillso.container.k3s_role>`
+requires ``k3s_role`` (``server`` or ``agent``) and ``k3s_version``.
+
+.. code-block:: yaml
+
+   ---
+   - name: K3s server
      hosts: k3s_servers
      become: true
      roles:
        - role: arillso.container.k3s
          vars:
-           k3s_server: true
-           k3s_cluster_init: true
+           k3s_role: server
+           k3s_version: v1.35.2+k3s1
+           k3s_server_init: true
 
-   - name: Deploy monitoring
+   - name: K3s agents
+     hosts: k3s_agents
+     become: true
+     roles:
+       - role: arillso.container.k3s
+         vars:
+           k3s_role: agent
+           k3s_version: v1.35.2+k3s1
+           k3s_server_url: "https://{{ groups['k3s_servers'][0] }}:6443"
+           k3s_token: "{{ vault_k3s_token }}"
+
+Grafana Alloy
+~~~~~~~~~~~~~
+
+:ref:`arillso.agent.alloy <ansible_collections.arillso.agent.alloy_role>`
+ships metrics via ``alloy_prometheus_remote_write`` and logs via
+``alloy_loki_clients``:
+
+.. code-block:: yaml
+
+   ---
+   - name: Monitoring agent
      hosts: all
      become: true
      roles:
        - role: arillso.agent.alloy
          vars:
            alloy_prometheus_enabled: true
+           alloy_prometheus_remote_write:
+             - name: default
+               url: https://prometheus.example.com/api/v1/write
            alloy_loki_enabled: true
-           alloy_node_exporter_enabled: true
+           alloy_loki_clients:
+             - name: default
+               url: https://loki.example.com/loki/api/v1/push
 
-Full inventory:
+Run from the container image
+----------------------------
 
-.. code-block:: ini
-
-   # inventory.ini
-   [all:vars]
-   ansible_user=ubuntu
-
-   [k3s_servers]
-   k3s-master.example.com
-
-   [k3s_agents]
-   k3s-worker1.example.com
-   k3s-worker2.example.com
-
-   [docker_hosts]
-   docker1.example.com
-
-   [monitoring]
-   monitor.example.com
-
-Run complete deployment:
+The image ``arillso/ansible`` (also ``ghcr.io/arillso/ansible``) runs as
+the non-root user ``ansible`` (UID 1000) with home ``/home/ansible``. It
+contains no arillso collections; install them at run time:
 
 .. code-block:: bash
 
-   # Dry run first
-   ansible-playbook -i inventory.ini full-stack.yml --check
-
-   # Execute
-   ansible-playbook -i inventory.ini full-stack.yml
-
-Using Container Images
-----------------------
-
-arillso provides optimized Ansible container images:
-
-.. code-block:: bash
-
-   # Pull the image
-   docker pull arillso/ansible:latest
-
-   # Run a playbook
    docker run --rm \
-     -v $(pwd):/ansible \
-     -v ~/.ssh:/root/.ssh:ro \
+     -v "$PWD":/workspace -w /workspace \
+     -v "$HOME/.ssh/id_ed25519":/home/ansible/.ssh/id_ed25519:ro \
      arillso/ansible \
-     ansible-playbook -i inventory.ini site.yml
+     sh -c 'ansible-galaxy collection install -r requirements.yml && ansible-playbook -i inventory.ini site.yml'
 
-   # Run with Mitogen (2-7x faster)
-   docker run --rm \
-     -v $(pwd):/ansible \
-     -v ~/.ssh:/root/.ssh:ro \
-     arillso/ansible \
-     ansible-playbook -i inventory.ini site.yml \
-     --strategy mitogen_linear
+The baked-in ``ansible.cfg`` sets ``host_key_checking = False``; pass
+``-e ANSIBLE_HOST_KEY_CHECKING=True`` for persistent hosts. Mitogen is
+installed but not the default strategy; enable it with
+``-e ANSIBLE_STRATEGY=mitogen_linear``. Details: :ref:`docker_ansible`.
 
-Using Go Library
-----------------
-
-Programmatic Ansible execution:
-
-.. code-block:: go
-
-   package main
-
-   import (
-       "context"
-       "github.com/arillso/go.ansible"
-   )
-
-   func main() {
-       ctx := context.Background()
-
-       playbook := ansible.NewPlaybook(
-           ansible.WithPlaybookPath("site.yml"),
-           ansible.WithInventory("inventory.ini"),
-       )
-
-       err := playbook.Exec(ctx)
-       if err != nil {
-           panic(err)
-       }
-   }
-
-Using GitHub Actions
---------------------
-
-Automate with CI/CD:
+Run from GitHub Actions
+-----------------------
 
 .. code-block:: yaml
 
    # .github/workflows/deploy.yml
-   name: Deploy Infrastructure
+   name: Deploy
 
    on:
      push:
@@ -526,130 +230,67 @@ Automate with CI/CD:
        steps:
          - uses: actions/checkout@v4
 
-         - name: Deploy with Ansible
-           uses: arillso/action.playbook@v1.2.0
+         - name: Run playbook
+           uses: arillso/action.playbook@0.5.0
            with:
              playbook: site.yml
              inventory: inventory.ini
+             galaxy_file: requirements.yml
              private_key: ${{ secrets.SSH_PRIVATE_KEY }}
              vault_password: ${{ secrets.VAULT_PASSWORD }}
 
-Common Patterns
----------------
+``playbook`` and ``inventory`` are the only required inputs. All inputs:
+:ref:`action_playbook`.
 
-Secrets Management
-~~~~~~~~~~~~~~~~~~
+Run from Go
+-----------
 
-Use Bitwarden for secrets:
+.. code-block:: go
 
-.. code-block:: yaml
+   package main
 
-   - name: Retrieve secrets from Bitwarden
-     ansible.builtin.include_role:
-       name: arillso.system.bitwarden_secrets
-     vars:
-       bitwarden_secrets:
-         - id: "database-password"
-           field: "password"
-           register_as: db_password
+   import (
+       "context"
+       "log"
 
-Idempotent Operations
-~~~~~~~~~~~~~~~~~~~~~
+       ansible "github.com/arillso/go.ansible/v2"
+   )
 
-All arillso roles are idempotent:
+   func main() {
+       pb := ansible.NewPlaybook()
+       pb.Config.Playbooks = []string{"site.yml"}
+       pb.Config.Inventories = []string{"inventory.ini"}
 
-.. code-block:: bash
+       if err := pb.Exec(context.Background()); err != nil {
+           log.Fatalf("playbook failed: %v", err)
+       }
+   }
 
-   # Run multiple times - only changes what's needed
-   ansible-playbook site.yml
-   ansible-playbook site.yml  # No changes
-   ansible-playbook site.yml  # Still no changes
-
-Check Mode (Dry Run)
-~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: bash
-
-   # See what would change without making changes
-   ansible-playbook site.yml --check --diff
+Details: :ref:`go_ansible`.
 
 Troubleshooting
 ---------------
 
-Installation Issues
-~~~~~~~~~~~~~~~~~~~
+``couldn't resolve module/action`` or role not found
+   The collection is missing or installed in a path Ansible does not
+   search. Check with ``ansible-galaxy collection list`` and
+   ``ansible-config dump | grep COLLECTIONS_PATHS``.
 
-**Collection not found:**
+Version warning on collection load
+   The collections need ``ansible-core`` 2.18 or newer. Check with
+   ``ansible --version``.
 
-.. code-block:: bash
+Hosts unreachable
+   Test the connection with ``ansible all -i inventory.ini -m ping`` and
+   rerun the playbook with ``-vvv``.
 
-   # Update Galaxy API
-   ansible-galaxy collection install arillso.system --force
+More cases: :ref:`troubleshooting`.
 
-**Version conflicts:**
-
-.. code-block:: bash
-
-   # Show installed versions
-   ansible-galaxy collection list
-
-   # Upgrade to latest
-   ansible-galaxy collection install arillso.system --upgrade
-
-Connection Issues
-~~~~~~~~~~~~~~~~~
-
-**SSH connection failed:**
-
-.. code-block:: bash
-
-   # Test connectivity
-   ansible all -i inventory.ini -m ping
-
-   # Verbose output
-   ansible-playbook site.yml -vvv
-
-**Permission denied:**
-
-.. code-block:: bash
-
-   # Ensure SSH key is correct
-   ssh -i ~/.ssh/id_rsa user@host
-
-   # Check become password
-   ansible-playbook site.yml --ask-become-pass
-
-Next Steps
+Next steps
 ----------
 
-Now that you've completed the quick start:
-
-1. **Explore Collections**
-
-   * :ref:`arillso.system <plugins_in_arillso.system>` - System management
-   * :ref:`arillso.container <plugins_in_arillso.container>` - Containers
-   * :ref:`arillso.agent <plugins_in_arillso.agent>` - Monitoring
-
-2. **Learn Best Practices**
-
-   * :ref:`security` - Security guidelines
-   * :ref:`standards` - Repository standards
-   * :ref:`contributing` - Contribute to arillso
-
-3. **Advanced Topics**
-
-   * :ref:`examples` - Real-world examples
-   * :ref:`architecture` - Architecture guide
-   * :ref:`troubleshooting` - Problem solving
-
-4. **Get Help**
-
-   * Check the troubleshooting guide
-   * Open an issue on `GitHub <https://github.com/arillso>`_
-   * Review :ref:`compatibility` for version info
-
-.. seealso::
-
-   * :ref:`standards` - Repository Standards
-   * :ref:`contributing` - Contributing Guidelines
-   * :ref:`cicd` - CI/CD Setup
+* Role and plugin reference: :ref:`plugins_in_arillso.system`,
+  :ref:`plugins_in_arillso.container`, :ref:`plugins_in_arillso.agent`
+* :ref:`environment` for working on the collections themselves
+* :ref:`architecture` for how the projects depend on each other
+* :ref:`compatibility` for version information
