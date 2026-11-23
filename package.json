@@ -5,7 +5,7 @@
         "build:watch": "scripts/build_frontend.sh --watch"
     },
     "devDependencies": {
-        "autoprefixer": "10.6.2",
+        "autoprefixer": "10.7.0",
         "cssnano": "9.9.0",
         "esbuild": "0.28.2",
         "postcss": "8.5.33",
