@@ -1,0 +1,106 @@
+{#- arillso guide layout. Extends the basic theme; header, navigation and
+    footer are replaced, the body block and script/CSS handling are kept. -#}
+{%- extends "basic/layout.html" %}
+
+{%- set render_sidebar = False %}
+
+{%- block htmltitle %}
+<title>{% if pagename == root_doc %}arillso{% else %}{{ title|striptags|e }}{{ titlesuffix }}{% endif %}</title>
+{%- endblock %}
+
+{%- block extrahead %}
+<link rel="preload" href="{{ pathto('_static/fonts/archivo-var.woff2', 1) }}" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{{ pathto('_static/fonts/ibm-plex-mono-400.woff2', 1) }}" as="font" type="font/woff2" crossorigin>
+<meta name="color-scheme" content="light dark">
+<meta property="og:title" content="{{ title|striptags|e }}">
+<meta property="og:description" content="Reference for the arillso Ansible collections, the arillso/ansible container image, the action.playbook GitHub Action and the go.ansible library.">
+<meta property="og:type" content="website">
+{%- if pageurl %}
+<meta property="og:url" content="{{ pageurl|e }}">
+{%- endif %}
+<meta property="og:site_name" content="arillso guide">
+<script>
+  {#- Runs before first paint so a stored dark/light choice does not flash. #}
+  document.documentElement.classList.add("js");
+  try { var t = localStorage.getItem("arillso-theme"); if (t === "dark" || t === "light") document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+{%- endblock %}
+
+{%- block body_tag %}<body class="page-{{ pagename|replace('/', '-')|e }}">{% endblock %}
+
+{%- block header %}
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="masthead">
+  <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false">
+    <span class="nav-toggle-bars" aria-hidden="true"></span><span class="nav-toggle-label">Contents</span>
+  </button>
+  <a class="wordmark" href="{{ pathto(root_doc)|e }}">
+    <img src="{{ pathto('_static/logo.svg', 1) }}" alt="" width="28" height="28">
+    <span>arillso<b>/</b>guide</span>
+  </a>
+  <form class="masthead-search" action="{{ pathto('search') }}" method="get" role="search">
+    <label class="visually-hidden" for="masthead-q">Search the guide</label>
+    <input id="masthead-q" type="search" name="q" placeholder="Search" autocomplete="off" spellcheck="false">
+  </form>
+  <nav class="masthead-links" aria-label="Project links">
+    <a href="https://github.com/arillso">GitHub</a>
+    <a href="https://galaxy.ansible.com/ui/namespaces/arillso/">Galaxy</a>
+  </nav>
+  <button class="theme-toggle" type="button" aria-label="Switch colour scheme" title="Switch colour scheme">
+    <span aria-hidden="true"></span>
+  </button>
+</header>
+{%- endblock %}
+
+{%- block relbar1 %}{% endblock %}
+{%- block relbar2 %}{% endblock %}
+
+{%- block content %}
+<div class="frame">
+  <nav id="site-nav" class="site-nav" aria-label="Contents">
+    {{ toctree(collapse=True, maxdepth=4, includehidden=True, titles_only=True) }}
+  </nav>
+  <main id="content" class="page" tabindex="-1">
+    {%- if parents or pagename != root_doc %}
+    <nav class="trail" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="{{ pathto(root_doc)|e }}">Guide</a></li>
+        {%- for parent in parents %}
+        <li><a href="{{ parent.link|e }}">{{ parent.title }}</a></li>
+        {%- endfor %}
+        {%- if pagename != root_doc and title %}
+        <li aria-current="page">{{ title }}</li>
+        {%- endif %}
+      </ol>
+    </nav>
+    {%- endif %}
+    <article class="doc">
+      {% block body %}{% endblock %}
+    </article>
+    {%- if prev or next %}
+    <nav class="pager" aria-label="Previous and next page">
+      {%- if prev %}
+      <a class="pager-prev" href="{{ prev.link|e }}" rel="prev"><span>Previous</span>{{ prev.title }}</a>
+      {%- endif %}
+      {%- if next %}
+      <a class="pager-next" href="{{ next.link|e }}" rel="next"><span>Next</span>{{ next.title }}</a>
+      {%- endif %}
+    </nav>
+    {%- endif %}
+  </main>
+</div>
+{%- endblock %}
+
+{%- block footer %}
+<footer class="colophon">
+  <nav aria-label="Footer">
+    <a href="{{ pathto('guide/getting-started/quickstart') }}">Quickstart</a>
+    <a href="{{ pathto('collections/index') }}">Collections</a>
+    <a href="{{ pathto('guide/reference/troubleshooting') }}">Troubleshooting</a>
+    <a href="{{ pathto('guide/development/contributing') }}">Contributing</a>
+    <a href="https://github.com/arillso">GitHub</a>
+    <a href="https://galaxy.ansible.com/ui/namespaces/arillso/">Ansible Galaxy</a>
+  </nav>
+  <p>arillso projects are MIT licensed. Collection pages are generated with antsibull-docs from the released collections.</p>
+</footer>
+{%- endblock %}

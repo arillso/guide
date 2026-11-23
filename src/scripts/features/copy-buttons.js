@@ -28,7 +28,8 @@ export function initCopyButtons() {
     copyButton.type = "button";
     copyButton.className = "code-copy-button";
     copyButton.textContent = "Copy";
-    copyButton.setAttribute("aria-label", "Copy code to clipboard");
+    // Visible text is the accessible name; aria-live announces "Copied".
+    copyButton.setAttribute("aria-live", "polite");
 
     let resetTimer;
     function showState(label, copied) {
@@ -52,7 +53,7 @@ export function initCopyButtons() {
       } catch {
         ok = copyWithFallback(code);
       }
-      showState(ok ? "Copied!" : "Failed", ok);
+      showState(ok ? "Copied" : "Failed", ok);
     });
 
     block.style.position = "relative";

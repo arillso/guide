@@ -23,10 +23,33 @@ from security_txt import write_security_txt  # noqa: E402
 write_security_txt(datetime.now(timezone.utc))
 
 project = "arillso"
+
+# Homepage facts, computed instead of typed so they cannot drift: collection
+# versions from versions.env (Renovate bumps them), plugin counts from the
+# pages antsibull-docs generated into rst/collections/ (build.sh step 4).
+_ROOT = Path(__file__).resolve().parent
+_versions = dict(
+    line.split("=", 1)
+    for line in (_ROOT / "versions.env").read_text(encoding="utf-8").splitlines()
+    if line.startswith("ARILLSO_")
+)
+_subs = []
+for _name in ("system", "container", "agent"):
+    _version = _versions[f"ARILLSO_{_name.upper()}_VERSION"].strip('"')
+    _subs.append(f".. |{_name}_version| replace:: {_version}")
+    _dir = _ROOT / "rst" / "collections" / "arillso" / _name
+    for _kind in ("role", "module", "filter", "lookup"):
+        _count = len(list(_dir.glob(f"*_{_kind}.rst")))
+        _subs.append(f".. |{_name}_{_kind}s| replace:: {_count}")
+_gen = _ROOT / "rst" / "collections" / "arillso"
+_subs.append(f".. |total_roles| replace:: **{len(list(_gen.glob('*/*_role.rst')))}**")
+_plugins = [p for p in _gen.glob("*/*.rst") if not p.name.endswith("_role.rst") and p.name != "index.rst"]
+_subs.append(f".. |total_plugins| replace:: **{len(_plugins)}**")
+rst_epilog = "\n".join(_subs) + "\n"
 copyright = "arillso contributors"
 
-html_title = "arillso Guide Documentation"
-html_short_title = "arillso Documentation"
+html_title = "arillso guide"
+html_short_title = "arillso guide"
 
 extensions = [
     "sphinx.ext.intersphinx",
@@ -39,14 +62,17 @@ extensions = [
 # a Mermaid major release change every diagram without a repo change. Renovate
 # bumps it (custom manager in .github/renovate.json).
 mermaid_version = "12.3.0"
-mermaid_init_js = "mermaid.initialize({startOnLoad:true,theme:'default'});"
+mermaid_init_js = "mermaid.initialize({startOnLoad:true,theme:'neutral'});"
 
 pygments_style = "ansible"
 
 highlight_language = "YAML+Jinja"
 
-templates_path = ["_templates"]
-html_theme = "sphinx_ansible_theme"
+# Own theme under _theme/arillso (inherits Sphinx's basic templates only).
+html_theme = "arillso"
+html_theme_path = ["_theme"]
+# "#" instead of the pilcrow: the latin subset of the vendored fonts has no ¶.
+html_permalinks_icon = "#"
 html_show_sphinx = False
 
 html_use_index = False
@@ -61,8 +87,7 @@ html_extra_path = ["_well_known_build"]
 html_css_files = ["custom.css"]
 html_js_files = ["custom.js"]
 
-# Logo and Favicon
-html_logo = "_static/logo.svg"
+# Favicon (the logo is placed by _theme/arillso/layout.html)
 html_favicon = "_static/favicon.ico"
 
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html#confval-intersphinx_mapping for the syntax
@@ -101,37 +126,3 @@ linkcheck_ignore = [
 # Sitemap configuration
 html_baseurl = "https://guide.arillso.io/"
 sitemap_url_scheme = "{link}"
-
-html_theme_options = {
-    # URLs and canonical settings
-    "canonical_url": "https://guide.arillso.io/",
-    "documentation_home_url": "/",
-    # Topbar navigation links
-    "topbar_links": {
-        "GitHub": "https://github.com/arillso",
-        "Discussions": "https://github.com/orgs/arillso/discussions",
-        "Collections": "https://galaxy.ansible.com/ui/namespaces/arillso/",
-        "Docker Hub": "https://hub.docker.com/r/arillso/ansible",
-        "GitHub Actions": "https://github.com/marketplace/actions/play-ansible-playbook",
-    },
-    # Branding and logo
-    "logo_only": True,
-    "display_version": False,
-    # Navigation behavior
-    "collapse_navigation": False,
-    "sticky_navigation": True,
-    "navigation_depth": 4,
-    "includehidden": True,
-    "titles_only": False,
-    # Page navigation
-    "prev_next_buttons_location": "both",
-    # Styling
-    "style_external_links": True,
-    "style_nav_header_background": "#2c3e50",
-    # Tracking and analytics (disabled)
-    "analytics_id": "",
-    "analytics_anonymize_ip": False,
-    # Additional features
-    "vcs_pageview_mode": "",
-    "show_rtd_ethical_ads": False,
-}
