@@ -242,7 +242,7 @@ Complete workflow implementing the :ref:`standards` CI architecture.
            uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
          - name: Run Molecule
-           uses: gofrolist/molecule-action@52c7de8cf1bfef0c1ad43ea69fd5c4b227de368b # v2.9.21
+           uses: gofrolist/molecule-action@483b9b4d3af747d6612af3f8a56c89f304ca26d8 # v2.9.22
            with:
              molecule_command: test
              molecule_args: --scenario-name ${{ matrix.distro }}
