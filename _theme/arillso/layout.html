@@ -21,7 +21,6 @@
 <meta property="og:site_name" content="arillso guide">
 <script>
   {#- Runs before first paint so a stored dark/light choice does not flash. #}
-  document.documentElement.classList.add("js");
   try { var t = localStorage.getItem("arillso-theme"); if (t === "dark" || t === "light") document.documentElement.dataset.theme = t; } catch (e) {}
 </script>
 {%- endblock %}
@@ -62,7 +61,9 @@
         about nine headings ahead of the page h1 for screen readers. #}
     {{ toctree(collapse=True, maxdepth=4, includehidden=True, titles_only=True)|replace(' role="heading"', '') }}
   </nav>
-  <main id="content" class="page" tabindex="-1">
+  {#- Trail and pager sit outside <main>: Sphinx search builds result
+      excerpts from [role="main"], and they would lead every excerpt. #}
+  <div class="page">
     {%- if parents or pagename != root_doc %}
     <nav class="trail" aria-label="Breadcrumb">
       <ol>
@@ -76,9 +77,11 @@
       </ol>
     </nav>
     {%- endif %}
-    <article class="doc">
-      {% block body %}{% endblock %}
-    </article>
+    <main id="content" role="main" tabindex="-1">
+      <article class="doc body">
+        {% block body %}{% endblock %}
+      </article>
+    </main>
     {%- if prev or next %}
     <nav class="pager" aria-label="Previous and next page">
       {%- if prev %}
@@ -89,7 +92,7 @@
       {%- endif %}
     </nav>
     {%- endif %}
-  </main>
+  </div>
 </div>
 {%- endblock %}
 

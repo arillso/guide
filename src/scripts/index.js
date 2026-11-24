@@ -7,6 +7,10 @@ import { initThemeToggle } from "./features/theme-toggle.js";
 import { initNavToggle } from "./features/nav-toggle.js";
 import { initNavCurrent } from "./features/nav-current.js";
 
+// Set before first paint (the bundle loads in <head>). Only the bundle sets
+// it, so if custom.js fails to load the contents navigation stays visible.
+document.documentElement.classList.add("js");
+
 onReady(() => {
   initTruncateDescriptions();
   initCopyButtons();

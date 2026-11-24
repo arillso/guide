@@ -195,9 +195,9 @@ Pin versions in ``requirements.yml`` and raise them deliberately:
    ---
    collections:
      - name: arillso.system
-       version: ">=2.0.4,<3.0.0"
+       version: "@ARILLSO_SYSTEM_VERSION@"
      - name: arillso.container
-       version: "2.2.0"
+       version: "@ARILLSO_CONTAINER_VERSION@"
 
 .. code-block:: bash
 

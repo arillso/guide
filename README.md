@@ -11,17 +11,17 @@ theme (`_theme/arillso/`, styles and scripts in `src/`).
 
 ## Source Layout
 
-| Path                             | Purpose                                                                                                                                                             |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/`                           | Frontend sources (CSS tokens/base/layout/components, JS feature modules). PostCSS + esbuild emit the bundles into `_static/`. See [`src/README.md`](src/README.md). |
-| `_theme/arillso/`                | Sphinx theme: `theme.toml` and `layout.html`, inheriting only the `basic` templates (search page).                                                                  |
-| `scripts/`                       | Python and shell helpers — `collection_cache.py` (collection cache), `normalize_collections.py` (normalisation pass), `build_frontend.sh` (frontend bundle).        |
-| `rst/`                           | Hand-written Sphinx sources plus the generated collection trees that `antsibull-docs` writes during the build.                                                      |
-| `_static/`                       | Tracked `logo.svg`, `favicon.ico` and `fonts/` (self-hosted, SIL OFL), plus the bundles `custom.css` and `custom.js` that the frontend build regenerates.           |
-| `tests/`                         | Pytest suite for the build scripts (collection cache, normaliser).                                                                                                  |
-| `versions.env`                   | Pinned collection versions consumed by `build.sh` and `collection_cache.py`.                                                                                        |
-| `build.sh`                       | Top-level build entry point — orchestrates the steps below.                                                                                                         |
-| `conf.py` / `antsibull-docs.cfg` | Sphinx and antsibull-docs configuration.                                                                                                                            |
+| Path                             | Purpose                                                                                                                                                      |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/`                           | Frontend sources (flat CSS files per concern, JS feature modules). PostCSS + esbuild emit the bundles into `_static/`. See [`src/README.md`](src/README.md). |
+| `_theme/arillso/`                | Sphinx theme: `theme.toml` and `layout.html`, inheriting only the `basic` templates (search page).                                                           |
+| `scripts/`                       | Python and shell helpers — `collection_cache.py` (collection cache), `normalize_collections.py` (normalisation pass), `build_frontend.sh` (frontend bundle). |
+| `rst/`                           | Hand-written Sphinx sources plus the generated collection trees that `antsibull-docs` writes during the build.                                               |
+| `_static/`                       | Tracked `logo.svg`, `favicon.ico` and `fonts/` (self-hosted, SIL OFL), plus the bundles `custom.css` and `custom.js` that the frontend build regenerates.    |
+| `tests/`                         | Pytest suite for the build scripts (collection cache, normaliser).                                                                                           |
+| `versions.env`                   | Pinned collection and tool versions, read by `build.sh`, `collection_cache.py` and `conf.py`.                                                                |
+| `build.sh`                       | Top-level build entry point — orchestrates the steps below.                                                                                                  |
+| `conf.py` / `antsibull-docs.cfg` | Sphinx and antsibull-docs configuration.                                                                                                                     |
 
 ## Local Development
 

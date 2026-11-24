@@ -32,4 +32,5 @@ export function initThemeToggle() {
   });
 
   label();
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", label);
 }

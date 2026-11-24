@@ -47,7 +47,7 @@ for _name in ("system", "container", "agent"):
         _subs.append(f".. |{_name}_{_kind}s| replace:: {_count}")
 _gen = _ROOT / "rst" / "collections" / "arillso"
 _subs.append(f".. |total_roles| replace:: **{len(list(_gen.glob('*/*_role.rst')))}**")
-_plugins = [p for p in _gen.glob("*/*.rst") if not p.name.endswith("_role.rst") and p.name != "index.rst"]
+_plugins = [p for k in ("module", "filter", "lookup") for p in _gen.glob(f"*/*_{k}.rst")]
 _subs.append(f".. |total_plugins| replace:: **{len(_plugins)}**")
 rst_epilog = "\n".join(_subs) + "\n"
 
@@ -59,6 +59,9 @@ def _fill_versions(app, docname, source):
     ``uses: arillso/action.playbook@@ACTION_PLAYBOOK_VERSION@`` use tokens.
     Statements about one specific release keep the literal version.
     """
+    # Token values are not config values, so tell Sphinx to re-read this page
+    # when versions.env changes (incremental builds).
+    app.env.note_dependency(str(_ROOT / "versions.env"))
     text = source[0]
     for key, value in _versions.items():
         text = text.replace(f"@{key}@", value.strip('"'))
