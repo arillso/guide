@@ -1,78 +1,61 @@
 .. meta::
-  :description: Go module for programmatically executing Ansible playbooks with Galaxy integration and secure file management
+  :description: go.ansible: Go package that builds and runs ansible-galaxy and ansible-playbook commands; exported API, configuration fields and example
 
 .. _go_ansible:
 
 go.ansible
 ==========
 
-A Go module for programmatically executing Ansible playbooks with support for Galaxy integration, temporary file management, and flexible configuration.
+Go package ``ansible`` that builds and runs ``ansible-galaxy`` and
+``ansible-playbook`` commands from a ``Config`` struct. It calls the Ansible
+binaries on ``PATH``; Ansible itself is not part of the module. All facts on this
+page come from ``go.mod``, ``ansiblePlaybook.go``, ``example_test.go`` and
+``CHANGELOG.md`` in https://github.com/arillso/go.ansible.
 
 .. contents::
    :local:
    :depth: 2
 
-Overview
---------
+Facts
+-----
 
-``go.ansible`` enables embedding Ansible automation within Go applications, providing a clean API for executing playbooks, managing credentials, and integrating with Ansible Galaxy.
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
-**Repository:** https://github.com/arillso/go.ansible
-
-**Documentation:** https://pkg.go.dev/github.com/arillso/go.ansible
-
-**Go Version:** 1.25+
-
-Features
---------
-
-Playbook Execution
-~~~~~~~~~~~~~~~~~~
-
-* Execute Ansible playbooks from Go applications
-* Context-based execution with cancellation support
-* Command output streaming and capture
-* Debug mode with command tracing
-
-Secure File Management
-~~~~~~~~~~~~~~~~~~~~~~
-
-* Automatic temporary file creation for SSH keys
-* Secure handling of Vault passwords
-* Automatic cleanup of sensitive files
-* File permission management (0600 for keys)
-
-Galaxy Integration
-~~~~~~~~~~~~~~~~~~
-
-* Automatic role installation from Galaxy
-* Collection installation support
-* Requirements file processing (``requirements.yml``)
-* Custom Galaxy server configuration
-
-Flexible Configuration
-~~~~~~~~~~~~~~~~~~~~~~
-
-* Builder pattern for option setting
-* Support for all ansible-playbook flags
-* Extra variables (key=value or JSON)
-* Inventory management (files or inline)
-* SSH configuration and key management
+   * - Property
+     - Value
+   * - Module path
+     - ``github.com/arillso/go.ansible/v2``
+   * - Package name
+     - ``ansible``
+   * - Latest release
+     - ``@GO_ANSIBLE_VERSION@``
+   * - Go version (``go.mod``)
+     - ``v2.0.0``: ``go 1.26.1``; ``main``: ``go 1.27.4``
+   * - Dependencies
+     - none outside the standard library
+   * - API reference
+     - https://pkg.go.dev/github.com/arillso/go.ansible/v2
+   * - License
+     - MIT
 
 Installation
 ------------
 
-Install the module:
-
 .. code-block:: bash
 
-   go get github.com/arillso/go.ansible
+   go get github.com/arillso/go.ansible/v2@@GO_ANSIBLE_VERSION@
 
-Quick Start
------------
+.. code-block:: go
 
-Basic Usage
-~~~~~~~~~~~
+   import ansible "github.com/arillso/go.ansible/v2"
+
+Example
+-------
+
+Runs Galaxy requirements and a playbook, logs the masked command lines first and
+checks the Ansible exit code. Compiles against ``v2.0.0`` and ``main``.
 
 .. code-block:: go
 
@@ -80,376 +63,179 @@ Basic Usage
 
    import (
        "context"
+       "errors"
        "log"
-       "github.com/arillso/go.ansible"
+       "os"
+       "time"
+
+       ansible "github.com/arillso/go.ansible/v2"
    )
 
    func main() {
+       ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
+       defer cancel()
+
        pb := ansible.NewPlaybook()
        pb.Config.Playbooks = []string{"site.yml"}
        pb.Config.Inventories = []string{"inventory.yml"}
+       pb.Config.GalaxyFile = "requirements.yml"
+       pb.Config.ExtraVars = []string{"env=staging"}
+       pb.Config.Limit = "web"
+       pb.Config.VaultPassword = os.Getenv("VAULT_PASSWORD")
 
-       if err := pb.Exec(context.Background()); err != nil {
-           log.Fatalf("Execution failed: %v", err)
+       // Preview the command lines; secrets and extra-vars are masked.
+       cmds, err := pb.CommandStrings(ctx)
+       if err != nil {
+           log.Fatal(err)
+       }
+       for _, c := range cmds {
+           log.Println(c)
+       }
+
+       if err := pb.Exec(ctx); err != nil {
+           var ae *ansible.AnsibleError
+           if errors.As(err, &ae) && ae.ExitCode == ansible.ExitCodeUnreachable {
+               log.Fatalf("hosts unreachable: %v", ae)
+           }
+           log.Fatal(err)
        }
    }
 
-With Extra Variables
-~~~~~~~~~~~~~~~~~~~~
+More runnable examples are in ``example_test.go`` and on pkg.go.dev.
 
-.. code-block:: go
+Exported API
+------------
 
-   pb := ansible.NewPlaybook()
-   pb.Config.Playbooks = []string{"deploy.yml"}
-   pb.Config.Inventories = []string{"production"}
-   pb.Config.ExtraVars = []string{
-       "version=1.2.3",
-       "environment=production",
-   }
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
 
-   err := pb.Exec(context.Background())
+   * - Identifier
+     - Description
+   * - ``func NewPlaybook() *Playbook``
+     - Returns a ``Playbook`` with ``Config.Forks = 5`` and
+       ``Config.TempDir = os.TempDir()``.
+   * - ``func (p *Playbook) Exec(ctx context.Context) error``
+     - Resolves playbooks, writes temporary secret files, runs the commands in
+       order and removes the temporary files. Cancelling ``ctx`` stops the
+       running process.
+   * - ``func (p *Playbook) CommandStrings(ctx context.Context) ([]string, error)``
+     - Returns the command lines ``Exec`` would run, without running them and
+       without writing temporary files. Values of ``--extra-vars``,
+       ``--private-key`` and ``--vault-password-file`` are masked as
+       ``******``.
+   * - ``type Playbook struct``
+     - Fields ``Config Config``, ``Debug bool`` (trace output),
+       ``TraceOutput``, ``Stdout``, ``Stderr io.Writer`` (default
+       ``os.Stdout``/``os.Stderr``). Not safe for concurrent use.
+   * - ``type Config struct``
+     - All options, see :ref:`go_ansible_config`.
+   * - ``type AnsibleError struct``
+     - Returned (wrapped) when an Ansible command exits non-zero. Fields
+       ``ExitCode``, ``Command``, ``Message``, ``CommandIndex``,
+       ``TotalCommands``, ``Err``; methods ``Error()`` and ``Unwrap()``.
+   * - ``ExitCode*`` constants
+     - ``ExitCodeSuccess`` 0, ``ExitCodeError`` 1, ``ExitCodeHostFailed`` 2,
+       ``ExitCodeUnreachable`` 3, ``ExitCodeParserError`` 4,
+       ``ExitCodeUserAbort`` 99, ``ExitCodeUnexpected`` 250
 
-Using Galaxy Requirements
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: go
-
-   pb := ansible.NewPlaybook()
-   pb.Config.GalaxyFile = "requirements.yml"
-   pb.Config.Playbooks = []string{"site.yml"}
-   pb.Config.Inventories = []string{"hosts.yml"}
-
-   // Galaxy roles/collections will be installed automatically
-   err := pb.Exec(context.Background())
-
-SSH Key Management
-~~~~~~~~~~~~~~~~~~
-
-.. code-block:: go
-
-   pb := ansible.NewPlaybook()
-   pb.Config.PrivateKey = `-----BEGIN RSA PRIVATE KEY-----
-   MIIEpAIBAAKCAQEA...
-   -----END RSA PRIVATE KEY-----`
-   pb.Config.Playbooks = []string{"deploy.yml"}
-
-   // SSH key is written to temporary file automatically
-   // and cleaned up after execution
-   err := pb.Exec(context.Background())
-
-Vault Integration
-~~~~~~~~~~~~~~~~~
-
-.. code-block:: go
-
-   pb := ansible.NewPlaybook()
-   pb.Config.VaultPassword = "my-secret-password"
-   pb.Config.VaultID = "production@vault-file"
-   pb.Config.Playbooks = []string{"encrypted.yml"}
-
-   err := pb.Exec(context.Background())
-
-Advanced Usage
---------------
-
-Context and Cancellation
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: go
-
-   ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-   defer cancel()
-
-   pb := ansible.NewPlaybook()
-   pb.Config.Playbooks = []string{"long-running.yml"}
-
-   // Execution will be cancelled after 5 minutes
-   err := pb.Exec(ctx)
-
-Debug Mode
-~~~~~~~~~~
-
-.. code-block:: go
-
-   pb := ansible.NewPlaybook()
-   pb.Config.Debug = true  // Print full ansible-playbook command
-   pb.Config.Verbose = 4   // Maximum Ansible verbosity
-   pb.Config.Playbooks = []string{"debug.yml"}
-
-   err := pb.Exec(context.Background())
-
-Check Mode (Dry Run)
-~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: go
-
-   pb := ansible.NewPlaybook()
-   pb.Config.Check = true  // Don't make any changes
-   pb.Config.Diff = true   // Show differences
-   pb.Config.Playbooks = []string{"changes.yml"}
-
-   err := pb.Exec(context.Background())
-
-Glob Pattern Support
-~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: go
-
-   pb := ansible.NewPlaybook()
-   pb.Config.PlaybookGlob = "playbooks/*.yml"  // Automatically resolved
-
-   err := pb.Exec(context.Background())
-
-Configuration Options
----------------------
-
-PlaybookConfig Structure
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: go
-
-   type PlaybookConfig struct {
-       // Playbooks and Inventory
-       Playbooks     []string
-       PlaybookGlob  string
-       Inventories   []string
-
-       // Galaxy
-       GalaxyFile    string
-
-       // Credentials
-       PrivateKey    string
-       VaultPassword string
-       VaultID       string
-
-       // Execution Options
-       Check         bool
-       Diff          bool
-       Debug         bool
-       Verbose       int
-       ExtraVars     []string
-       Tags          []string
-       SkipTags      []string
-       Limit         string
-
-       // SSH Options
-       User          string
-       Connection    string
-       Timeout       int
-       SSHCommonArgs string
-
-       // Privilege Escalation
-       Become        bool
-       BecomeMethod  string
-       BecomeUser    string
-   }
-
-Common Patterns
+Execution Order
 ---------------
 
-Infrastructure Deployment
-~~~~~~~~~~~~~~~~~~~~~~~~~
+``Exec`` runs up to four commands:
 
-.. code-block:: go
+#. ``ansible --version`` if ``ShowVersion`` is set.
+#. ``ansible-galaxy role install`` and ``ansible-galaxy collection install`` if
+   ``GalaxyFile`` or ``GalaxyRequirementsFile`` is set. The file must exist.
+#. ``ansible-playbook`` with all ``Playbooks`` as positional arguments.
 
-   func DeployInfrastructure(version string) error {
-       pb := ansible.NewPlaybook()
-       pb.Config.GalaxyFile = "requirements.yml"
-       pb.Config.Playbooks = []string{"infrastructure.yml"}
-       pb.Config.Inventories = []string{"production"}
-       pb.Config.ExtraVars = []string{
-           fmt.Sprintf("app_version=%s", version),
-       }
-       pb.Config.PrivateKey = os.Getenv("SSH_PRIVATE_KEY")
+Before that, ``Exec`` checks:
 
-       return pb.Exec(context.Background())
-   }
+* ``Playbooks`` is not empty. Each entry is a file path, a glob pattern or a
+  collection playbook (``namespace.collection.name``); paths and globs must
+  match existing files.
+* Each ``Inventories`` entry is a readable file, or an inline inventory
+  containing a comma (``localhost,``). Without inventories, ``ansible-playbook``
+  uses its configured inventory.
+* ``PrivateKey`` contains PEM ``BEGIN``/``END`` markers.
 
-CI/CD Integration
-~~~~~~~~~~~~~~~~~
+``PrivateKey`` and ``VaultPassword`` are written to files with mode ``0600`` in
+``TempDir`` (``CRLF`` converted to ``LF``, trailing newline added) and removed
+after the run. Errors are wrapped with ``%w``, so
+``errors.As`` and ``errors.Is`` (including ``context.DeadlineExceeded``) work.
 
-.. code-block:: go
+.. _go_ansible_config:
 
-   func RunCIDeployment(ctx context.Context) error {
-       pb := ansible.NewPlaybook()
-       pb.Config.Playbooks = []string{"deploy.yml"}
-       pb.Config.Inventories = []string{"staging"}
-       pb.Config.Check = os.Getenv("DRY_RUN") == "true"
-       pb.Config.Diff = true
-       pb.Config.ExtraVars = []string{
-           fmt.Sprintf("git_commit=%s", os.Getenv("CI_COMMIT_SHA")),
-           fmt.Sprintf("git_branch=%s", os.Getenv("CI_COMMIT_BRANCH")),
-       }
+Config Fields
+-------------
 
-       return pb.Exec(ctx)
-   }
+Each field's doc comment names the flag or environment variable it sets.
+``docs/option-mapping.md`` in the repository groups them by mechanism.
 
-Dynamic Inventory
-~~~~~~~~~~~~~~~~~
+.. list-table::
+   :header-rows: 1
+   :widths: 20 80
 
-.. code-block:: go
+   * - Group
+     - Fields
+   * - General
+     - ``Become``, ``BecomeMethod``, ``BecomeUser``, ``User``, ``PrivateKey``,
+       ``PrivateKeyFile``, ``AskBecomePass``, ``AskPass``, ``Check``, ``Diff``,
+       ``FlushCache``, ``ForceHandlers``, ``SyntaxCheck``, ``ListHosts``,
+       ``ListTags``, ``ListTasks``, ``Step``, ``Connection``, ``Timeout``,
+       ``Forks``
+   * - SSH
+     - ``SSHCommonArgs``, ``SSHExtraArgs``, ``SCPExtraArgs``, ``SFTPExtraArgs``,
+       ``SSHTransferMethod``
+   * - Playbook
+     - ``Inventories []string``, ``Playbooks []string``, ``Limit``,
+       ``ExtraVars []string``, ``StartAtTask``, ``Tags``, ``SkipTags``,
+       ``ModulePath []string``, ``Verbose`` (1-4, rendered as ``-v`` to
+       ``-vvvv``),
+       ``NoColor``
+   * - Vault
+     - ``VaultID``, ``VaultPassword``, ``VaultPasswordFile``, ``AskVaultPass``
+   * - Facts
+     - ``FactPath``, ``FactCaching``, ``FactCachingTimeout``
+   * - Galaxy
+     - ``GalaxyFile``, ``GalaxyAPIKey`` (exported as ``ANSIBLE_GALAXY_TOKEN``),
+       ``GalaxyAPIServerURL``, ``GalaxyCollectionsPath``,
+       ``GalaxyDisableGPGVerify``, ``GalaxyForce``, ``GalaxyForceWithDeps``,
+       ``GalaxyNoDeps``, ``GalaxyIgnoreCerts``,
+       ``GalaxyIgnoreSignatureStatusCodes``, ``GalaxyKeyring``,
+       ``GalaxyOffline``, ``GalaxyPre``, ``GalaxyRequiredValidSignatureCount``,
+       ``GalaxyRequirementsFile``, ``GalaxyRolesPath``, ``GalaxySignature``,
+       ``GalaxyTimeout``, ``GalaxyUpgrade``
+   * - Other
+     - ``CallbacksEnabled``, ``PollInterval``, ``StrategyPlugin``,
+       ``AnyErrorsFatal``, ``ConfigFile`` (must exist), ``OutputCallback``,
+       ``ExtraEnv map[string]string`` (applied last, overrides other
+       variables), ``ShowVersion``, ``TempDir``
+   * - Deprecated
+     - ``GatherSubset``, ``GatherTimeout``, ``MaxFailPercentage``: on ``main``
+       ``Exec`` and ``CommandStrings`` return an error when set; set them as
+       play keywords
 
-   func DeployToHosts(hosts []string) error {
-       // Create inline inventory
-       inventory := strings.Join(hosts, ",") + ","
+.. note::
 
-       pb := ansible.NewPlaybook()
-       pb.Config.Playbooks = []string{"configure.yml"}
-       pb.Config.Inventories = []string{inventory}
+   ``main`` contains fixes not yet released in ``v2.0.0`` (``CHANGELOG.md``,
+   section *Unreleased*). Among them: ``NoColor``, ``StrategyPlugin``,
+   ``CallbacksEnabled``, ``PollInterval``, ``AnyErrorsFatal`` and
+   ``SSHTransferMethod`` are passed as ``ANSIBLE_*`` environment variables;
+   ``v2.0.0`` passes them as CLI flags that ``ansible-playbook`` rejects.
 
-       return pb.Exec(context.Background())
-   }
-
-Error Handling
---------------
-
-Wrapped Errors
-~~~~~~~~~~~~~~
-
-All errors are wrapped with context using ``github.com/pkg/errors``:
-
-.. code-block:: go
-
-   if err := pb.Exec(ctx); err != nil {
-       // Errors include context about what failed
-       log.Printf("Deployment failed: %+v", err)
-       // Example: "executing playbook: running command: exit status 2"
-   }
-
-Validation Errors
-~~~~~~~~~~~~~~~~~
-
-Configuration is validated before execution:
-
-.. code-block:: go
-
-   pb := ansible.NewPlaybook()
-   // pb.Config.Playbooks not set
-
-   err := pb.Exec(ctx)
-   // Error: "no playbooks specified"
-
-Testing
--------
-
-The module includes comprehensive tests:
+Development
+-----------
 
 .. code-block:: bash
 
-   # Run all tests
-   go test -v ./...
+   make test
 
-   # Run with coverage
-   go test -cover ./...
-
-   # Run specific test
-   go test -run TestPlaybook_Exec ./...
-
-Example Tests
-~~~~~~~~~~~~~
-
-.. code-block:: go
-
-   func TestPlaybookExecution(t *testing.T) {
-       pb := ansible.NewPlaybook()
-       pb.Config.Playbooks = []string{"test.yml"}
-       pb.Config.Inventories = []string{"localhost,"}
-       pb.Config.ExtraVars = []string{"test_var=value"}
-
-       err := pb.Exec(context.Background())
-       assert.NoError(t, err)
-   }
-
-Best Practices
---------------
-
-Security
-~~~~~~~~
-
-1. **Never hardcode credentials:**
-
-   .. code-block:: go
-
-      // Bad
-      pb.Config.VaultPassword = "my-password"
-
-      // Good
-      pb.Config.VaultPassword = os.Getenv("VAULT_PASSWORD")
-
-2. **Use context for timeouts:**
-
-   .. code-block:: go
-
-      ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
-      defer cancel()
-      err := pb.Exec(ctx)
-
-3. **Validate inputs:**
-
-   .. code-block:: go
-
-      if version == "" {
-          return errors.New("version is required")
-      }
-      pb.Config.ExtraVars = []string{fmt.Sprintf("version=%s", version)}
-
-Resource Management
-~~~~~~~~~~~~~~~~~~~
-
-The module automatically manages temporary files, but ensure proper context usage:
-
-.. code-block:: go
-
-   func deploy() error {
-       ctx, cancel := context.WithCancel(context.Background())
-       defer cancel()  // Ensure cleanup on early return
-
-       pb := ansible.NewPlaybook()
-       // ... configuration ...
-
-       return pb.Exec(ctx)
-   }
-
-Debugging
-~~~~~~~~~
-
-Enable debug mode during development:
-
-.. code-block:: go
-
-   if os.Getenv("DEBUG") == "true" {
-       pb.Config.Debug = true
-       pb.Config.Verbose = 4
-   }
-
-Dependencies
-------------
-
-The module has minimal dependencies:
-
-.. code-block:: go
-
-   require (
-       github.com/pkg/errors v0.9.1
-   )
-
-CI/CD Workflows
----------------
-
-The project includes automated workflows:
-
-* **Linting** (golangci-lint, staticcheck)
-* **Testing** (Go 1.25+)
-* **Security Scanning** (CodeQL, Trivy)
-* **Release Builds** (automated versioning)
-
-License
--------
-
-MIT License - Copyright (c) 2026, arillso
+CI calls reusable workflows from ``arillso/.github``: ``ci-go`` and ``ci-lint``
+on pull requests, ``security-code`` and Trivy nightly, release and SBOM on tag push
+(``tag.yml``).
 
 .. seealso::
 
-   * :ref:`docker.ansible <docker_ansible>` - Ansible container used for execution
-   * :ref:`action.playbook <action_playbook>` - GitHub Action using similar patterns
-   * Go Package Documentation: https://pkg.go.dev/github.com/arillso/go.ansible
+   * :ref:`action.playbook <action_playbook>` - GitHub Action built on this library
+   * :ref:`docker.ansible <docker_ansible>` - container image with ``ansible-playbook``

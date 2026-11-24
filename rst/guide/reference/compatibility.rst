@@ -1,771 +1,245 @@
 .. meta::
-  :description: Version compatibility and upgrade guide for arillso
-  :keywords: arillso, compatibility, versions, upgrade, migration
+  :description: Ansible, Python and platform requirements of the arillso collections, container image, GitHub Action and Go library
+  :keywords: arillso, compatibility, versions, requires_ansible, platforms
 
 .. _compatibility:
 
 Version Compatibility
 =====================
 
-Compatibility matrix, version requirements, and upgrade guides for arillso collections and tools.
+Requirements and supported platforms of the arillso components. Every value
+on this page is taken from the upstream repository: ``meta/runtime.yml``,
+``galaxy.yml`` and ``roles/*/meta/main.yml`` for the collections, the
+``Dockerfile`` and workflows for the image, ``action.yml`` for the action and
+``go.mod`` for the library.
 
 .. contents::
    :local:
    :depth: 2
 
-Supported Versions
+Documented Collection Versions
+------------------------------
+
+The collection reference in this guide is generated from these releases
+(``versions.env`` in the guide repository). Newer releases may exist on
+Ansible Galaxy; their requirements can differ.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 15 20 40
+
+   * - Collection
+     - Version
+     - ``requires_ansible``
+     - Collection dependencies (``galaxy.yml``)
+   * - :ref:`arillso.system <plugins_in_arillso.system>`
+     - 2.0.4
+     - ``>=2.18.0``
+     - ``ansible.posix >=2.0.0``, ``community.general >=9.0.0``,
+       ``community.crypto >=2.0.0``
+   * - :ref:`arillso.container <plugins_in_arillso.container>`
+     - 2.2.0
+     - ``>=2.18.0``
+     - ``arillso.system >=1.0.0``, ``community.docker >=3.4.11``
+   * - :ref:`arillso.agent <plugins_in_arillso.agent>`
+     - 2.1.0
+     - ``>=2.18.0``
+     - ``arillso.system >=0.0.36``
+
+``ansible-galaxy collection install`` resolves these dependencies
+automatically.
+
+Ansible and Python
 ------------------
 
-Current Release Status
-~~~~~~~~~~~~~~~~~~~~~~
+* **ansible-core:** all three collections declare ``requires_ansible:
+  ">=2.18.0"`` in ``meta/runtime.yml``, and every role sets
+  ``min_ansible_version: "2.18"``.
+* **CI coverage:** the shared ``ci-ansible-collection.yml`` workflow from
+  ``arillso/.github`` runs ``ansible-test sanity`` against ``stable-2.18``,
+  ``stable-2.19`` and ``stable-2.20`` (default of its ``ansible_versions``
+  input; none of the collections overrides it).
+* **Python on the control node:** the collection READMEs state
+  ``Python >= 3.12`` for arillso.system and ``Python >= 3.9`` for
+  arillso.container. The arillso.agent README states no Python version; it
+  requires systemd on the target hosts.
 
-.. list-table::
-   :header-rows: 1
-   :widths: 30 20 20 30
-
-   * - Component
-     - Current Version
-     - Status
-     - End of Life
-   * - arillso.system
-     - 1.1.x
-     - Supported
-     - TBD
-   * - arillso.container
-     - 1.4.x
-     - Supported
-     - TBD
-   * - arillso.agent
-     - 1.2.x
-     - Supported
-     - TBD
-   * - arillso/ansible (container)
-     - latest
-     - Supported
-     - Rolling
-   * - go.ansible (library)
-     - 1.x
-     - Supported
-     - TBD
-   * - action.playbook (GitHub Action)
-     - 1.2.x
-     - Supported
-     - TBD
-
-Version Support Policy
-~~~~~~~~~~~~~~~~~~~~~~
-
-* **Major versions** (1.0.0 → 2.0.0): Supported for 12 months after next major release
-* **Minor versions** (1.0.0 → 1.1.0): Supported for 6 months after next minor release
-* **Patch versions** (1.0.0 → 1.0.1): Always upgrade to latest patch
-* **Security fixes**: Backported to all supported versions
-
-Requirements
-------------
-
-Ansible Requirements
-~~~~~~~~~~~~~~~~~~~~
-
-.. list-table::
-   :header-rows: 1
-   :widths: 30 35 35
-
-   * - arillso Collection
-     - Minimum Ansible
-     - Recommended Ansible
-   * - arillso.system 1.x
-     - 2.15.0
-     - 2.16.0+
-   * - arillso.container 1.x
-     - 2.15.0
-     - 2.16.0+
-   * - arillso.agent 1.x
-     - 2.15.0
-     - 2.16.0+
-
-**Check your Ansible version:**
+Check the installed versions:
 
 .. code-block:: bash
 
    ansible --version
+   ansible-galaxy collection list | grep -E 'arillso|ansible.posix|community'
 
-**Upgrade Ansible:**
+Managed Node Platforms
+----------------------
 
-.. code-block:: bash
+Platforms as declared in ``meta/main.yml`` of each role in the documented
+release. ``EL`` covers RHEL and its rebuilds. A platform that is not listed
+is not declared, not necessarily broken.
 
-   # Using pip
-   pip install --upgrade ansible
+arillso.system 2.0.4
+~~~~~~~~~~~~~~~~~~~~
 
-   # Using pipx (recommended)
-   pipx upgrade ansible
+.. list-table::
+   :header-rows: 1
+   :widths: 34 22 22 22
 
-Python Requirements
+   * - Roles
+     - Debian
+     - Ubuntu
+     - EL
+   * - access, bitwarden_secrets, facts, firewall, logging, network, python,
+       shell, systemd
+     - bullseye, bookworm
+     - focal, jammy, noble
+     - 8, 9
+   * - ansible
+     - bullseye, bookworm
+     - jammy, noble
+     - --
+   * - packages
+     - buster, bullseye, bookworm
+     - bionic, focal, jammy, noble
+     - --
+   * - ready, thermal
+     - bullseye, bookworm
+     - focal, jammy, noble
+     - --
+   * - tuning
+     - buster, bullseye
+     - focal, jammy
+     - all
+   * - zram
+     - bookworm, trixie
+     - jammy, noble
+     - --
+
+arillso.container 2.2.0
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+   :widths: 34 22 22 22
+
+   * - Roles
+     - Debian
+     - Ubuntu
+     - EL
+   * - docker, docker_compose_v2, docker_login, fleet, helm, k3s, tailscale
+     - bullseye, bookworm
+     - jammy, noble
+     - 9
+
+arillso.agent 2.1.0
 ~~~~~~~~~~~~~~~~~~~
 
 .. list-table::
    :header-rows: 1
-   :widths: 30 35 35
-
-   * - Component
-     - Minimum Python
-     - Recommended Python
-   * - Ansible Control Node
-     - 3.9
-     - 3.11+
-   * - Managed Nodes
-     - 3.6
-     - 3.9+
-   * - go.ansible
-     - N/A (Go)
-     - N/A (Go)
-
-**Check Python version:**
-
-.. code-block:: bash
-
-   # Control node
-   python3 --version
-
-   # Managed nodes
-   ansible all -m ansible.builtin.command -a "python3 --version"
-
-Operating System Support
-------------------------
-
-Control Node (Where Ansible Runs)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. list-table::
-   :header-rows: 1
-   :widths: 40 30 30
-
-   * - OS
-     - Status
-     - Notes
-   * - Ubuntu 20.04, 22.04, 24.04
-     - ✅ Supported
-     - Recommended
-   * - Debian 11, 12
-     - ✅ Supported
-     -
-   * - RHEL/Rocky/Alma 8, 9
-     - ✅ Supported
-     -
-   * - macOS 12+
-     - ✅ Supported
-     - With Homebrew
-   * - Windows 10/11
-     - ⚠️ Limited
-     - WSL2 only
-   * - Alpine Linux
-     - ❌ Not Supported
-     - Use container image
-
-Managed Nodes (Target Hosts)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-**arillso.system**
-
-.. list-table::
-   :header-rows: 1
-   :widths: 40 30 30
-
-   * - OS
-     - Status
-     - Notes
-   * - Ubuntu 20.04, 22.04, 24.04
-     - ✅ Fully Supported
-     - Primary platform
-   * - Debian 11, 12
-     - ✅ Fully Supported
-     -
-   * - RHEL/Rocky/Alma 8, 9
-     - ✅ Fully Supported
-     -
-   * - Fedora 38+
-     - ⚠️ Best Effort
-     - Community supported
-   * - Alpine Linux
-     - ⚠️ Limited
-     - Container roles only
-   * - Arch Linux
-     - ❌ Not Supported
-     -
-   * - Windows
-     - ❌ Not Supported
-     - Use arillso.system on Linux
-
-**arillso.container**
-
-.. list-table::
-   :header-rows: 1
-   :widths: 40 30 30
-
-   * - OS
-     - Status
-     - Notes
-   * - Ubuntu 20.04, 22.04, 24.04
-     - ✅ Fully Supported
-     -
-   * - Debian 11, 12
-     - ✅ Fully Supported
-     -
-   * - RHEL/Rocky/Alma 8, 9
-     - ✅ Fully Supported
-     -
-   * - Alpine Linux
-     - ✅ Supported
-     - K3s, Docker
-   * - Raspberry Pi OS
-     - ✅ Supported
-     - ARM64
-
-**arillso.agent**
-
-.. list-table::
-   :header-rows: 1
-   :widths: 40 30 30
-
-   * - OS
-     - Status
-     - Notes
-   * - Ubuntu 20.04, 22.04, 24.04
-     - ✅ Fully Supported
-     -
-   * - Debian 11, 12
-     - ✅ Fully Supported
-     -
-   * - RHEL/Rocky/Alma 8, 9
-     - ✅ Fully Supported
-     -
-
-Architecture Support
---------------------
-
-.. list-table::
-   :header-rows: 1
-   :widths: 30 35 35
-
-   * - Architecture
-     - Support Status
-     - Notes
-   * - x86_64 (amd64)
-     - ✅ Fully Supported
-     - Primary
-   * - ARM64 (aarch64)
-     - ✅ Fully Supported
-     - Tested on Pi, Graviton
-   * - ARMv7
-     - ⚠️ Limited
-     - Basic roles only
-   * - x86 (32-bit)
-     - ❌ Not Supported
-     -
-
-Collection Compatibility
-------------------------
-
-Inter-Collection Compatibility
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. list-table::
-   :header-rows: 1
-   :widths: 25 25 25 25
-
-   * - Collection
-     - arillso.system
-     - arillso.container
-     - arillso.agent
-   * - arillso.system
-     - 1.x
-     - Any
-     - Any
-   * - arillso.container
-     - Any
-     - 1.x
-     - Any
-   * - arillso.agent
-     - Any
-     - Any
-     - 1.x
-
-**All arillso collections are designed to work together seamlessly.**
-
-Community Collections
-~~~~~~~~~~~~~~~~~~~~~
-
-arillso collections depend on these community collections:
-
-.. code-block:: yaml
-
-   # Automatically installed as dependencies
-   dependencies:
-     - ansible.posix (>= 1.5.0)
-     - community.general (>= 8.0.0)
-
-**Verify dependencies:**
-
-.. code-block:: bash
-
-   ansible-galaxy collection list
-
-Third-Party Tool Versions
---------------------------
-
-Container Runtimes
-~~~~~~~~~~~~~~~~~~
-
-**Docker**
-
-.. list-table::
-   :header-rows: 1
-   :widths: 30 35 35
-
-   * - Docker Version
-     - arillso.container
-     - Notes
-   * - 20.10.x
-     - ✅ Supported
-     - Minimum
-   * - 23.0.x
-     - ✅ Supported
-     -
-   * - 24.0.x
-     - ✅ Supported
-     -
-   * - 25.0.x+
-     - ✅ Supported
-     - Recommended
-
-**Kubernetes (K3s)**
-
-.. list-table::
-   :header-rows: 1
-   :widths: 30 35 35
-
-   * - K3s Version
-     - arillso.container
-     - Notes
-   * - v1.26.x
-     - ✅ Supported
-     - Minimum
-   * - v1.27.x
-     - ✅ Supported
-     -
-   * - v1.28.x
-     - ✅ Supported
-     - Recommended
-   * - v1.29.x+
-     - ✅ Supported
-     -
-
-**Customize K3s version:**
-
-.. code-block:: yaml
-
-   # In your vars
-   # renovate: datasource=github-releases depName=k3s-io/k3s
-   k3s_version: "v1.28.0+k3s1"
-
-Monitoring Tools
-~~~~~~~~~~~~~~~~
-
-**Grafana Alloy**
-
-.. list-table::
-   :header-rows: 1
-   :widths: 30 35 35
-
-   * - Alloy Version
-     - arillso.agent
-     - Notes
-   * - v1.0.x
-     - ✅ Supported
-     - Latest stable
-
-**Tailscale**
-
-.. list-table::
-   :header-rows: 1
-   :widths: 30 35 35
-
-   * - Tailscale Version
-     - arillso.agent
-     - Notes
-   * - Latest stable
-     - ✅ Supported
-     - Auto-updated
-
-Upgrade Guides
---------------
-
-Upgrading Collections
-~~~~~~~~~~~~~~~~~~~~~
-
-**Minor Version Upgrades (1.0.x → 1.1.x)**
-
-Minor upgrades are backward compatible:
-
-.. code-block:: bash
-
-   # Update to latest minor version
-   ansible-galaxy collection install arillso.system --upgrade
-
-   # Test with check mode
-   ansible-playbook site.yml --check
-
-   # Deploy
-   ansible-playbook site.yml
-
-**Major Version Upgrades (1.x → 2.x)**
-
-Major upgrades may include breaking changes:
-
-1. **Review Changelog:**
-
-   .. code-block:: bash
-
-      # View changelog
-      ansible-doc-collection arillso.system
-
-      # Or visit GitHub
-      curl https://github.com/arillso/ansible.system/blob/main/CHANGELOG.md
-
-2. **Update in test environment first:**
-
-   .. code-block:: bash
-
-      # Test environment
-      ansible-galaxy collection install arillso.system:2.0.0 \
-        -p ./test-collections
-
-      # Test playbooks
-      ansible-playbook -i test-inventory site.yml
-
-3. **Update variable names if needed:**
-
-   .. code-block:: yaml
-
-      # Example breaking change (hypothetical)
-      # v1.x
-      firewall:  # Old structure
-        - table:
-            family: inet
-
-      # v2.x (hypothetical)
-      firewall_tables:  # New structure
-        inet:
-          chains: []
-
-4. **Deploy to production:**
-
-   .. code-block:: bash
-
-      ansible-galaxy collection install arillso.system:2.0.0 --force
-      ansible-playbook site.yml
-
-Migration Paths
----------------
-
-From Other Collections
-~~~~~~~~~~~~~~~~~~~~~~
-
-**From geerlingguy.* roles**
-
-.. code-block:: yaml
-
-   # Before (geerlingguy)
-   - hosts: all
-     roles:
-       - geerlingguy.docker
-
-   # After (arillso)
-   - hosts: all
-     tasks:
-       - name: Install Docker
-         ansible.builtin.include_role:
-           name: arillso.container.docker
-
-**From ansible.builtin modules**
-
-.. code-block:: yaml
-
-   # Before
-   - name: Install packages
-     ansible.builtin.package:
-       name:
-         - nginx
-         - htop
-
-   # After (more features)
-   - name: Install packages
-     ansible.builtin.include_role:
-       name: arillso.system.packages
-     vars:
-       packages_list:
-         - name: nginx
-           state: present
-         - name: htop
-           state: present
-
-From Manual Configuration
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-**Converting shell scripts to playbooks:**
-
-.. code-block:: bash
-
-   # Before (shell script)
-   #!/bin/bash
-   apt-get update
-   apt-get install -y nginx
-   systemctl enable nginx
-   systemctl start nginx
-
-.. code-block:: yaml
-
-   # After (Ansible)
-   ---
-   - name: Setup web server
-     hosts: webservers
-     become: true
-     tasks:
-       - name: Install nginx
-         ansible.builtin.include_role:
-           name: arillso.system.packages
-         vars:
-           packages_list:
-             - name: nginx
-               state: present
-
-Breaking Changes
+   :widths: 34 22 22 22
+
+   * - Roles
+     - Debian
+     - Ubuntu
+     - EL
+   * - alloy, do
+     - bullseye, bookworm
+     - focal, jammy, noble
+     - 8, 9
+   * - tailscale
+     - bullseye, bookworm
+     - jammy, noble
+     - 8, 9
+
+Other Components
 ----------------
 
-Version 1.x Breaking Changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. list-table::
+   :header-rows: 1
+   :widths: 25 35 40
 
-**arillso.system 1.0.0**
+   * - Component
+     - Versioning
+     - Requirements and contents
+   * - :ref:`arillso/ansible <docker_ansible>` (container image)
+     - Rolling. A push to ``main`` that changes ``Dockerfile`` or
+       ``requirements.txt`` publishes ``latest``, ``<ansible-core version>``
+       and ``<ansible-core version>-<git sha>`` tags and a GitHub release
+       named after the build date.
+     - Images for ``linux/amd64`` and ``linux/arm64`` on Docker Hub and
+       ``ghcr.io``. Alpine base, runs as UID/GID ``1000:1000``. The
+       ansible-core version is pinned in ``requirements.txt``.
+   * - :ref:`action.playbook <action_playbook>` (GitHub Action)
+     - Semantic version tags without ``v`` prefix (for example ``0.5.0``).
+     - Docker action; each release pins its own image
+       ``ghcr.io/arillso/action.playbook:<version>``, which is built on a
+       pinned ``arillso/ansible`` image.
+   * - :ref:`go.ansible <go_ansible>` (Go library)
+     - Semantic version tags with ``v`` prefix (for example ``v2.0.0``).
+     - Go version from the ``go`` directive in ``go.mod``.
 
-* Initial release - no breaking changes
+Upgrading
+---------
 
-**arillso.container 1.0.0**
+Collections follow semantic versioning; tags carry no ``v`` prefix. Breaking
+changes are listed in each collection's ``CHANGELOG.md``:
 
-* Initial release - no breaking changes
+* `arillso/ansible.system CHANGELOG <https://github.com/arillso/ansible.system/blob/main/CHANGELOG.md>`_
+* `arillso/ansible.container CHANGELOG <https://github.com/arillso/ansible.container/blob/main/CHANGELOG.md>`_
+* `arillso/ansible.agent CHANGELOG <https://github.com/arillso/ansible.agent/blob/main/CHANGELOG.md>`_
 
-**arillso.agent 1.0.0**
-
-* Initial release - no breaking changes
-
-Planned Deprecations
-~~~~~~~~~~~~~~~~~~~~
-
-No deprecations planned for 1.x series.
-
-Version Pinning
----------------
-
-Best Practices
-~~~~~~~~~~~~~~
-
-**Use version ranges in requirements.yml:**
+Pin versions in ``requirements.yml`` and raise them deliberately:
 
 .. code-block:: yaml
 
    ---
    collections:
-     # Allow patch updates
      - name: arillso.system
-       version: ">=1.0.0,<1.1.0"
-
-     # Allow minor updates
+       version: "@ARILLSO_SYSTEM_VERSION@"
      - name: arillso.container
-       version: ">=1.0.0,<2.0.0"
+       version: "@ARILLSO_CONTAINER_VERSION@"
 
-     # Pin exact version (not recommended)
-     - name: arillso.agent
-       version: "1.0.0"
+.. code-block:: bash
 
-**Renovate auto-updates:**
+   ansible-galaxy collection install -r requirements.yml --upgrade
+   ansible-playbook site.yml --check --diff
+
+To let Renovate raise the pins, extend the shared preset from
+``arillso/.github``:
 
 .. code-block:: json
 
    {
      "$schema": "https://docs.renovatebot.com/renovate-schema.json",
      "extends": [
-       "github>arillso/.github:renovate-ansible#2026-08-08"
+       "github>arillso/.github:renovate-ansible#2026-11-20"
      ]
    }
 
 The ``#<date-tag>`` suffix pins the preset to a fixed revision. Without it
 Renovate resolves the preset against the default branch of
-``arillso/.github``, so a change there takes effect without a pull request and
-without review. A ``customManager`` in the shared presets keeps the tag
-current on its own (``automerge: true``).
+``arillso/.github``, so a change there takes effect without a pull request.
+A custom manager in the shared ``renovate-base`` preset keeps the tag current
+and automerges the bump.
 
-Lock Files
-~~~~~~~~~~
+Reporting a Compatibility Problem
+---------------------------------
 
-Create a lock file for reproducibility:
-
-.. code-block:: bash
-
-   # Generate lock file
-   ansible-galaxy collection list --format yaml > collections-lock.yml
-
-   # Install from lock file
-   ansible-galaxy collection install -r collections-lock.yml
-
-Compatibility Testing
----------------------
-
-Testing Different Versions
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: yaml
-
-   # molecule/default/requirements.yml
-   ---
-   collections:
-     - name: arillso.system
-       version: "1.0.0"  # Test specific version
+Open an issue in the collection's repository
+(`ansible.system <https://github.com/arillso/ansible.system/issues>`_,
+`ansible.container <https://github.com/arillso/ansible.container/issues>`_,
+`ansible.agent <https://github.com/arillso/ansible.agent/issues>`_) and
+include:
 
 .. code-block:: bash
 
-   # Test with molecule
-   molecule test
-
-Matrix Testing
-~~~~~~~~~~~~~~
-
-Test multiple versions in CI/CD:
-
-.. code-block:: yaml
-
-   # .github/workflows/test.yml
-   strategy:
-     matrix:
-       ansible:
-         - "2.15"
-         - "2.16"
-       collection:
-         - "1.0.0"
-         - "latest"
-
-Known Issues
-------------
-
-Current Known Issues
-~~~~~~~~~~~~~~~~~~~~
-
-.. list-table::
-   :header-rows: 1
-   :widths: 30 40 30
-
-   * - Issue
-     - Description
-     - Workaround
-   * - None
-     - No known issues
-     - N/A
-
-Version-Specific Issues
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Issues are tracked per version in GitHub Issues, in each collection's
-repository (for example `arillso/ansible.system
-<https://github.com/arillso/ansible.system/issues>`_,
-`arillso/ansible.agent <https://github.com/arillso/ansible.agent/issues>`_,
-and `arillso/ansible.container
-<https://github.com/arillso/ansible.container/issues>`_).
-
-Compatibility Checklist
------------------------
-
-Before Upgrading
-~~~~~~~~~~~~~~~~
-
-✅ **Pre-upgrade checklist:**
-
-* [ ] Review CHANGELOG for breaking changes
-* [ ] Test in non-production environment
-* [ ] Backup configuration files
-* [ ] Update requirements.yml
-* [ ] Run playbooks with ``--check`` mode
-* [ ] Update CI/CD pipelines
-* [ ] Document any custom changes needed
-* [ ] Plan rollback procedure
-
-After Upgrading
-~~~~~~~~~~~~~~~
-
-✅ **Post-upgrade verification:**
-
-* [ ] Verify collection versions installed
-* [ ] Run full playbook in test environment
-* [ ] Check all roles function correctly
-* [ ] Verify monitoring still works
-* [ ] Review logs for errors
-* [ ] Test rollback procedure
-* [ ] Update documentation
-* [ ] Deploy to production
-
-Getting Help
-------------
-
-Version-Related Issues
-~~~~~~~~~~~~~~~~~~~~~~
-
-If you encounter compatibility issues:
-
-1. **Check compatibility matrix** (this page)
-2. **Review CHANGELOG** for breaking changes
-3. **Search GitHub Issues** for known problems
-4. **Open new issue** with version details
-
-Include in bug reports:
-
-.. code-block:: bash
-
-   # Ansible version
    ansible --version
-
-   # Collection versions
    ansible-galaxy collection list | grep arillso
-
-   # OS details
    cat /etc/os-release
-
-   # Python version
    python3 --version
-
-Release Calendar
-----------------
-
-Release Schedule
-~~~~~~~~~~~~~~~~
-
-* **Major releases** (x.0.0): Annually
-* **Minor releases** (1.x.0): Quarterly
-* **Patch releases** (1.0.x): As needed
-
-**Subscribe to releases:**
-
-* GitHub: Watch → Custom → Releases
-* RSS: each collection exposes a release feed at
-  ``https://github.com/arillso/<repository>/releases.atom`` (for example
-  `ansible.system <https://github.com/arillso/ansible.system/releases.atom>`_)
-
-Next Steps
-----------
-
-* Review :ref:`quickstart` for getting started
-* Check :ref:`examples` for version-specific examples
-* Read :ref:`troubleshooting` for upgrade issues
-* Explore :ref:`contributing` for version requirements
 
 .. seealso::
 
    * :ref:`quickstart` - Quick Start Guide
-   * :ref:`troubleshooting` - Troubleshooting Guide
-   * :ref:`contributing` - Contributing Guidelines
-   * `GitHub Releases <https://github.com/arillso>`_
+   * :ref:`troubleshooting` - Troubleshooting
+   * :ref:`contributing` - Contributing

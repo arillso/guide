@@ -1,0 +1,74 @@
+/* search.html (Sphinx basic template + searchtools.js). */
+
+.page-search .doc form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-search .doc input[type="text"] {
+  flex: 1 1 14rem;
+  width: auto;
+  font-size: 1rem;
+}
+
+.page-search .doc input[type="submit"] {
+  min-height: 2.25rem;
+  padding: 0 1rem;
+  border: 1px solid var(--rule);
+  background: var(--ink);
+  color: var(--paper);
+  font: 600 0.75rem/1 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+#search-results h2 {
+  counter-increment: none;
+}
+
+#search-results h2::before {
+  content: none;
+}
+
+#search-results ul.search {
+  list-style: none;
+  padding: 0;
+  counter-reset: hit;
+}
+
+#search-results ul.search li {
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr);
+  counter-increment: hit;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--hair);
+}
+
+#search-results ul.search li::before {
+  content: counter(hit, decimal-leading-zero);
+  padding-top: 0.2em;
+  font: 600 0.75rem var(--font-mono);
+  color: var(--signal);
+}
+
+#search-results ul.search li a {
+  font-weight: 700;
+}
+
+#search-results ul.search li > :not(a) {
+  grid-column: 2;
+}
+
+#search-results p.context {
+  margin: 0.3rem 0 0;
+  font-size: 0.875rem;
+  color: var(--mute);
+}
+
+#search-progress {
+  font: 400 0.8125rem var(--font-mono);
+  color: var(--mute);
+}

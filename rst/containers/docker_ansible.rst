@@ -1,295 +1,255 @@
 .. meta::
-  :description: Alpine-based Docker container for running Ansible with Mitogen optimization
+  :description: arillso/ansible container image: ansible-core on Alpine Linux with Kubernetes CLI tools, published for linux/amd64 and linux/arm64
 
 .. _docker_ansible:
 
 docker.ansible
 ==============
 
-Alpine-based Docker container for running Ansible with Mitogen optimization, Kubernetes tools, and multi-platform support.
+Container image ``arillso/ansible``: ansible-core in a Python virtualenv on
+Alpine Linux, with SSH, Kubernetes and helper CLI tools. All facts on this page
+come from ``Dockerfile``, ``requirements.txt`` and ``.github/workflows/`` in
+https://github.com/arillso/docker.ansible (branch ``main``).
 
 .. contents::
    :local:
    :depth: 2
 
-Overview
---------
-
-``docker.ansible`` is a production-ready Docker container that provides a complete Ansible execution environment with performance optimizations and additional tooling for cloud-native workflows.
-
-**Repository:** https://github.com/arillso/docker.ansible
-
-**Docker Registries:**
-
-* Docker Hub: ``arillso/ansible``
-* GitHub Container Registry: ``ghcr.io/arillso/ansible``
-
-Features
---------
-
-Performance Optimization
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-* **Mitogen enabled by default** - 2-7x faster execution compared to standard Ansible
-* Optimized Alpine Linux base for minimal image size
-* Multi-platform support (amd64, arm64)
-
-Kubernetes Integration
-~~~~~~~~~~~~~~~~~~~~~~
-
-Pre-installed Kubernetes tools:
-
-* ``kubectl`` - Kubernetes command-line tool
-* ``helm`` - Kubernetes package manager
-* ``kustomize`` - Kubernetes native configuration management
-
-Security
-~~~~~~~~
-
-* Non-root user ``ansible`` (UID/GID 1000)
-* Minimal attack surface with Alpine Linux
-* Regular security scanning with Trivy
-
-Quick Start
+Image Facts
 -----------
 
-Basic Usage
-~~~~~~~~~~~
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
-Check Ansible version:
+   * - Property
+     - Value
+   * - Base image
+     - ``alpine:3.24.4`` (pinned by digest)
+   * - ansible-core
+     - ``2.22.0`` (``requirements.txt``)
+   * - Python
+     - Alpine package ``python3`` 3.14; Ansible runs from the virtualenv
+       ``/pipx/venvs/ansible``, its binaries are linked into ``/pipx/bin``
+       (first on ``PATH``)
+   * - User
+     - ``ansible``, UID/GID ``1000:1000``, home ``/home/ansible``
+   * - Working directory
+     - ``/home/ansible``; ``/data`` exists and is owned by ``ansible``
+   * - Entrypoint
+     - ``/sbin/tini --``
+   * - Default command
+     - ``ansible-playbook --version``
+   * - Stop signal
+     - ``SIGINT`` (Ansible finishes the running task and prints the recap)
+   * - Platforms
+     - ``linux/amd64``, ``linux/arm64`` (``platforms`` in ``merge.yml``)
+   * - License
+     - MIT
+
+Tags and Registries
+-------------------
+
+``merge.yml`` pushes every build to Docker Hub (``arillso/ansible``) and GitHub
+Container Registry (``ghcr.io/arillso/ansible``) with the same tags:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
+
+   * - Tag
+     - Meaning
+   * - ``latest``
+     - Most recent build from ``main``
+   * - ``<ansible-core>`` (e.g. ``2.22.0``)
+     - ansible-core version from ``requirements.txt``; moves with every rebuild
+       of that version
+   * - ``<ansible-core>-<short-sha>``
+     - Build of one commit
+   * - ``<ansible-core>-<full-sha>``
+     - Build of one commit, full SHA
+
+A build runs on every push to ``main`` that changes ``Dockerfile`` or
+``requirements.txt``. The matching GitHub release and git tag are named after the
+build date (``YYYY-MM-DD``, latest: ``2026-11-21``). The ghcr.io image carries a
+build provenance attestation; the build also produces an SBOM.
+
+Contents
+--------
+
+System Packages
+~~~~~~~~~~~~~~~
+
+Installed with ``apk`` in the production stage of the ``Dockerfile``:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Area
+     - Packages
+   * - Runtime
+     - ``python3``, ``bash``, ``tini``
+   * - SSH and transfer
+     - ``openssh-client-common``, ``openssh-client-default``, ``openssh-keygen``,
+       ``sshpass``, ``rsync``
+   * - Kubernetes
+     - ``kubectl``, ``helm``, ``kustomize``
+   * - Utilities
+     - ``git``, ``curl``, ``jq``, ``gnupg``, ``openssl``, ``libexpat``
+
+Python Packages
+~~~~~~~~~~~~~~~
+
+Installed from ``requirements.txt`` into ``/pipx/venvs/ansible`` (selection, see
+the file for exact pins):
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Area
+     - Packages
+   * - Ansible
+     - ``ansible-core``, ``mitogen``, ``jmespath``, ``netaddr``, ``passlib``,
+       ``Jinja2``
+   * - Connections
+     - ``paramiko``, ``pywinrm[credssp]``, ``requests-credssp``
+   * - Cloud
+     - ``boto3``/``botocore`` (AWS), ``azure-identity``, ``azure-mgmt-compute``,
+       ``azure-mgmt-network``, ``google-cloud-compute``, ``google-auth``,
+       ``pyvmomi`` (VMware)
+   * - Containers
+     - ``docker``, ``kubernetes``, ``openshift``
+   * - Databases
+     - ``psycopg2-binary``, ``PyMySQL``, ``redis``
+   * - Other APIs
+     - ``python-gitlab``, ``hvac`` (HashiCorp Vault), ``py-consul``,
+       ``crowdstrike-falconpy``, ``dnspython``
+
+Built-in Ansible Configuration
+------------------------------
+
+The image writes ``/etc/ansible/ansible.cfg`` and ``/etc/ansible/hosts.yml``:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 65
+
+   * - Setting
+     - Value
+   * - ``inventory``
+     - ``/etc/ansible/hosts.yml`` (only ``localhost`` with
+       ``ansible_connection: local``)
+   * - ``host_key_checking``
+     - ``False``; set ``ANSIBLE_HOST_KEY_CHECKING=True`` for persistent hosts
+   * - ``strategy_plugins``
+     - Path of the Mitogen strategy plugins; the default strategy stays
+       ``linear``
+   * - ``stdout_callback``
+     - ``default``
+   * - ``pipelining``
+     - ``True``
+
+``ANSIBLE_FORCE_COLOR=True`` is set as environment variable.
+
+Mitogen is installed but not active. Enable it per run with
+``ANSIBLE_STRATEGY=mitogen_linear``.
+
+Usage
+-----
 
 .. code-block:: bash
 
-   docker run --rm arillso/ansible ansible-playbook --version
+   # Print the Ansible version (default command)
+   docker run --rm arillso/ansible
 
-Run a playbook:
+   # Run a playbook from the current directory
+   docker run --rm -v "$(pwd)":/workspace -w /workspace \
+     arillso/ansible ansible-playbook -i inventory.yml playbook.yml
 
-.. code-block:: bash
-
-   docker run --rm -v $(pwd):/workspace -w /workspace \
-     arillso/ansible ansible-playbook playbook.yml
-
-Interactive shell:
-
-.. code-block:: bash
-
-   docker run --rm -it -v $(pwd):/workspace -w /workspace \
+   # Interactive shell
+   docker run --rm -it -v "$(pwd)":/workspace -w /workspace \
      arillso/ansible bash
 
-With Inventory
-~~~~~~~~~~~~~~
+SSH key and host key checking:
 
 .. code-block:: bash
 
    docker run --rm \
-     -v $(pwd):/workspace \
-     -w /workspace \
+     -e ANSIBLE_HOST_KEY_CHECKING=True \
+     -v "$(pwd)":/workspace -w /workspace \
+     -v "$HOME/.ssh/id_ed25519":/home/ansible/.ssh/id_ed25519:ro \
+     arillso/ansible ansible-playbook -i inventory.yml playbook.yml
+
+Vault password from a file:
+
+.. code-block:: bash
+
+   docker run --rm \
+     -v "$(pwd)":/workspace -w /workspace \
+     -v "$(pwd)/.vault_pass":/home/ansible/.vault_pass:ro \
      arillso/ansible ansible-playbook \
-     -i inventory.yml \
-     playbook.yml
+       --vault-password-file /home/ansible/.vault_pass playbook.yml
 
-Using Mitogen
-~~~~~~~~~~~~~
+With Mitogen:
 
-Mitogen is enabled by default through the ``ansible.cfg`` configuration:
+.. code-block:: bash
 
-.. code-block:: ini
+   docker run --rm -e ANSIBLE_STRATEGY=mitogen_linear \
+     -v "$(pwd)":/workspace -w /workspace \
+     arillso/ansible ansible-playbook -i inventory.yml playbook.yml
 
-   [defaults]
-   strategy_plugins = /usr/lib/python3.11/site-packages/ansible_mitogen/plugins/strategy
-   strategy = mitogen_linear
+Files written to a bind mount belong to UID 1000. To write as the calling user,
+add ``--user "$(id -u):$(id -g)"``.
 
-Docker Compose Example
-----------------------
+Extending the Image
+-------------------
 
-.. code-block:: yaml
+``/pipx`` belongs to ``root``; ``pip`` on ``PATH`` is the virtualenv's pip.
+Switch to ``root`` for the install and back to ``1000:1000`` afterwards:
 
-   version: '3.8'
-   services:
-     ansible:
-       image: arillso/ansible:latest
-       volumes:
-         - ./:/workspace
-       working_dir: /workspace
-       command: ansible-playbook -i inventory.yml site.yml
+.. code-block:: dockerfile
 
-GitHub Actions Example
-----------------------
-
-.. code-block:: yaml
-
-   name: Deploy with Ansible
-   on: [push]
-
-   jobs:
-     deploy:
-       runs-on: ubuntu-latest
-       container:
-         image: arillso/ansible:latest
-       steps:
-         - uses: actions/checkout@v4
-         - name: Run Ansible playbook
-           run: ansible-playbook -i inventory.yml playbook.yml
+   FROM arillso/ansible:@ARILLSO_ANSIBLE_IMAGE_VERSION@
+   USER root
+   RUN pip install --no-cache-dir <package>
+   USER 1000:1000
 
 Building from Source
 --------------------
 
-Requirements
-~~~~~~~~~~~~
-
-* Docker with BuildKit support
-* Make (optional, for convenience)
-
-Build Commands
-~~~~~~~~~~~~~~
-
-Using Make:
-
 .. code-block:: bash
 
-   make ansible-build       # Build container
-   make test-quick          # Quick validation
-   make comprehensive-test  # Full test suite
-   make release-check       # Pre-release validation
+   git clone https://github.com/arillso/docker.ansible
+   cd docker.ansible
+   make ansible-build        # build the image
+   make test-quick           # basic checks
+   make comprehensive-test   # all test suites under tests/
 
-Using Docker directly:
+``docker build -t arillso/ansible:local .`` works without ``make``. The builder
+stage resolves Alpine packages through the ``pkg.arillso.io`` proxy.
 
-.. code-block:: bash
+CI
+--
 
-   docker build -t arillso/ansible:local .
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
-Multi-platform Build
-~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: bash
-
-   docker buildx build \
-     --platform linux/amd64,linux/arm64 \
-     -t arillso/ansible:latest \
-     --push .
-
-Version Management
-------------------
-
-The container uses version ranges for Alpine packages to balance stability and security:
-
-.. code-block:: dockerfile
-
-   # Example: Python with version constraint
-   RUN apk add --no-cache \
-       python3>=3.11.0 \
-       python3<4.0.0
-
-This approach:
-
-* Allows security patches within the same minor version
-* Prevents breaking changes from major version updates
-* Maintains reproducible builds
-
-Testing
--------
-
-The project includes comprehensive testing:
-
-Unit Tests
-~~~~~~~~~~
-
-Basic functionality validation:
-
-.. code-block:: bash
-
-   make test-quick
-
-Integration Tests
-~~~~~~~~~~~~~~~~~
-
-Real-world playbook execution:
-
-.. code-block:: bash
-
-   make comprehensive-test
-
-Security Scanning
-~~~~~~~~~~~~~~~~~
-
-Trivy vulnerability scanning is performed in CI/CD pipeline:
-
-.. code-block:: bash
-
-   trivy image arillso/ansible:latest
-
-Performance Tests
-~~~~~~~~~~~~~~~~~
-
-Mitogen performance validation comparing execution times with and without optimization.
-
-CI/CD Pipeline
---------------
-
-Automated workflows in ``.github/workflows/``:
-
-* **Build and Test** - Multi-platform builds with comprehensive testing
-* **Security Scanning** - Trivy vulnerability scans
-* **Release** - Automated publishing to Docker Hub and GitHub Container Registry
-
-Environment Variables
----------------------
-
-Common Ansible environment variables:
-
-.. code-block:: bash
-
-   docker run --rm \
-     -e ANSIBLE_HOST_KEY_CHECKING=False \
-     -e ANSIBLE_STDOUT_CALLBACK=yaml \
-     -v $(pwd):/workspace \
-     -w /workspace \
-     arillso/ansible ansible-playbook playbook.yml
-
-Troubleshooting
----------------
-
-Permission Issues
-~~~~~~~~~~~~~~~~~
-
-The container runs as user ``ansible`` (UID 1000). If you encounter permission issues:
-
-.. code-block:: bash
-
-   # Run as current user
-   docker run --rm --user $(id -u):$(id -g) \
-     -v $(pwd):/workspace -w /workspace \
-     arillso/ansible ansible-playbook playbook.yml
-
-Mitogen Issues
-~~~~~~~~~~~~~~
-
-To disable Mitogen and use standard Ansible:
-
-.. code-block:: bash
-
-   docker run --rm \
-     -e ANSIBLE_STRATEGY=linear \
-     -v $(pwd):/workspace -w /workspace \
-     arillso/ansible ansible-playbook playbook.yml
-
-Python Dependencies
-~~~~~~~~~~~~~~~~~~~
-
-Install additional Python packages:
-
-.. code-block:: dockerfile
-
-   FROM arillso/ansible:latest
-   RUN pip install --no-cache-dir netaddr jmespath
-
-License
--------
-
-MIT License - Copyright (c) 2024-2026, arillso
+   * - Workflow
+     - Content
+   * - ``pull-request.yml``
+     - Lint, hadolint, image build, container structure tests, secret scan,
+       dependency review
+   * - ``merge.yml``
+     - Build and push for ``linux/amd64`` and ``linux/arm64``, GitHub release
+   * - ``nightly-security.yml``
+     - Daily at 02:00 UTC: CodeQL, Trivy scan (``CRITICAL``, ``HIGH``), secret
+       scan
 
 .. seealso::
 
-   * :ref:`action.playbook <action_playbook>` - GitHub Action using this container
-   * :ref:`go.ansible <go_ansible>` - Go library for Ansible execution
+   * :ref:`action.playbook <action_playbook>` - GitHub Action built on this image
+   * :ref:`go.ansible <go_ansible>` - Go library for running ``ansible-playbook``
    * :ref:`list_of_collections` - Ansible Collections

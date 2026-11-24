@@ -1,561 +1,249 @@
 .. meta::
-  :description: Contributing guidelines and development standards for arillso projects
+  :description: How to contribute to the arillso collections, container image, GitHub Action and Go library
 
 .. _contributing:
 
 Contributing
-=======================
+============
 
-Thank you for your interest in contributing to arillso projects! This guide provides standards, guidelines, and best practices for all arillso repositories.
+Rules that apply across the arillso repositories. Each repository has its own
+``CONTRIBUTING.md`` with the exact setup; where it differs from this page, the
+repository file wins.
 
 .. contents::
    :local:
    :depth: 2
 
-General Guidelines
-------------------
+Repositories
+------------
 
-Code of Conduct
-~~~~~~~~~~~~~~~
+.. list-table::
+   :header-rows: 1
+   :widths: 35 65
 
-All arillso projects adhere to a Code of Conduct. By participating, you are expected to uphold this code. Be respectful, constructive, and inclusive in all interactions.
+   * - Repository
+     - Content
+   * - `arillso/ansible.system <https://github.com/arillso/ansible.system>`_
+     - Collection ``arillso.system``
+   * - `arillso/ansible.container <https://github.com/arillso/ansible.container>`_
+     - Collection ``arillso.container``
+   * - `arillso/ansible.agent <https://github.com/arillso/ansible.agent>`_
+     - Collection ``arillso.agent``
+   * - `arillso/docker.ansible <https://github.com/arillso/docker.ansible>`_
+     - Container image ``arillso/ansible``
+   * - `arillso/action.playbook <https://github.com/arillso/action.playbook>`_
+     - GitHub Action ``arillso/action.playbook``
+   * - `arillso/go.ansible <https://github.com/arillso/go.ansible>`_
+     - Go module ``github.com/arillso/go.ansible/v2``
+
+The organisation-wide code of conduct, security policy and pull request
+template live in `arillso/.github <https://github.com/arillso/.github>`_.
 
 Prerequisites
-~~~~~~~~~~~~~
+-------------
 
-**For Ansible Collections:**
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
-* Ansible >= 2.15
-* Python >= 3.9
-* Git
-* GitHub account
+   * - Repository type
+     - Requirements (from the repository's ``CONTRIBUTING.md``)
+   * - Ansible collections
+     - Ansible >= 2.18, Python >= 3.12 (arillso.system: 3.13, the version
+       its CI runs), Git, Docker for tests; arillso.container needs QEMU with
+       KVM for Molecule
+   * - Go library and action
+     - Go version from the ``go`` directive in ``go.mod``, Git; Docker for
+       the action
+   * - Container image
+     - Docker, Make
 
-**For Go Projects:**
+All repositories use `lefthook <https://github.com/evilmartians/lefthook>`_
+for Git hooks. Run ``lefthook install`` once after cloning; see
+:ref:`cicd` for what the hooks check.
 
-* Go >= 1.25
-* Git
-* GitHub account
+Workflow
+--------
 
-**For Container Projects:**
+1. Fork the repository and clone it:
 
-* Docker with BuildKit
-* Make (optional)
+   .. code-block:: bash
 
-Types of Contributions
-~~~~~~~~~~~~~~~~~~~~~~
+      git clone https://github.com/YOUR_USERNAME/ansible.system.git
+      cd ansible.system
+      git remote add upstream https://github.com/arillso/ansible.system.git
 
-We welcome various types of contributions:
+2. Create a branch named after the change type, for example
+   ``feat/your-topic`` or ``fix/your-topic``.
+3. Run ``make lint`` and ``make test`` and fix all findings.
+4. Add an entry under ``[Unreleased]`` in ``CHANGELOG.md``.
+5. Open a pull request against ``main`` and fill in the template.
 
-* **Bug Reports** - Found a bug? Let us know!
-* **Feature Requests** - Have an idea for improvement?
-* **Documentation** - Improvements to docs are always appreciated
-* **Code Contributions** - Bug fixes, new features, or improvements
-* **Testing** - Platform testing and validation
+A maintainer reviews the pull request. All CI checks must pass and at least
+one maintainer approval is required before merge. The CI jobs are described
+in :ref:`cicd`.
 
-Ansible Collection Standards
------------------------------
+Commit Messages
+---------------
 
-File Organization
-~~~~~~~~~~~~~~~~~
+`Conventional Commits <https://www.conventionalcommits.org/>`_: a type, an
+optional scope (role, plugin or area) and an imperative summary in lower
+case.
 
-Each role must follow the standard structure defined in :ref:`standards`. The design rules
-behind that structure - the role contract, ``argument_specs``, dispatcher pattern, handler
-namespacing, and composition - are documented in :ref:`ansible-roles`.
+.. code-block:: text
 
-**Required structure:**
+   fix(firewall): reload nftables after config validation
+
+   Optional body: what changes for users and why.
+
+   Fixes #123
+
+Common types are ``feat``, ``fix``, ``docs``, ``test``, ``ci``, ``chore`` and
+``refactor``. A change that requires users to adapt playbooks or variables is
+breaking: add ``!`` after the scope (``fix(tuning)!: ...``) and a
+``BREAKING CHANGE:`` footer with the migration step.
+
+Ansible Collections
+-------------------
+
+Role Layout
+~~~~~~~~~~~
 
 .. code-block:: text
 
    roles/ROLE_NAME/
    ├── defaults/
-   │   └── main.yml          # User-configurable variables, prefixed and commented
+   │   └── main.yml              # User-configurable variables
    ├── handlers/
-   │   └── main.yml          # Service restart handlers, names prefixed
+   │   └── main.yml              # Service handlers
    ├── meta/
-   │   ├── main.yml          # Role metadata
-   │   └── argument_specs.yml # REQUIRED: Variable specs
+   │   ├── main.yml              # Role metadata, platforms
+   │   └── argument_specs.yml    # Variable specifications
    ├── tasks/
-   │   ├── main.yml          # Dispatcher, not implementation
-   │   ├── install.yml       # Installation tasks
-   │   ├── configure.yml     # Configuration tasks
-   │   └── service.yml       # Service management
+   │   ├── main.yml              # Entry point
+   │   ├── install.yml
+   │   ├── configure.yml
+   │   └── service.yml
    ├── templates/
-   │   └── ...               # Jinja2 templates
    ├── vars/
-   │   ├── main.yml          # Internal constants, not inputs
-   │   ├── Debian.yml        # Debian-specific vars
-   │   └── RedHat.yml        # RedHat-specific vars
-   └── README.md             # Role documentation
+   │   ├── Debian.yml
+   │   └── RedHat.yml
+   └── README.md
 
-The role's test scenario lives at the collection level, not inside the role:
+Molecule scenarios live in ``extensions/molecule/<role>/`` in arillso.system
+and in ``roles/<role>/molecule/`` in arillso.container and arillso.agent. The
+design rules behind this layout are in :ref:`ansible-roles`.
 
-.. code-block:: text
+Rules
+~~~~~
 
-   extensions/molecule/ROLE_NAME/
-   ├── molecule.yml          # Driver, platforms, test_sequence
-   ├── converge.yml          # Invokes the role
-   └── verify.yml            # Asserts the end state on the system
+* Tasks are idempotent; a second run must not report changes.
+* Modules are called by their fully qualified name
+  (``ansible.builtin.template``, not ``template``).
+* Variables are prefixed with the role name and documented in
+  ``defaults/main.yml``.
+* Every role has ``meta/argument_specs.yml``. CI validates it in the
+  *Argument Specs Check* job, and the role pages of this guide are generated
+  from it.
+* Service restarts and reloads go through handlers.
+* YAML uses four spaces, starts with ``---`` and stays under 500 characters
+  per line (``.yamllint.yml``).
+* Python plugins follow PEP 8 with a line length of 100 (black, ruff).
 
-Code Style
-~~~~~~~~~~
-
-**Good Example:**
+Example task:
 
 .. code-block:: yaml
 
    - name: Install Grafana Alloy package
      ansible.builtin.package:
-       name: "{{ alloy_package_name }}"
-       state: "{{ alloy_package_state }}"
-     register: alloy_install_result
-     when: alloy_enabled | bool
-
-**Bad Example:**
-
-.. code-block:: yaml
-
-   - name: install pkg
-     package: name={{pkg}} state=present
-     when: enabled
-
-Best Practices
-~~~~~~~~~~~~~~
-
-1. **Use FQCN** (Fully Qualified Collection Names):
-
-   .. code-block:: yaml
-
-      # Good
-      - name: Create directory
-        ansible.builtin.file:
-          path: /etc/app
-          state: directory
-
-      # Bad
-      - name: Create directory
-        file:
-          path: /etc/app
-          state: directory
-
-2. **Proper YAML Indentation:**
-
-   * Use 4 spaces for indentation (not tabs)
-   * Be consistent throughout the file
-
-3. **Meaningful Variable Names:**
-
-   * Prefix with role name: ``alloy_*``, ``docker_*``, ``k3s_*``
-   * Use descriptive names: ``alloy_prometheus_enabled`` not ``alloy_prom``
-   * Booleans: Use ``*_enabled``, ``*_required``, etc.
-   * Lists: Use plural names ``alloy_custom_exporters``
-   * Dicts: Use singular names ``alloy_node_exporter_config``
-
-4. **Task Organization:**
-
-   * Separate tasks by function (install, configure, service)
-   * Use ``include_tasks`` for modularity
-   * Keep main.yml as entry point only
-
-Variable Documentation
-~~~~~~~~~~~~~~~~~~~~~~
-
-All variables **MUST** be documented in three places:
-
-**1. defaults/main.yml** - With inline comments:
-
-.. code-block:: yaml
-
-   # Enable Prometheus metrics collection
-   alloy_prometheus_enabled: false
-
-   # Prometheus remote write endpoint
-   alloy_prometheus_remote_write_url: ""
-
-**2. meta/argument_specs.yml** - With full specifications (REQUIRED):
-
-.. code-block:: yaml
-
-   argument_specs:
-     main:
-       short_description: Grafana Alloy configuration
-       options:
-         alloy_prometheus_enabled:
-           type: bool
-           required: false
-           default: false
-           description: Enable Prometheus metrics collection
-
-**3. README.md** - With usage examples:
-
-.. code-block:: markdown
-
-   ### Prometheus Configuration
-
-   ```yaml
-   alloy_prometheus_enabled: true
-   alloy_prometheus_remote_write_url: "https://prometheus.example.com/api/v1/write"
-   ```
-
-.. warning::
-   Roles without ``argument_specs.yml`` will be rejected!
-
-Testing Requirements
-~~~~~~~~~~~~~~~~~~~~
-
-**Before Submitting:**
-
-Use the Makefile targets - CI runs the same ones, so local and pipeline results cannot
-drift apart.
-
-1. **Lint your code:**
-
-   .. code-block:: bash
-
-      make lint          # ansible-lint, yamllint, ruff/black
-
-2. **Run the unit suite:**
-
-   .. code-block:: bash
-
-      make test-unit     # pytest for modules, filters, lookups
-
-3. **Run the Molecule scenario** for the role you touched:
-
-   .. code-block:: bash
-
-      make test-molecule                       # every scenario, slow
-      cd extensions && molecule test -s ROLE_NAME   # just one
-
-   * The sequence must include ``idempotence`` - a second run changing anything is a bug
-   * Minimum: one major platform. Ideal: Ubuntu, Debian, and RHEL
-   * Roles needing a real kernel run under a VM driver, not a container
-
-4. **Verify the collection builds:**
-
-   .. code-block:: bash
-
-      make build
-
-See :ref:`ansible-roles` for scenario layout, driver choice, and the idempotence traps
-that linting does not catch.
-
-Release Process
-~~~~~~~~~~~~~~~
-
-.. important::
-   **ALWAYS update CHANGELOG.md before releasing!**
-
-**Release Checklist:**
-
-1. **Update CHANGELOG.md** (REQUIRED)
-
-   * Move items from ``[Unreleased]`` to new version section
-   * Follow `Keep a Changelog <https://keepachangelog.com/>`_ format (see :ref:`standards`)
-   * Categories: Added, Changed, Fixed, Deprecated, Removed, Security
-
-2. **Update galaxy.yml version**
-
-   .. code-block:: yaml
-
-      version: "1.0.1"
-
-3. **Create and push git tag**
-
-   * Use version **without 'v' prefix** per :ref:`standards` (e.g., ``1.0.1`` not ``v1.0.1``)
-
-   .. code-block:: bash
-
-      git tag 1.0.1
-      git push origin 1.0.1
-
-4. **Automated workflows trigger**
-
-   * ``tag.yml`` publishes to Ansible Galaxy (see :ref:`cicd` for workflow details)
-   * Creates GitHub Release with CHANGELOG notes
-
-Go Project Standards
---------------------
-
-Code Style
-~~~~~~~~~~
-
-* Follow standard Go conventions (``gofmt``, ``golangci-lint``)
-* Use ``context.Context`` for operations
-* Error handling with ``github.com/pkg/errors`` for wrapped errors
-* Struct-based configuration with defaults
+         name: "{{ alloy_package_name }}"
+         state: "{{ alloy_package_state }}"
 
 Testing
 ~~~~~~~
 
 .. code-block:: bash
 
-   # Run all tests
-   go test -v ./...
+   make lint            # ansible-lint, yamllint, ruff/black
+   make test            # pytest unit suite
+   make test-molecule   # every Molecule scenario (slow)
+   make build           # ansible-galaxy collection build
 
-   # With coverage
-   go test -cover ./...
+``make test`` runs ``pytest`` directly. CI runs ``ansible-test units
+--docker`` instead, so a green local run does not guarantee a green CI run.
 
-   # Specific test
-   go test -run TestPlaybook_Exec ./...
-
-Documentation
-~~~~~~~~~~~~~
-
-* All public functions must have doc comments
-* Include usage examples in package docs
-* Keep README.md up-to-date
-
-Docker/Container Standards
---------------------------
-
-Dockerfile Best Practices
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-1. **Multi-stage builds** for smaller images
-2. **Non-root user** for security
-3. **Version ranges** for Alpine packages:
-
-   .. code-block:: dockerfile
-
-      # Good - allows security patches
-      RUN apk add --no-cache \
-          python3>=3.11.0 \
-          python3<4.0.0
-
-4. **Multi-platform support** (amd64, arm64)
-
-Testing
+Release
 ~~~~~~~
 
-.. code-block:: bash
+Maintainers only.
 
-   make ansible-build       # Build container
-   make test-quick          # Quick validation
-   make comprehensive-test  # Full test suite
-   make release-check       # Pre-release validation
+1. Move the ``[Unreleased]`` entries in ``CHANGELOG.md`` to a new
+   ``## [X.Y.Z]`` section.
+2. Set ``version`` in ``galaxy.yml`` to the same version.
+3. Tag without ``v`` prefix and push the tag:
 
-GitHub Actions Standards
-------------------------
+   .. code-block:: bash
 
-Action Development
-~~~~~~~~~~~~~~~~~~
+      git tag 2.0.5
+      git push origin 2.0.5
 
-1. **Use semantic inputs** - Clear, descriptive parameter names
-2. **Provide examples** - Include usage examples in README
-3. **Handle errors gracefully** - Validate inputs and provide clear errors
-4. **Security first** - Use GitHub Secrets for sensitive data
+``tag.yml`` refuses the release if the tag and ``galaxy.yml`` differ or the
+changelog section is missing, then publishes to Ansible Galaxy and creates
+the GitHub Release.
 
-Action.yml Structure
-~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: yaml
-
-   name: 'Action Name'
-   description: 'Clear description'
-   inputs:
-     input_name:
-       description: 'Detailed description'
-       required: false
-       default: 'value'
-   runs:
-     using: 'docker'
-     image: 'Dockerfile'
-
-Commit Guidelines
------------------
-
-Commit Message Format
-~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: text
-
-   Add feature description
-
-   - Detailed point 1
-   - Detailed point 2
-   - Detailed point 3
-
-   Fixes #123
-
-**Format:**
-
-* First line: Brief summary (50 chars or less)
-* Blank line
-* Detailed description with bullet points
-* Reference related issues
-
-**Examples:**
-
-.. code-block:: text
-
-   feat: add Faro configuration to Alloy role
-
-   - Add alloy_enable_faro variable
-   - Add Faro receiver template
-   - Update README with examples
-
-   Fixes #123
-
-.. code-block:: text
-
-   fix: correct SSH key normalization
-
-   - Handle missing trailing newlines
-   - Support all PEM formats
-   - Add validation tests
-
-   Closes #456
-
-Pull Request Process
---------------------
-
-1. Prepare Your Changes
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: bash
-
-   # Update from upstream
-   git fetch upstream
-   git rebase upstream/main
-
-   # Run tests
-   ansible-lint roles/ROLE_NAME/  # For Ansible
-   go test ./...                   # For Go
-
-2. Create Pull Request
-~~~~~~~~~~~~~~~~~~~~~~
-
-* Fill out all sections of PR template
-* Link related issues
-* Mark as draft if work in progress
-* Provide test results
-
-3. PR Review Process
-~~~~~~~~~~~~~~~~~~~~
-
-* Maintainer review
-* Address feedback
-* Ensure CI checks pass
-* Require maintainer approval
-* Maintainer merges when ready
-
-4. After Merge
-~~~~~~~~~~~~~~
-
-.. code-block:: bash
-
-   # Delete feature branch
-   git branch -d feature/your-feature
-
-   # Update fork
-   git checkout main
-   git pull upstream main
-   git push origin main
-
-Documentation Standards
------------------------
-
-README Structure
-~~~~~~~~~~~~~~~~
-
-Every project README should contain:
-
-1. **Title and badges**
-2. **Description** - What it does
-3. **Features** - Key capabilities
-4. **Installation** - How to install
-5. **Quick Start** - Minimal example
-6. **Configuration** - Available options
-7. **Examples** - Real-world usage
-8. **License** - MIT with copyright
-9. **Contributing** - Link to guide
-
-Inline Documentation
-~~~~~~~~~~~~~~~~~~~~
-
-* **Ansible:** Comment complex logic and non-obvious decisions
-* **Go:** Doc comments on all exported functions
-* **Docker:** Comment multi-stage builds and custom logic
-
-Version Compatibility
+Go Library and Action
 ---------------------
 
-See :ref:`compatibility` for complete version requirements, platform support, and upgrade guides.
+* Format with ``gofmt``/``goimports``; ``golangci-lint`` runs with the
+  repository's ``.golangci.yml``.
+* go.ansible: use ``context.Context`` for command execution and
+  cancellation, wrap errors with the standard library (``fmt.Errorf`` with
+  ``%w``).
+* Document exported functions and types.
+* action.playbook: expose Ansible options as action inputs named after the
+  Ansible CLI flags and document every input in ``action.yml``.
 
-CI/CD Workflows
+.. code-block:: bash
+
+   make lint
+   make test
+
+Release tags: ``vX.Y.Z`` for go.ansible, ``X.Y.Z`` without prefix for
+action.playbook. Both release from ``tag.yml`` after a ``CHANGELOG.md``
+update.
+
+Container Image
 ---------------
 
-All repositories must have standardized CI/CD workflows.
+The ``Dockerfile`` of ``arillso/ansible`` is a multi-stage build on Alpine,
+runs as ``USER 1000:1000`` and constrains Alpine packages with version ranges
+(for example ``python3>=3.14.10-r1``) so security patches still apply.
 
-See :ref:`cicd` for complete workflow implementations, linter configurations, and automation standards.
+.. code-block:: bash
 
-Security Guidelines
--------------------
+   make ansible-build        # build the image
+   make test-quick           # basic tests
+   make comprehensive-test   # structure, security, performance,
+                             # integration, unit and upgrade tests
+   make release-check        # comprehensive-test as release gate
 
-Secrets Management
-~~~~~~~~~~~~~~~~~~
+There is no manual release: a merge to ``main`` that changes ``Dockerfile``
+or ``requirements.txt`` builds and publishes the image (see :ref:`cicd`).
 
-* **Never commit secrets** to repositories
-* Use GitHub Secrets for CI/CD
-* Use Vault or secret managers in production
-* Rotate credentials regularly
+Security
+--------
 
-Dependency Management
-~~~~~~~~~~~~~~~~~~~~~
-
-* Keep dependencies up-to-date
-* Use Renovate for automated updates
-* Review security advisories
-* Pin major versions, allow patches
-
-Code Security
-~~~~~~~~~~~~~
-
-* Validate all inputs
-* Sanitize user data
-* Use parameterized queries
-* Avoid command injection
-* Follow OWASP guidelines
-
-Getting Help
-------------
-
-If you have questions:
-
-1. Check existing documentation
-2. Search closed issues
-3. Open a discussion on GitHub
-4. Tag maintainers if needed
-
-Community
----------
-
-* **Be respectful** and constructive
-* **Provide context** in issues and PRs
-* **Be patient** - maintainers are volunteers
-* **Celebrate contributions** - recognize others' work
-
-Questions?
-----------
-
-Open a discussion on GitHub or check project-specific CONTRIBUTING.md files:
-
-* `arillso.agent CONTRIBUTING.md <https://github.com/arillso/ansible.agent/blob/main/CONTRIBUTING.md>`_
-* `arillso.container CONTRIBUTING.md <https://github.com/arillso/ansible.container/blob/main/CONTRIBUTING.md>`_
-* `arillso.system CONTRIBUTING.md <https://github.com/arillso/ansible.system/blob/main/CONTRIBUTING.md>`_
+* Report vulnerabilities by email to ``security@arillso.io``, not as public
+  issues.
+* Do not commit secrets. Gitleaks runs in the pre-commit and pre-push hooks
+  and in CI.
 
 .. seealso::
 
-   * :ref:`standards` - Repository standards and conventions
-   * :ref:`ansible-roles` - Role and collection design rules
-   * :ref:`cicd` - CI/CD workflows and automation
-   * :ref:`compatibility` - Version compatibility and requirements
+   * :ref:`standards` - Repository Standards
+   * :ref:`ansible-roles` - Role and Collection Design
+   * :ref:`cicd` - CI/CD & Linting
+   * :ref:`compatibility` - Version Compatibility
    * :ref:`list_of_collections` - Ansible Collections
    * :ref:`list_of_containers` - Container Images
    * :ref:`list_of_libraries` - Go Libraries
-
----
-
-**Thank you for contributing to arillso!**
-
-Your contributions help make these projects better for everyone.

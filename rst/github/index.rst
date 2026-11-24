@@ -5,45 +5,33 @@
 
 .. _list_of_github:
 
-GitHub Actions Index
-====================
+GitHub Action
+=============
 
-GitHub Actions for Ansible automation in CI/CD pipelines.
+GitHub Actions maintained by arillso.
 
-.. contents::
-   :local:
-   :depth: 1
+.. list-table::
+   :header-rows: 1
+   :widths: 25 15 60
 
-Actions
--------
-
-:ref:`action.playbook <action_playbook>`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-GitHub Action for running Ansible Playbooks in CI/CD pipelines with comprehensive configuration options.
-
-**Key Features:**
-
-* Automatic SSH key normalization (v1.2.0+)
-* Ansible Galaxy integration
-* Vault password management via GitHub Secrets
-* Privilege escalation support
-* Check mode and diff support for safe deployments
-
-**Quick Start:**
+   * - Action
+     - Release
+     - Purpose
+   * - :ref:`action.playbook <action_playbook>`
+     - ``@ACTION_PLAYBOOK_VERSION@``
+     - Runs ``ansible-playbook`` in a Docker container action; installs Galaxy
+       requirements, loads SSH keys into ``ssh-agent``, passes Vault passwords
+       through a temporary file
 
 .. code-block:: yaml
 
-   - name: Run Ansible Playbook
-     uses: arillso/action.playbook@v1.2.0
+   - uses: arillso/action.playbook@@ACTION_PLAYBOOK_VERSION@
      with:
-       playbook: deploy.yml
-       inventory: production.yml
+       playbook: site.yml
+       inventory: inventory.yml
        private_key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-**Marketplace:** https://github.com/marketplace/actions/play-ansible-playbook
-
-**Repository:** https://github.com/arillso/action.playbook
+Source: https://github.com/arillso/action.playbook
 
 .. toctree::
    :maxdepth: 1

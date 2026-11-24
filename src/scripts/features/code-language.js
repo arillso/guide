@@ -1,7 +1,7 @@
 // Labels each `.highlight` code block with its Pygments language. Sphinx
 // puts the language class on the wrapper, not on the inner block:
 //   <div class="highlight-yaml notranslate"><div class="highlight"><pre>
-// The label is set as `data-language` and rendered by code-block.css.
+// The label is set as `data-language` and rendered by code.css.
 
 const UNLABELLED = new Set(["none", "text", "default"]);
 

@@ -1,26 +1,27 @@
 # Arillso Guide
 
-> The simple, flexible, robust and powerful toolbox for Ansible.
-> It contains roles for managing Linux and Windows devices.
+Source of <https://guide.arillso.io>, the reference documentation for the
+arillso Ansible collections, the `arillso/ansible` container image, the
+`action.playbook` GitHub Action and the `go.ansible` library.
 
-The site is published as Sphinx HTML built on top of `antsibull-docs`.
-Collection documentation for `arillso.system`, `arillso.agent`, and
-`arillso.container` is generated from the upstream collections and
-themed with the custom CSS/JS bundle in `_static/`.
+The site is Sphinx HTML built on top of `antsibull-docs`. Collection
+documentation for `arillso.system`, `arillso.agent`, and `arillso.container`
+is generated from the released collections and rendered with the site's own
+theme (`_theme/arillso/`, styles and scripts in `src/`).
 
 ## Source Layout
 
-| Path                             | Purpose                                                                                                                                                             |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/`                           | Frontend sources (CSS tokens/base/layout/components, JS feature modules). PostCSS + esbuild emit the bundles into `_static/`. See [`src/README.md`](src/README.md). |
-| `_templates/`                    | Jinja2 overrides for the Sphinx theme.                                                                                                                              |
-| `scripts/`                       | Python and shell helpers — `collection_cache.py` (collection cache), `normalize_collections.py` (normalisation pass), `build_frontend.sh` (frontend bundle).        |
-| `rst/`                           | Hand-written Sphinx sources plus the generated collection trees that `antsibull-docs` writes during the build.                                                      |
-| `_static/`                       | Tracked `logo.svg` and `favicon.ico`, plus the bundles `custom.css` and `custom.js` that the frontend build regenerates — do not edit those by hand.                |
-| `tests/`                         | Pytest suite for the build scripts (collection cache, normaliser).                                                                                                  |
-| `versions.env`                   | Pinned collection versions consumed by `build.sh` and `collection_cache.py`.                                                                                        |
-| `build.sh`                       | Top-level build entry point — orchestrates the steps below.                                                                                                         |
-| `conf.py` / `antsibull-docs.cfg` | Sphinx and antsibull-docs configuration.                                                                                                                            |
+| Path                             | Purpose                                                                                                                                                      |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/`                           | Frontend sources (flat CSS files per concern, JS feature modules). PostCSS + esbuild emit the bundles into `_static/`. See [`src/README.md`](src/README.md). |
+| `_theme/arillso/`                | Sphinx theme: `theme.toml` and `layout.html`, inheriting only the `basic` templates (search page).                                                           |
+| `scripts/`                       | Python and shell helpers — `collection_cache.py` (collection cache), `normalize_collections.py` (normalisation pass), `build_frontend.sh` (frontend bundle). |
+| `rst/`                           | Hand-written Sphinx sources plus the generated collection trees that `antsibull-docs` writes during the build.                                               |
+| `_static/`                       | Tracked `logo.svg`, `favicon.ico` and `fonts/` (self-hosted, SIL OFL), plus the bundles `custom.css` and `custom.js` that the frontend build regenerates.    |
+| `tests/`                         | Pytest suite for the build scripts (collection cache, normaliser).                                                                                           |
+| `versions.env`                   | Pinned collection and tool versions, read by `build.sh`, `collection_cache.py` and `conf.py`.                                                                |
+| `build.sh`                       | Top-level build entry point — orchestrates the steps below.                                                                                                  |
+| `conf.py` / `antsibull-docs.cfg` | Sphinx and antsibull-docs configuration.                                                                                                                     |
 
 ## Local Development
 
@@ -89,8 +90,8 @@ instructions, and the pull request process.
 
 ## Further Reading
 
-- [`src/README.md`](src/README.md) — frontend module map, token usage,
-  component macros, and frontend build commands.
+- [`src/README.md`](src/README.md) — design decisions, frontend module map,
+  token rules, and frontend build commands.
 - [`docs/regression-checklist.md`](docs/regression-checklist.md) — manual
   regression checklist for frontend and theme changes.
 - [`AGENTS.md`](AGENTS.md) — conventions and traps when changing this repo.

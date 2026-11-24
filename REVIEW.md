@@ -6,7 +6,7 @@ In scope:
 
 - Sphinx configuration (`conf.py`, `antsibull-docs.cfg`)
 - Build tooling (`build.sh`, `requirements.txt`, `versions.env`, `Dockerfile`, `docker-compose.yml`)
-- Theme and layout (`_static/`, `_templates/`, `package.json`, `postcss.config.js`)
+- Theme and layout (`_static/`, `_theme/`, `src/`, `package.json`, `postcss.config.js`)
 - CI/CD workflow changes
 - Renovate configuration updates
 

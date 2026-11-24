@@ -1,0 +1,214 @@
+/* Code: inline literals and highlighted blocks. Highlight colours follow the
+   tokens so dark mode does not need a second Pygments stylesheet. */
+
+.doc code,
+.doc kbd,
+.doc samp,
+.doc pre,
+.doc tt {
+  font-family: var(--font-mono);
+}
+
+.doc code.literal,
+.doc :not(pre) > code {
+  padding: 0.05em 0.3em;
+  background: var(--paper-sunk);
+  font-size: 0.875em;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.doc a code.literal {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.doc div[class^="highlight-"],
+.doc div[class*=" highlight-"] {
+  margin: 0 0 1.5rem;
+}
+
+.doc .highlight {
+  position: relative;
+  background: var(--paper-sunk);
+  border-left: 3px solid var(--signal);
+}
+
+.doc .highlight pre {
+  margin: 0;
+  padding: 1rem 1rem 1rem 1.1rem;
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--ink);
+  background: transparent;
+  tab-size: 2;
+}
+
+/* Language label (set by code-language.js) and copy button share the top
+   right corner: label on the left of the button. */
+.doc .highlight[data-language]::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0;
+  right: 4.25rem;
+  padding: 0.3rem 0.5rem;
+  font: 600 0.625rem/1.2 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--mute);
+}
+
+.code-copy-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 4rem;
+  min-height: 2.75rem;
+  padding: 0 0.7rem;
+  border: 0;
+  border-left: 1px solid var(--hair);
+  border-bottom: 1px solid var(--hair);
+  background: var(--paper);
+  color: var(--ink);
+  font: 600 0.6875rem/1 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.code-copy-button:hover {
+  color: var(--signal);
+}
+
+.code-copy-button.copied {
+  background: var(--signal);
+  color: var(--signal-ink);
+}
+
+/* Label and copy button sit in a reserved top strip, never over code,
+   so the full block width stays available for long lines. */
+.doc .highlight pre {
+  padding: 2.9rem 1rem 1rem 1.1rem;
+}
+
+/* Pygments tokens mapped onto the palette. */
+.highlight .c,
+.highlight .c1,
+.highlight .cm,
+.highlight .cs,
+.highlight .ch,
+.highlight .cp,
+.highlight .cpf {
+  color: var(--mute);
+  font-style: italic;
+}
+
+.highlight .k,
+.highlight .kc,
+.highlight .kd,
+.highlight .kn,
+.highlight .kp,
+.highlight .kr,
+.highlight .kt,
+.highlight .nt,
+.highlight .ow {
+  color: var(--signal);
+  font-weight: 600;
+}
+
+.highlight .s,
+.highlight .s1,
+.highlight .s2,
+.highlight .sb,
+.highlight .sd,
+.highlight .se,
+.highlight .sh,
+.highlight .si,
+.highlight .sx,
+.highlight .sr,
+.highlight .ss,
+.highlight .sa,
+.highlight .sc,
+.highlight .dl,
+.highlight .l,
+.highlight .ld,
+.highlight .l-Scalar-Plain {
+  /* Amber, not green: strings must stay apart from petrol keys. */
+  color: var(--warn);
+}
+
+.highlight .m,
+.highlight .mi,
+.highlight .mf,
+.highlight .mh,
+.highlight .mo,
+.highlight .mb,
+.highlight .il,
+.highlight .no,
+.highlight .bp {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.highlight .nb,
+.highlight .nf,
+.highlight .fm,
+.highlight .nc,
+.highlight .nn,
+.highlight .nv,
+.highlight .vi,
+.highlight .vg,
+.highlight .vc,
+.highlight .vm,
+.highlight .nd,
+.highlight .ne,
+.highlight .ni,
+.highlight .nl,
+.highlight .na,
+.highlight .gh,
+.highlight .gu {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.highlight .p,
+.highlight .o,
+.highlight .p-Indicator,
+.highlight .w,
+.highlight .n,
+.highlight .nx,
+.highlight .py {
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+
+/* Diff and traceback output. */
+.highlight .gi {
+  color: var(--ok);
+  background: none;
+}
+
+.highlight .gd,
+.highlight .gr,
+.highlight .gt {
+  color: var(--bad);
+  background: none;
+}
+
+.highlight .gp,
+.highlight .go {
+  color: var(--mute);
+  user-select: none;
+}
+
+.highlight .err {
+  color: var(--bad);
+  background: none;
+  border: 0;
+}
+
+.highlight .hll {
+  background: var(--signal-wash);
+}

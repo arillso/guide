@@ -8,7 +8,8 @@ Ansible Role & Collection Design
 ================================
 
 How to build an Ansible role and a collection so they stay reusable, testable, and
-maintainable over years. These patterns come from production collections, not from theory.
+maintainable. The examples are taken from the arillso collections, mostly the ``zram``
+and ``packages`` roles of ``arillso.system``.
 
 Where this fits: :ref:`standards` defines *which files* a repository must contain,
 :ref:`contributing` defines *how to submit* changes. This page defines *how a role is
@@ -112,9 +113,9 @@ Three lines of comment save the archaeology in two years.
 Every Variable Lives in Three Places
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1. **``defaults/main.yml``** - the value, with the rationale comment above
-2. **``meta/argument_specs.yml``** - type, ``required``, ``choices``, ``description`` (Rule 3)
-3. **``README.md``** - variable table plus a runnable example
+1. ``defaults/main.yml`` - the value, with the rationale comment above
+2. ``meta/argument_specs.yml`` - type, ``required``, ``choices``, ``description`` (Rule 3)
+3. ``README.md`` - variable table plus a runnable example
 
 The three are not duplication: ``defaults`` answers *which value*, ``argument_specs``
 *which shape is valid*, the README *how do I call this*. Without the README a caller has
@@ -146,21 +147,21 @@ the wrong thing.
                    required: false
                    default: 50
                zram_algorithm:
-                   description: "Kernel compression algorithm"
+                   description:
+                       - "Kernel compression algorithm for the zram device"
+                       - "Validated at runtime against /sys/block/zram0/comp_algorithm"
                    type: "str"
                    required: false
                    default: "zstd"
-                   choices:
-                       - "zstd"
-                       - "lz4"
-                       - "lzo"
 
 What this buys:
 
 * **Type checking** - ``type: int`` catches the string ``"50"`` coming from an environment variable
-* **``choices``** - constrains to valid values instead of misconfiguring at runtime
+* ``choices`` - constrains to valid values instead of misconfiguring at runtime
+  (``zram_algorithm`` has none because the valid set depends on the kernel; the role
+  checks it in ``validate.yml`` instead)
 * **Self-documentation** - ``ansible-doc`` and documentation generators read it directly
-* **``assert`` tasks become unnecessary** - validation belongs at the entry point, not in the task list
+* ``assert`` **tasks become unnecessary** - validation belongs at the entry point, not in the task list
 
 .. note::
    Every ``description`` is prose for humans, not a restatement of the variable name.
@@ -191,6 +192,11 @@ Why this is more than convenience: it allows a role to be disabled **in the inve
 per host group without touching the playbook. One playbook listing all roles, plus group
 variables switching them on and off per environment - that scales. Playbook variants per
 environment do not.
+
+.. note::
+   Not every arillso role has this switch yet. ``zram_enabled``, ``alloy_enabled``,
+   ``do_enabled`` and ``tailscale_enabled`` exist; ``firewall``, ``tuning``, ``docker``
+   and ``k3s`` have none.
 
 Rule 5 - ``tasks/main.yml`` Is a Dispatcher
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -249,7 +255,7 @@ can answer on its own.
      - visible
      - invisible until execution
 
-Rule of thumb: **``import_tasks`` when the structure is fixed**, ``include_tasks`` when the
+Rule of thumb: ``import_tasks`` **when the structure is fixed**, ``include_tasks`` when the
 decision is only made at runtime or a loop is needed. The ``when`` difference is the most
 common source of error - with ``import_tasks`` and an expensive condition, that condition
 is evaluated N times.
@@ -279,8 +285,8 @@ would otherwise carry everywhere:
 * **State logic** - hold/unhold, unattended upgrades, idempotence special cases, retry behaviour
 * **A maintained interface** - the role normalises different input shapes into one flow
 
-As a rough scale: a package role covering all of that quickly reaches several hundred
-lines across a dozen task files. **That** justifies calling it from ten other roles.
+For scale: the ``packages`` role in ``arillso.system`` 2.0.4 has 16 task files and
+about 700 lines. **That** justifies calling it from other roles.
 
 The argument is the error surface, not the saved lines: eight nearly identical task
 definitions, one per combination of source type and keyring, mean every change has to be
@@ -357,12 +363,9 @@ Better, in this order:
           {{ 'linux-modules-extra-' ~ ansible_kernel
              if ansible_distribution == 'Ubuntu' else '' }}
 
-2. **``vars:`` on the task or block** - limited visibility instead of host state
-3. **``set_fact`` only** when a value is genuinely needed across play boundaries or after
+2. ``vars:`` **on the task or block** - limited visibility instead of host state
+3. ``set_fact`` **only** when a value is genuinely needed across play boundaries or after
    a ``register``
-
-As orientation: a healthy collection gets by with a handful of ``set_fact`` across a dozen
-roles.
 
 Rule 8 - Namespace Your Handlers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -373,10 +376,12 @@ Handlers live in the **play-wide** namespace, not the role namespace. Two roles 
 .. code-block:: yaml
 
    # handlers/main.yml
-   - name: "zram: restart zramswap"
-     ansible.builtin.systemd_service:
+   - name: Restart zramswap to apply /etc/default/zramswap configuration changes
+     ansible.builtin.systemd:
          name: zramswap
          state: restarted
+     become: true
+     listen: "zram: restart zramswap"
 
 .. code-block:: yaml
 
@@ -384,9 +389,9 @@ Handlers live in the **play-wide** namespace, not the role namespace. Two roles 
 
 Further handler rules:
 
-* **``notify`` only on real change** - the task must report an honest ``changed``, otherwise
+* ``notify`` **only on real change** - the task must report an honest ``changed``, otherwise
   the handler never fires or always fires
-* **``meta: flush_handlers``** set deliberately when a restart must happen *before* the next
+* ``meta: flush_handlers`` set deliberately when a restart must happen *before* the next
   step instead of at the end of the play
 * **A dead handler is a bug** - a handler nobody notifies, or a variable nobody reads,
   should be deleted, not kept
@@ -557,6 +562,9 @@ Structure
    structure; ``molecule/`` inside it is a testing-tool convention rather than part of the
    collection specification.
 
+   ``arillso.system`` uses this layout. ``arillso.container`` 2.2.0 still keeps its
+   scenarios under ``roles/<role>/molecule/default/``; ``arillso.agent`` 2.1.0 has both.
+
 ``galaxy.yml`` - The Dependency Contract
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -565,10 +573,11 @@ Structure
    ---
    namespace: arillso
    name: system
-   version: 1.1.6
+   version: @ARILLSO_SYSTEM_VERSION@
    readme: README.md
    authors:
        - Simon Baerlocher (@sbaerlocher) <s.baerlocher@sbaerlocher.ch>
+       - arillso (@arillso) <hello@arillso.io>
    license:
        - MIT
    dependencies:
@@ -592,16 +601,16 @@ a known incompatibility.
    requires_ansible: ">=2.18.0"
 
    action_groups:
-       arillso_agent:
-           - arillso.agent.alloy
-           - arillso.agent.do
-           - arillso.agent.tailscale
+       system:
+           - arillso.system.apt_update_info
+           - arillso.system.reboot_info
 
 This file also holds:
 
-* **``action_groups``** - named module groups for ``module_defaults``, so a playbook sets
-  credentials once instead of per task
-* **``plugin_routing``** - redirects for renames, so old calls keep working; the way to
+* ``action_groups`` - named module groups for ``module_defaults``, so a playbook sets
+  credentials once instead of per task. Only modules belong there; ``module_defaults``
+  does not apply to roles
+* ``plugin_routing`` - redirects for renames, so old calls keep working; the way to
   rename something without a breaking change
 
 Take SemVer Seriously
@@ -663,7 +672,6 @@ One scenario per role, under ``extensions/molecule/<role>/``:
    scenario:
        test_sequence:
            - dependency
-           - cleanup
            - destroy
            - syntax
            - create
@@ -671,29 +679,31 @@ One scenario per role, under ``extensions/molecule/<role>/``:
            - converge
            - idempotence
            - verify
-           - cleanup
            - destroy
 
 **Choose the driver to fit:** containers suffice for roles that manage files and packages.
 Roles needing a real kernel (kernel modules, swap, network stack) run under a VM driver -
 otherwise you are testing behaviour that does not exist in production.
 
-Where neither is available, a reduced sequence is acceptable **only with a comment stating
-why**. A role touching ``/sys/block`` and calling ``swapon`` cannot converge in a container:
+State the reason for the driver in the scenario file. ``arillso.system`` runs ``zram`` and
+``tuning`` under the ``molecule-qemu`` driver in a separate CI job; the ``zram`` scenario
+starts with:
 
 .. code-block:: yaml
 
    ---
-   # zram loads the zram kernel module, slurps /sys/block/zram0/comp_algorithm
-   # and calls swapon -p. Containers have no own kernel, /sys/block is
-   # read-only and swapon fails without privileges. This scenario therefore
-   # runs syntax and lint only instead of a real converge.
+   # zram loads the zram kernel module (community.general.modprobe), slurps
+   # /sys/block/zram0/comp_algorithm and calls swapon. A real kernel is
+   # required for all of this, so this scenario runs under the molecule-qemu
+   # (KVM) driver — a full Ubuntu cloud-image VM — and does a real
+   # converge + idempotence + verify rather than the syntax-only run a
+   # container can offer.
 
-   scenario:
-       test_sequence:
-           - dependency
-           - destroy
-           - syntax
+   driver:
+       name: molecule-qemu
+
+Where no suitable driver is available, a reduced sequence (for example ``dependency``,
+``destroy``, ``syntax``) is acceptable **only with a comment stating why**.
 
 ``verify.yml`` checks the **end state on the system**, not the Ansible return value:
 
@@ -794,7 +804,7 @@ Secrets
 * **Never in the repository** - not even Vault-encrypted, if an external store is available
 * **Origin is the playbook's business** - look up against the secret store, then pass through
   as a role parameter
-* **``no_log: true``** on every task and every ``argument_specs`` option touching a secret
+* ``no_log: true`` on every task and every ``argument_specs`` option touching a secret
 * **Secret scanner in CI** - gitleaks or secretlint as a pre-commit hook and in the pipeline run
 
 See :ref:`security` for the concrete Vault and Bitwarden patterns.
@@ -802,9 +812,9 @@ See :ref:`security` for the concrete Vault and Bitwarden patterns.
 Error Handling
 ~~~~~~~~~~~~~~
 
-* **``block``/``rescue``/``always``** for cleanup that must also run on failure
-* **``failed_when``** where the return value does not match the definition of success
-* **``until``/``retries``/``delay``** for anything crossing a network - but with a finite ceiling
+* ``block``/``rescue``/``always`` for cleanup that must also run on failure
+* ``failed_when`` where the return value does not match the definition of success
+* ``until``/``retries``/``delay`` for anything crossing a network - but with a finite ceiling
 * **No ``ignore_errors: true`` as a habit** - either the error is irrelevant (then
   ``failed_when: false`` with a rationale) or it is not
 
@@ -832,12 +842,12 @@ Error Handling
 Performance
 ~~~~~~~~~~~
 
-* **``gather_facts: false``** where no facts are needed; otherwise restrict ``gather_subset``
+* ``gather_facts: false`` where no facts are needed; otherwise restrict ``gather_subset``
 * **Fact caching** for repeated runs across the same fleet
 * **One task with a list beats a loop over N tasks** - package managers accept lists and
   resolve once instead of N times
-* **``async``/``poll: 0``** for long, independent operations
-* **``serial``** for rolling updates instead of a big bang
+* ``async``/``poll: 0`` for long, independent operations
+* ``serial`` for rolling updates instead of a big bang
 
 .. code-block:: yaml
 

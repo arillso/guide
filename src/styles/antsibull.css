@@ -1,0 +1,171 @@
+/* Generated collection pages (antsibull-docs). The extension ships
+   antsibull-minimal.css with colour variables; they are remapped onto the
+   palette here, plus layout for the option and return value tables. */
+
+:root {
+  --antsibull-links-background: var(--paper);
+  --antsibull-links-background-active: var(--paper-sunk);
+  --antsibull-links-focus-outline: var(--focus);
+  --antsibull-links-text: var(--ink);
+  --antsibull-table-background-header: transparent;
+  --antsibull-table-background-even: transparent;
+  --antsibull-table-background-odd: transparent;
+  --antsibull-table-border: var(--hair);
+  --antsibull-narrowtable-background: var(--paper-sunk);
+  --antsibull-option-type: var(--mute);
+  --antsibull-option-elements: var(--mute);
+  --antsibull-option-required: var(--bad);
+  --antsibull-option-version-added: var(--ok);
+  --antsibull-option-aliases: var(--ok);
+  --antsibull-option-default: var(--signal);
+  --antsibull-option-sample: var(--signal);
+  --antsibull-option-sample-header: var(--ink);
+  --antsibull-attribute-support-none: var(--bad);
+  --antsibull-attribute-support-partial: var(--warn);
+  --antsibull-attribute-support-full: var(--ok);
+  --antsibull-attribute-support-na: inherit;
+  --antsibull-deprecation-border: var(--rule);
+  --antsibull-deprecation-background: var(--paper-sunk);
+  --antsibull-deprecation-color: var(--ink);
+}
+
+/* Collection pages carry the widest tables: give them more room. */
+body[class*="page-collections-"] .doc {
+  max-width: 60rem;
+}
+
+.doc table.ansible-option-table {
+  font-size: 0.9375rem;
+}
+
+.doc table.ansible-option-table th {
+  background: transparent;
+}
+
+/* antsibull-minimal.css forces th > p to font-size: medium !important. */
+.doc table.ansible-option-table th > p {
+  font-size: inherit !important;
+}
+
+.doc table.ansible-option-table td {
+  padding: 0;
+  border-bottom: 1px solid var(--hair);
+}
+
+.doc table.ansible-option-table td > div.ansible-option-cell {
+  padding: 0.6rem 0.6rem 0.4rem;
+}
+
+.doc .ansible-option-title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+.doc .ansible-option-title strong {
+  font-weight: 600;
+}
+
+.doc .ansible-option-type-line {
+  margin: 0.15rem 0 0;
+  font: 400 0.75rem/1.4 var(--font-mono);
+}
+
+.doc .ansible-option-required {
+  font-weight: 600;
+}
+
+.doc .ansible-option-line {
+  margin: 0.35rem 0 0;
+  font-size: 0.875rem;
+}
+
+.doc .ansible-option-default-bold,
+.doc .ansible-option-sample-bold,
+.doc .ansible-option-returned-bold,
+.doc .ansible-option-choices-entry,
+.doc .ansible-attribute-support-label {
+  font: 600 0.6875rem/1.4 var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mute);
+}
+
+.doc code.ansible-option-default,
+.doc code.ansible-option-sample,
+.doc code.ansible-option-value {
+  background: transparent;
+  padding: 0;
+  font-weight: 600;
+}
+
+/* Nesting guide for sub-options: thin rule per level. */
+.doc table.ansible-option-table .ansible-option-indent,
+.doc table.ansible-option-table .ansible-option-indent-desc {
+  border-right: 1px solid var(--hair);
+}
+
+/* Permalink anchor on each option: a small "#" on hover. */
+.doc .ansibleOptionLink {
+  margin-left: 0.25rem;
+  color: var(--mute);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  opacity: 0;
+}
+
+.doc .ansibleOptionLink::after {
+  content: "#";
+}
+
+.doc .ansible-option-cell:hover .ansibleOptionLink,
+.doc .ansibleOptionLink:focus-visible {
+  opacity: 1;
+}
+
+/* Issue tracker / homepage / repository link row at the page end. */
+.doc .ansible-links {
+  gap: 0.5rem;
+  padding: 0;
+}
+
+.doc .ansible-links > * {
+  margin: 0 !important;
+}
+
+.doc .ansible-links a {
+  display: inline-block;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 600 0.75rem/1.2 var(--font-mono);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.doc .ansible-links a:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* Generated role and plugin pages open with a four-paragraph install note
+   and, for roles, a local contents box. Set the note as a compact spec
+   block and drop the contents box when it only lists one entry point, so
+   the parameters start near the top. */
+body[class^="page-collections-"] .doc h1 + .admonition.note {
+  margin: 0 0 1.25rem;
+  padding: 0.5rem 0.75rem 0.4rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+body[class^="page-collections-"] .doc h1 + .admonition.note p {
+  margin: 0 0 0.2rem;
+}
+
+body[class^="page-collections-"] .doc nav.contents.local:has(> ul > li:only-child) {
+  display: none;
+}

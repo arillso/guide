@@ -1,0 +1,7 @@
+# arillso guide theme. Inherits only Sphinx's `basic` templates (search page,
+# search index scripts); all styling comes from src/styles via custom.css.
+[theme]
+inherit = "basic"
+stylesheets = []
+sidebars = []
+pygments_style = { default = "ansible" }

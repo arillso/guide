@@ -1,823 +1,380 @@
 .. meta::
-  :description: Security best practices and hardening guide for arillso
-  :keywords: arillso, security, hardening, best practices, compliance
+  :description: Secrets handling and host hardening with the arillso roles
+  :keywords: arillso, security, hardening, secrets, ssh, nftables, k3s
 
 .. _security:
 
-Security & Best Practices
-==========================
+Security
+========
 
-Security guidelines, hardening strategies, and best practices for arillso-managed infrastructure.
+Secrets handling and host hardening with the arillso roles. Every role variable
+named here is documented on the role page linked in its section; defaults refer to
+the collection versions this guide documents.
 
 .. contents::
    :local:
    :depth: 2
 
-Security Philosophy
--------------------
+Secrets
+-------
 
-arillso follows a **defense-in-depth** approach with multiple security layers:
+Keep secrets out of version control in plaintext. Pass them to roles as
+variables; the roles do not fetch secrets themselves.
 
-1. **Code Security** - SHA-pinned dependencies, CodeQL scanning
-2. **Container Security** - Minimal images, non-root users, Trivy scanning
-3. **Runtime Security** - Secrets management, SSH hardening, firewall
-4. **Network Security** - VPN mesh, TLS, network segmentation
-5. **Compliance** - Audit logs, monitoring, access control
-
-Secrets Management
-------------------
-
-Never commit secrets to version control.
-
-Using Ansible Vault
-~~~~~~~~~~~~~~~~~~~
-
-**Create encrypted file:**
+Ansible Vault
+~~~~~~~~~~~~~
 
 .. code-block:: bash
 
-   # Create new vault file
-   ansible-vault create vault.yml
+   ansible-vault create group_vars/all/vault.yml
+   ansible-vault edit group_vars/all/vault.yml
 
-   # Edit existing vault
-   ansible-vault edit vault.yml
-
-   # Encrypt existing file
-   ansible-vault encrypt secrets.yml
-
-**Vault file structure:**
-
-.. code-block:: yaml
-
-   ---
-   # vault.yml
-   vault_mysql_root_password: "super_secret_password"
-   vault_api_key: "sk-1234567890abcdef"
-   vault_tailscale_authkey: "tskey-auth-XXXXX"
-
-**Use in playbooks:**
-
-.. code-block:: yaml
-
-   ---
-   - name: Deploy with secrets
-     hosts: all
-     vars_files:
-       - vault.yml
-
-     tasks:
-       - name: Configure database
-         ansible.builtin.template:
-           src: db_config.j2
-           dest: /etc/db/config.yml
-         vars:
-           db_password: "{{ vault_mysql_root_password }}"
-
-**Run with vault:**
-
-.. code-block:: bash
-
-   # Prompt for password
    ansible-playbook site.yml --ask-vault-pass
-
-   # Use password file
    ansible-playbook site.yml --vault-password-file ~/.vault_pass
-
-   # Multiple vaults
-   ansible-playbook site.yml \
-     --vault-id dev@~/.vault_dev \
-     --vault-id prod@~/.vault_prod
-
-Using Bitwarden Secrets
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-Install Bitwarden Secrets Manager CLI for secrets retrieval:
+   ansible-playbook site.yml --vault-id dev@~/.vault_dev --vault-id prod@~/.vault_prod
 
 .. code-block:: yaml
 
-   ---
-   - name: Install Bitwarden Secrets Manager CLI
-     hosts: all
-     become: true
-
-     tasks:
-       - name: Install bws CLI
-         ansible.builtin.include_role:
-           name: arillso.system.bitwarden_secrets
-         vars:
-           bitwarden_secrets_version: "1.0.0"
-           bitwarden_secrets_install_path: "/usr/local/bin"
-
-**Then use bws CLI in your playbooks:**
+   # group_vars/all/vault.yml (encrypted)
+   vault_tailscale_auth_key: "tskey-auth-..."
 
 .. code-block:: yaml
 
-   ---
-   - name: Retrieve secrets using bws
-     hosts: all
-     become: true
-
-     tasks:
-       - name: Get secret from Bitwarden
-         ansible.builtin.shell:
-           cmd: bws secret get SECRET_ID --access-token "{{ lookup('env', 'BWS_ACCESS_TOKEN') }}"
-         register: bws_secret
-         changed_when: false
-         no_log: true
-
-       - name: Use secret
-         ansible.builtin.debug:
-           msg: "Secret retrieved"
-
-Environment Variables
-~~~~~~~~~~~~~~~~~~~~~
-
-For CI/CD environments:
-
-.. code-block:: yaml
-
-   ---
-   # Use environment variables
-   - name: Deploy
-     hosts: all
+   - name: Join the tailnet
+     ansible.builtin.include_role:
+       name: arillso.agent.tailscale
      vars:
-       db_password: "{{ lookup('env', 'DB_PASSWORD') }}"
-       api_key: "{{ lookup('env', 'API_KEY') }}"
+       tailscale_auth_key: "{{ vault_tailscale_auth_key }}"
 
-**GitHub Actions:**
+Bitwarden Secrets Manager
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:ref:`arillso.system.bitwarden_secrets <ansible_collections.arillso.system.bitwarden_secrets_role>`
+installs the ``bws`` CLI (``bitwarden_secrets_version``, default ``1.0.0``) to
+``bitwarden_secrets_install_path`` (default ``/usr/local/bin``). Secrets are then
+read with the ``community.general.bitwarden_secrets_manager`` lookup, which runs on
+the control node, so install ``bws`` there. A complete project is in
+:ref:`examples`.
+
+Secrets in CI
+~~~~~~~~~~~~~
+
+With :ref:`action.playbook <action_playbook>`, pass secrets as inputs or as
+environment variables of the step:
 
 .. code-block:: yaml
 
-   - name: Deploy
-     uses: arillso/action.playbook@v1.2.0
+   - name: Run playbook
+     uses: arillso/action.playbook@@ACTION_PLAYBOOK_VERSION@
      with:
        playbook: deploy.yml
+       inventory: inventory/production.ini
        private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+       known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
        vault_password: ${{ secrets.VAULT_PASSWORD }}
      env:
        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
-SSH Security
-------------
+``vault_password`` and ``vault_password_file`` are alternatives, as are
+``private_key`` and ``private_key_file``.
 
-SSH Key Management
-~~~~~~~~~~~~~~~~~~
+``no_log``
+~~~~~~~~~~
 
-**Generate secure SSH keys:**
+Secret-carrying role options are declared ``no_log`` in ``argument_specs``, for
+example ``tailscale_auth_key`` and ``k3s_token``. Some roles also have a switch
+that controls ``no_log`` on their secret-handling tasks, such as
+``tailscale_no_log_auth_key``,
+``do_no_log_api_token``, ``alloy_no_log_config`` and ``alloy_no_log_env_file``
+(all default ``true``). Set ``no_log: true`` on your own tasks that handle
+secrets; see :ref:`ansible-roles`.
 
-.. code-block:: bash
+SSH Access
+----------
 
-   # Ed25519 (recommended)
-   ssh-keygen -t ed25519 -C "ansible@example.com"
-
-   # RSA (if Ed25519 not supported)
-   ssh-keygen -t rsa -b 4096 -C "ansible@example.com"
-
-**Use arillso.system.access for key management:**
-
-.. code-block:: yaml
-
-   ---
-   - name: Manage SSH access
-     hosts: all
-     become: true
-
-     tasks:
-       - name: Configure user access
-         ansible.builtin.include_role:
-           name: arillso.system.access
-         vars:
-           access_users:
-             - name: admin
-               shell: /bin/bash
-               groups:
-                 - sudo
-               ssh_keys:
-                 - key: "ssh-ed25519 AAAAC3... admin@example.com"
-
-           access_sudoers:
-             - name: admin
-               user: admin
-               nopasswd: true
-
-           # Security settings
-           access_ssh_password_authentication: false
-           access_ssh_permit_root_login: "False"
-           access_ssh_pubkey_authentication: true
-
-SSH Hardening
-~~~~~~~~~~~~~
-
-**Harden SSH daemon with arillso.system.access:**
+:ref:`arillso.system.access <ansible_collections.arillso.system.access_role>`
+manages users, groups, sudoers, ``authorized_keys`` and ``sshd_config``.
 
 .. code-block:: yaml
 
-   ---
-   - name: Harden SSH configuration
-     hosts: all
-     become: true
+   - name: Configure users and sshd
+     ansible.builtin.include_role:
+       name: arillso.system.access
+     vars:
+       access_users:
+         - name: admin
+           groups: ["sudo"]
+           ssh_keys:
+             - key: "ssh-ed25519 AAAAC3... admin@example.com"
+       access_sudoers:
+         - name: admin
+           user: admin
+           nopasswd: true
+       access_ssh_permit_root_login: "no"
+       access_ssh_allow_groups: ["sudo"]
 
-     tasks:
-       - name: Configure SSH server
-         ansible.builtin.include_role:
-           name: arillso.system.access
-         vars:
-           access_ssh_port: 22
-           access_ssh_permit_root_login: "False"
-           access_ssh_password_authentication: false
-           access_ssh_pubkey_authentication: true
-           access_ssh_x11_forwarding: false
+Relevant defaults:
 
-Firewall Configuration
-----------------------
+.. list-table::
+   :header-rows: 1
+   :widths: 45 25 30
 
-Use arillso.system.firewall for consistent firewall management.
+   * - Variable
+     - Default
+     - Note
+   * - ``access_ssh_permit_root_login``
+     - ``prohibit-password``
+     - ``yes``, ``no``, ``prohibit-password``, ``forced-commands-only``
+   * - ``access_ssh_password_authentication``
+     - ``false``
+     -
+   * - ``access_ssh_pubkey_authentication``
+     - ``true``
+     -
+   * - ``access_ssh_max_auth_tries``
+     - ``3``
+     -
+   * - ``access_ssh_x11_forwarding``
+     - ``false``
+     -
+   * - ``access_ssh_agent_forwarding``
+     - ``false``
+     -
+   * - ``access_ssh_tcp_forwarding``
+     - ``true``
+     -
+   * - ``access_validate_ssh_config``
+     - ``true``
+     - runs ``sshd -t`` on the rendered config before it is written
+   * - ``access_validate_sudoers``
+     - ``true``
+     - runs ``visudo -c`` on sudoers files before they are written
 
-Basic Firewall Setup
-~~~~~~~~~~~~~~~~~~~~
+Firewall
+--------
 
-.. code-block:: yaml
+:ref:`arillso.system.firewall <ansible_collections.arillso.system.firewall_role>`
+renders ``/etc/nftables.conf`` from YAML.
 
-   ---
-   - name: Configure firewall
-     hosts: all
-     become: true
-
-     tasks:
-       - name: Setup firewall rules
-         ansible.builtin.include_role:
-           name: arillso.system.firewall
-         vars:
-           firewall:
-             - table:
-                 family: inet
-                 name: filter
-                 chains:
-                   - name: input
-                     hook: input
-                     policy: drop
-                     priority: 0
-                     rules:
-                       - iifname lo accept
-                       - ct state established,related accept
-                       - ip saddr 10.0.0.0/8 tcp dport 22 accept comment "SSH from management"
-                       - tcp dport 80 accept comment "HTTP"
-                       - tcp dport 443 accept comment "HTTPS"
-
-Advanced Firewall Rules
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: yaml
-
-   ---
-   firewall:
-     - table:
-         family: inet
-         name: filter
-         chains:
-           - name: input
-             hook: input
-             policy: drop
-             priority: 0
-             rules:
-               - iifname lo accept
-               - ct state established,related accept
-
-               # SSH rate limiting (prevent brute force)
-               - tcp dport 22 ct state new limit rate 5/minute accept comment "SSH rate limit"
-
-               # Allow specific admin IP
-               - ip saddr 203.0.113.10 accept comment "Admin access"
-
-               # Block malicious network
-               - ip saddr 198.51.100.0/24 drop comment "Blocked network"
-
-               # Allow Docker bridge network
-               - ip saddr 172.17.0.0/16 accept comment "Docker network"
-
-               # Log dropped packets
-               - log prefix "firewall-drop: " drop
-
-Network Segmentation
-~~~~~~~~~~~~~~~~~~~~
-
-.. mermaid::
-
-   flowchart LR
-       subgraph DMZ[DMZ - Public Zone]
-           Web[Web Servers]
-           LB[Load Balancer]
-       end
-
-       FW1[Firewall]
-
-       subgraph App[Application Tier]
-           AppServ[App Servers]
-           Cache[Cache<br/>Redis]
-       end
-
-       FW2[Firewall]
-
-       subgraph DB[Database Tier]
-           Database[Database Servers]
-           Backup[Backup Storage]
-       end
-
-       DMZ --> FW1
-       FW1 --> App
-       App --> FW2
-       FW2 --> DB
-
-       style DMZ fill:#FF4757,stroke:#FF4757,color:#fff
-       style FW1 fill:#FFB020,stroke:#FFB020,color:#fff
-       style App fill:#0066FF,stroke:#0066FF,color:#fff
-       style FW2 fill:#FFB020,stroke:#FFB020,color:#fff
-       style DB fill:#4EC9B0,stroke:#4EC9B0,color:#fff
-
-System Hardening
-----------------
-
-Kernel Hardening
-~~~~~~~~~~~~~~~~
-
-.. code-block:: yaml
-
-   ---
-   - name: Harden kernel
-     hosts: all
-     become: true
-
-     tasks:
-       - name: Apply kernel hardening
-         ansible.builtin.include_role:
-           name: arillso.system.tuning
-         vars:
-           tuning_sysctl:
-             # Network security
-             net.ipv4.conf.all.accept_source_route: 0
-             net.ipv4.conf.default.accept_source_route: 0
-             net.ipv4.conf.all.accept_redirects: 0
-             net.ipv4.conf.default.accept_redirects: 0
-             net.ipv4.conf.all.secure_redirects: 0
-             net.ipv4.conf.default.secure_redirects: 0
-             net.ipv4.conf.all.send_redirects: 0
-             net.ipv4.conf.default.send_redirects: 0
-             net.ipv4.icmp_echo_ignore_broadcasts: 1
-             net.ipv4.icmp_ignore_bogus_error_responses: 1
-             net.ipv4.tcp_syncookies: 1
-
-             # Kernel security
-             kernel.dmesg_restrict: 1
-             kernel.kptr_restrict: 2
-             kernel.yama.ptrace_scope: 2
-
-             # Filesystem protection
-             fs.protected_hardlinks: 1
-             fs.protected_symlinks: 1
-             fs.suid_dumpable: 0
-
-Package Management
-~~~~~~~~~~~~~~~~~~
-
-.. code-block:: yaml
-
-   ---
-   - name: Secure package management
-     hosts: all
-     become: true
-
-     tasks:
-       - name: Manage packages
-         ansible.builtin.include_role:
-           name: arillso.system.packages
-         vars:
-           # Install only what's needed
-           packages_list:
-             - name: fail2ban
-               state: present
-             - name: aide
-               state: present
-
-             # Remove unnecessary packages
-             - name: telnet
-               state: absent
-             - name: rsh-client
-               state: absent
-             - name: nis
-               state: absent
-
-Container Security
-------------------
-
-Docker Security
+Default Ruleset
 ~~~~~~~~~~~~~~~
 
-.. code-block:: yaml
+Without overrides the role writes one ``inet filter`` table:
 
-   ---
-   - name: Secure Docker
-     hosts: docker_hosts
-     become: true
+* ``input``, policy ``drop``: accept loopback, accept established/related, accept
+  new SSH connections on port 22 limited by ``firewall_ssh_rate_limit``
+  (``10/minute``) and ``firewall_ssh_rate_burst`` (``5``), then log with
+  ``firewall_log_drop_prefix`` (``nft-drop-input:``) at
+  ``firewall_log_drop_rate_limit`` (``5/minute``) and drop.
+* ``forward``, policy ``drop``: accept established/related.
+* ``output``, policy ``accept``.
 
-     tasks:
-       - name: Install Docker with security settings
-         ansible.builtin.include_role:
-           name: arillso.container.docker
-         vars:
-           docker_daemon:
-             # Use user namespaces
-             userns-remap: "default"
+Raise ``firewall_ssh_rate_limit`` on hosts that open many short-lived SSH
+connections (CI runners, bastions) instead of removing the rule.
 
-             # Limit logging
-             log-driver: "json-file"
-             log-opts:
-               max-size: "10m"
-               max-file: "3"
+Custom Rules
+~~~~~~~~~~~~
 
-             # Live restore
-             live-restore: true
-
-           # Non-root Docker users
-           docker_users:
-             - appuser
-
-**Container image security:**
-
-.. code-block:: dockerfile
-
-   # Use minimal base images
-   FROM alpine:3.18
-
-   # Don't run as root
-   RUN addgroup -g 1000 appuser && \
-       adduser -D -u 1000 -G appuser appuser
-
-   USER appuser
-
-   # Copy only what's needed
-   COPY --chown=appuser:appuser app /app
-
-   # Run with minimal permissions
-   CMD ["/app/start.sh"]
-
-Kubernetes Security
-~~~~~~~~~~~~~~~~~~~
+Rules are dicts, not nftables strings. Keys include ``iifname``, ``oifname``,
+``ip_saddr``, ``ip_daddr``, ``tcp_dport``, ``udp_dport``, ``ct_state``,
+``limit``, ``burst``, ``log_prefix``, ``log_level``, ``comment`` and ``action``
+(default ``accept``).
 
 .. code-block:: yaml
 
-   ---
-   - name: Secure K3s
-     hosts: k8s_all
-     become: true
+   firewall_host:
+     - table:
+         name: filter
+         family: inet
+         chains:
+           - name: input
+             type: filter
+             hook: input
+             priority: 0
+             policy: drop
+             rules:
+               - iifname: "lo"
+                 action: accept
+               - ct_state: ["established", "related"]
+                 action: accept
+               - comment: "SSH from the management network"
+                 ip_saddr: "10.0.0.0/8"
+                 tcp_dport: 22
+                 action: accept
+               - comment: "Blocked network"
+                 ip_saddr: "198.51.100.0/24"
+                 action: drop
+               - comment: "HTTP and HTTPS"
+                 tcp_dport: [80, 443]
+                 action: accept
 
-     tasks:
-       - name: Deploy K3s with security
-         ansible.builtin.include_role:
-           name: arillso.container.k3s
-         vars:
-           k3s_secrets_encryption: true
+.. important::
+   ``firewall_tables``, ``firewall_global``, ``firewall_group`` and
+   ``firewall_host`` are not merged rule by rule. The last non-empty level in
+   that order becomes the complete ruleset. A host that sets ``firewall_host``
+   loses the default ruleset and everything from the lower levels.
 
-           k3s_kube_apiserver_args:
-             # Authentication
-             - "--anonymous-auth=false"
-             - "--enable-admission-plugins=NodeRestriction,PodSecurityPolicy"
+On Docker hosts, define no ``forward`` chain with policy ``drop`` in the
+``inet filter`` table: nftables evaluates every base chain on a hook, so it would
+also drop traffic Docker forwards to containers.
 
-             # Audit logging
-             - "--audit-log-path=/var/log/k8s-audit.log"
-             - "--audit-log-maxage=30"
-             - "--audit-log-maxbackup=10"
+Kernel Parameters
+-----------------
 
-           k3s_kubelet_args:
-             # Security
-             - "--protect-kernel-defaults=true"
-             - "--read-only-port=0"
-
-**Pod Security Policy:**
-
-.. code-block:: yaml
-
-   # psp-restricted.yaml
-   apiVersion: policy/v1beta1
-   kind: PodSecurityPolicy
-   metadata:
-     name: restricted
-   spec:
-     privileged: false
-     allowPrivilegeEscalation: false
-     requiredDropCapabilities:
-       - ALL
-     runAsUser:
-       rule: MustRunAsNonRoot
-     seLinux:
-       rule: RunAsAny
-     fsGroup:
-       rule: RunAsAny
-     volumes:
-       - 'configMap'
-       - 'emptyDir'
-       - 'projected'
-       - 'secret'
-       - 'downwardAPI'
-       - 'persistentVolumeClaim'
-
-Monitoring & Auditing
----------------------
-
-Security Monitoring
-~~~~~~~~~~~~~~~~~~~
+:ref:`arillso.system.tuning <ansible_collections.arillso.system.tuning_role>`
+writes sysctls from ``tuning_sysctl_config`` to
+``/etc/sysctl.d/99-tuning.conf``.
 
 .. code-block:: yaml
 
-   ---
-   - name: Deploy security monitoring
-     hosts: all
-     become: true
+   - name: Apply hardening sysctls
+     ansible.builtin.include_role:
+       name: arillso.system.tuning
+     vars:
+       tuning_sysctl_config:
+         net.ipv4.conf.all.accept_source_route: 0
+         net.ipv4.conf.all.accept_redirects: 0
+         net.ipv4.conf.all.send_redirects: 0
+         net.ipv4.tcp_syncookies: 1
+         kernel.dmesg_restrict: 1
+         kernel.kptr_restrict: 2
+         fs.protected_hardlinks: 1
+         fs.protected_symlinks: 1
 
-     tasks:
-       - name: Install Grafana Alloy for security
-         ansible.builtin.include_role:
-           name: arillso.agent.alloy
-         vars:
-           alloy_cluster_name: "security-monitoring"
-           alloy_cluster_advertise_address: "{{ ansible_default_ipv4.address }}"
-           alloy_cluster_advertise_port: "12345"
+``tuning_sysctl_config`` replaces the role's default sysctl set, which contains
+performance values (``vm.*``, ``net.core.*``, TCP buffers). The role also
+manages the GRUB command line, swap, I/O scheduler, CPU governor, transparent
+huge pages and the tuned profile; check those defaults before running it for
+sysctls alone.
 
-Audit Logging
-~~~~~~~~~~~~~
+Packages
+--------
 
-**Configure rsyslog for centralized logging:**
-
-.. code-block:: yaml
-
-   ---
-   - name: Configure rsyslog
-     hosts: all
-     become: true
-
-     tasks:
-       - name: Setup rsyslog forwarding
-         ansible.builtin.include_role:
-           name: arillso.system.logging
-         vars:
-           logging_rsyslog_entries:
-             - name: forward-to-siem
-               content: |
-                 # Forward all logs to SIEM
-                 *.* @@siem.example.com:514
-
-**Log rotation for security logs:**
+:ref:`arillso.system.packages <ansible_collections.arillso.system.packages_role>`
+installs and removes packages and can configure unattended upgrades. The role
+supports Debian and Ubuntu only.
 
 .. code-block:: yaml
 
-   ---
-   - name: Configure log rotation
-     hosts: all
-     become: true
+   - name: Manage packages
+     ansible.builtin.include_role:
+       name: arillso.system.packages
+     vars:
+       packages_list:
+         - name: fail2ban
+           state: present
+         - name: telnet
+           state: absent
+       packages_unattended_upgrades_enabled: true
 
-     tasks:
-       - name: Setup logrotate
-         ansible.builtin.include_role:
-           name: arillso.system.logging
-         vars:
-           logging_logrotate_entries:
-             - name: auth-logs
-               path: /var/log/auth.log
-               options:
-                 - daily
-                 - rotate 90
-                 - compress
-                 - delaycompress
-                 - notifempty
+With ``packages_unattended_upgrades_enabled: true`` the role installs and
+configures ``unattended-upgrades``. The default origins include the
+distribution's ``-security`` pocket; ``packages_unattended_upgrades_auto_reboot``
+is ``false`` by default.
 
-Compliance
-----------
+Docker
+------
 
-CIS Benchmarks
-~~~~~~~~~~~~~~
+:ref:`arillso.container.docker <ansible_collections.arillso.container.docker_role>`
+renders ``/etc/docker/daemon.json`` from ``docker_daemon_base`` merged recursively
+with ``docker_daemon``.
 
-Apply CIS benchmark recommendations using arillso roles:
+* The base sets ``no-new-privileges: true``, ``live-restore: true`` and
+  ``log-driver: journald``.
+* ``no-new-privileges`` breaks images that rely on setuid binaries; opt out with
+  ``docker_daemon: {no-new-privileges: false}``.
+* ``userns-remap`` is not set by default. Enabling it changes bind-mount UIDs and
+  disables ``--privileged`` containers:
 
 .. code-block:: yaml
 
-   ---
-   - name: CIS hardening
-     hosts: all
-     become: true
+   docker_daemon:
+     userns-remap: "default"
 
-     tasks:
-       # 1. Install security packages
-       - name: Install chrony for time sync
-         ansible.builtin.include_role:
-           name: arillso.system.packages
-         vars:
-           packages_list:
-             - name: chrony
-               state: present
-             - name: aide
-               state: present
-             - name: fail2ban
-               state: present
+K3s
+---
 
-       # 2. Disable unused services
-       - name: Stop unnecessary services
-         ansible.builtin.systemd_service:
-           name: "{{ item }}"
-           state: stopped
-           enabled: false
-         loop:
-           - avahi-daemon
-           - cups
-         register: cis_stop_services
-         # Not every image ships these units. A missing unit is expected here,
-         # any other failure is not - so scope the tolerance instead of using
-         # ignore_errors, which would swallow real errors too.
-         failed_when:
-           - cis_stop_services.failed
-           - "'Could not find the requested service' not in (cis_stop_services.msg | default(''))"
+:ref:`arillso.container.k3s <ansible_collections.arillso.container.k3s_role>`
+applies a hardening set while ``k3s_security_hardening`` is ``true`` (default):
 
-       # 3. Kernel hardening
-       - name: Apply CIS kernel parameters
-         ansible.builtin.include_role:
-           name: arillso.system.tuning
-         vars:
-           tuning_sysctl:
-             net.ipv4.conf.all.accept_source_route: 0
-             net.ipv4.conf.all.accept_redirects: 0
-             net.ipv4.conf.all.send_redirects: 0
-             kernel.dmesg_restrict: 1
+.. list-table::
+   :header-rows: 1
+   :widths: 45 20 35
 
-Best Practices Checklist
--------------------------
+   * - Variable
+     - Default
+     - Effect
+   * - ``k3s_secrets_encryption``
+     - ``true``
+     - Secrets encrypted at rest
+   * - ``k3s_anonymous_auth``
+     - ``false``
+     - ``anonymous-auth=false``
+   * - ``k3s_node_restriction``
+     - ``true``
+     - ``NodeRestriction`` admission plugin
+   * - ``k3s_kubelet_read_only_port_disabled``
+     - ``true``
+     - ``read-only-port=0``
+   * - ``k3s_audit_log_enabled``
+     - ``true``
+     - API audit log, ``k3s_audit_log_maxage`` ``30``, level ``Metadata``
+   * - ``k3s_protect_kernel_defaults``
+     - ``false``
+     - ``protect-kernel-defaults``
+   * - ``k3s_pod_security_admission_profile``
+     - ``""``
+     - ``privileged``, ``baseline`` or ``restricted`` as cluster default
 
-Infrastructure Security
-~~~~~~~~~~~~~~~~~~~~~~~
+Enabling the set on an existing cluster changes behaviour: anonymous health
+probes and scrapers of kubelet port ``10255`` stop working.
 
-✅ **Access Control:**
+Logging
+-------
 
-* [ ] SSH keys only (no passwords)
-* [ ] Sudo access limited to specific users
-* [ ] Root login disabled
-* [ ] SSH from trusted networks only
+:ref:`arillso.system.logging <ansible_collections.arillso.system.logging_role>`
+configures rsyslog and logrotate.
 
-✅ **Firewall:**
+.. code-block:: yaml
 
-* [ ] Default deny policy
-* [ ] Only required ports open
-* [ ] Rate limiting on public services
-* [ ] Network segmentation implemented
+   - name: Forward logs and rotate auth.log
+     ansible.builtin.include_role:
+       name: arillso.system.logging
+     vars:
+       logging_rsyslog_remote_servers:
+         - host: siem.example.com
+           port: 514
+           protocol: tcp
+       logging_logrotate_entries:
+         - name: auth-logs
+           path: /var/log/auth.log
+           options:
+             - daily
+             - rotate 90
+             - compress
+             - delaycompress
+             - notifempty
 
-✅ **System Hardening:**
+For journal and metrics shipping, use
+:ref:`arillso.agent.alloy <ansible_collections.arillso.agent.alloy_role>` with
+``alloy_loki_enabled`` and ``alloy_loki_journal_enabled``.
 
-* [ ] Minimal packages installed
-* [ ] Unused services disabled
-* [ ] Kernel hardening applied
-* [ ] Automatic security updates enabled
+Checklist
+---------
 
-✅ **Secrets Management:**
-
-* [ ] Ansible Vault or secrets manager
-* [ ] No secrets in version control
-* [ ] Secrets rotated regularly
-* [ ] Different secrets per environment
-
-Container Security
-~~~~~~~~~~~~~~~~~~
-
-✅ **Image Security:**
-
-* [ ] Minimal base images (Alpine)
-* [ ] Non-root users
-* [ ] No unnecessary packages
-* [ ] Images scanned with Trivy
-
-✅ **Runtime Security:**
-
-* [ ] User namespaces enabled
-* [ ] Resource limits set
-* [ ] Read-only filesystems where possible
-* [ ] Capabilities dropped
-
-Monitoring & Compliance
-~~~~~~~~~~~~~~~~~~~~~~~
-
-✅ **Monitoring:**
-
-* [ ] Centralized logging (Loki)
-* [ ] Metrics collection (Prometheus)
-* [ ] Security event alerts
-* [ ] Log retention policy
-
-✅ **Compliance:**
-
-* [ ] Audit logging enabled
-* [ ] CIS benchmarks applied
-* [ ] Regular security scans
-* [ ] Documented procedures
-
-Common Security Mistakes
-------------------------
-
-❌ **Don't:**
-
-1. **Commit secrets to Git**
-
-   .. code-block:: yaml
-
-      # ❌ WRONG
-      db_password: "supersecret123"
-
-   .. code-block:: yaml
-
-      # ✅ CORRECT
-      db_password: "{{ vault_db_password }}"
-
-2. **Use weak SSH keys**
-
-   .. code-block:: bash
-
-      # ❌ WRONG
-      ssh-keygen -t rsa -b 1024
-
-      # ✅ CORRECT
-      ssh-keygen -t ed25519
-
-3. **Run containers as root**
-
-   .. code-block:: dockerfile
-
-      # ❌ WRONG
-      FROM ubuntu
-      COPY app /app
-      CMD ["/app/start"]
-
-      # ✅ CORRECT
-      FROM alpine
-      RUN adduser -D appuser
-      USER appuser
-      COPY --chown=appuser app /app
-      CMD ["/app/start"]
-
-4. **Disable firewall**
-
-   .. code-block:: yaml
-
-      # ❌ WRONG - No firewall configured
-
-      # ✅ CORRECT
-      firewall:
-        - table:
-            family: inet
-            name: filter
-            chains:
-              - name: input
-                hook: input
-                policy: drop
-                priority: 0
-                rules:
-                  - iifname lo accept
-                  - ct state established,related accept
-
-5. **Allow root SSH**
-
-   .. code-block:: yaml
-
-      # ❌ WRONG
-      access_ssh_permit_root_login: "True"
-
-      # ✅ CORRECT
-      access_ssh_permit_root_login: "False"
-
-Security Resources
-------------------
-
-Documentation
-~~~~~~~~~~~~~
-
-* `CIS Benchmarks <https://www.cisecurity.org/cis-benchmarks/>`_
-* `OWASP Top 10 <https://owasp.org/www-project-top-ten/>`_
-* `Docker Security <https://docs.docker.com/engine/security/>`_
-* `Kubernetes Security <https://kubernetes.io/docs/concepts/security/>`_
-
-Tools
-~~~~~
-
-* **Trivy** - Container image scanning
-* **ansible-lint** - Playbook security checks
-* **Vault** - Secrets management
-* **Bitwarden** - Password management
-* **Tailscale** - Zero-trust networking
-
-Next Steps
-----------
-
-* Implement :ref:`quickstart` securely
-* Review :ref:`examples` for secure patterns
-* Check :ref:`troubleshooting` for security issues
-* Read the compliance documentation for requirements
+* Secrets only in Vault or a secrets manager, passed in as variables.
+* ``no_log: true`` on tasks that handle secrets.
+* SSH: keys only, ``access_ssh_permit_root_login`` not ``yes``.
+* Firewall: default ``drop`` on input, only required ports open, SSH rate limit
+  kept.
+* Package upgrades: ``packages_unattended_upgrades_enabled`` or a scheduled run.
+* Docker: ``no-new-privileges`` left on unless an image needs setuid.
+* K3s: ``k3s_security_hardening`` left on; set a Pod Security Admission profile.
 
 .. seealso::
 
-   * :ref:`standards` - Repository Standards
-   * :ref:`ansible-roles` - Role design, ``no_log`` and secret-handling rules
-   * :ref:`contributing` - Contributing Guidelines
-   * :ref:`cicd` - CI/CD Security
+   * :ref:`ansible-roles` - role design, ``no_log`` and secret-handling rules
+   * :ref:`standards` - repository standards
+   * :ref:`cicd` - CI/CD security
+   * `Docker security <https://docs.docker.com/engine/security/>`_
+   * `Kubernetes security <https://kubernetes.io/docs/concepts/security/>`_

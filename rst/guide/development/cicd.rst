@@ -1,904 +1,363 @@
 .. meta::
-  :description: CI/CD workflows and linter configurations for arillso projects
+  :description: GitHub Actions workflows and linter configuration of the arillso repositories
 
 .. _cicd:
 
 CI/CD & Linting
 ===============
 
-Standard GitHub Actions workflows and linter configurations used across all arillso projects.
+How the arillso repositories build, test, scan and release. The jobs
+themselves live as reusable workflows in
+`arillso/.github <https://github.com/arillso/.github/tree/main/.github/workflows>`_;
+each repository has thin caller workflows that pass a few inputs.
 
 .. contents::
    :local:
    :depth: 2
 
-Workflow Standards
-------------------
+Workflow Layout
+---------------
 
-General Principles
-~~~~~~~~~~~~~~~~~~
+Every repository uses the same caller files under ``.github/workflows/``:
 
-**All workflows must:**
+.. list-table::
+   :header-rows: 1
+   :widths: 25 30 45
 
-1. **Pin actions to SHA digest** for security
-2. **Use concurrency control** to cancel outdated runs
-3. **Set minimal permissions** (``contents: read`` by default)
-4. **Include path ignores** for documentation changes
-5. **Support manual triggering** with ``workflow_dispatch``
+   * - File
+     - Trigger
+     - Purpose
+   * - ``pull-request.yml``
+     - Pull request against ``main``
+     - Lint, tests, secret scan, Claude review
+   * - ``merge.yml``
+     - Push to ``main``
+     - Re-run CI and the secret scan; the container image repository also
+       builds and publishes here
+   * - ``tag.yml``
+     - Version tag
+     - Release (Ansible Galaxy, GitHub Release, image)
+   * - ``nightly-security.yml``
+     - Daily cron ``0 2 * * *`` (02:00 UTC)
+     - Secret, code and configuration scans, SBOM
+   * - ``cleanup.yml``
+     - Monthly cron (``docker.ansible``, ``action.playbook``)
+     - Prune old images from the registries
 
-Workflow Template Structure
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Reusable workflows are referenced by date tag, for example
+``arillso/.github/.github/workflows/ci-ansible-collection.yml@2026-11-20``.
+``arillso/.github`` moves the tag of the current UTC day to the latest commit
+on every push to ``main``. Renovate (``renovate-base`` preset) bumps the tag in
+the consumer repositories in a weekly Monday window and automerges the update.
 
-.. code-block:: yaml
+Ansible Collections
+-------------------
 
-   ---
-   name: Workflow Name
+Pull Request
+~~~~~~~~~~~~
 
-   on:
-     push:
-       branches: [main]
-       paths-ignore:
-         - "**.md"
-         - ".github/CODEOWNERS"
-     pull_request:
-       branches: [main]
-     workflow_dispatch:
-
-   concurrency:
-     group: ${{ github.ref }}-${{ github.workflow }}
-     cancel-in-progress: true
-
-   permissions:
-     contents: read
-
-   jobs:
-     job-name:
-       runs-on: ubuntu-latest
-       steps:
-         - uses: actions/checkout@<SHA> # v4
-
-CI Workflow (pull-request.yml, merge.yml)
------------------------------------------
-
-Standard Linting Workflow
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-**For Go Projects:**
-
-.. code-block:: yaml
-
-   ---
-   name: Continuous Integration
-
-   on:
-     push:
-       branches: [main, "feature/**"]
-       paths-ignore:
-         - "**.md"
-         - ".github/CODEOWNERS"
-     pull_request:
-       branches: [main]
-     workflow_dispatch:
-
-   concurrency:
-     group: ${{ github.ref }}-${{ github.workflow }}
-     cancel-in-progress: true
-
-   jobs:
-     golangci-lint:
-       name: Go Lint
-       runs-on: ubuntu-latest
-       steps:
-         - name: Checkout Code
-           uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-         - name: Setup Go
-           uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
-           with:
-             go-version-file: go.mod
-             cache: true
-
-         - name: Run golangci-lint
-           uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
-           with:
-             version: latest
-
-     actionlint:
-       name: Action Lint
-       runs-on: ubuntu-latest
-       steps:
-         - name: Checkout Code
-           uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-         - name: Run actionlint
-           uses: reviewdog/action-actionlint@ae857e78c1b42b3d0a49637181b09d3d56d402b4 # v1.84.1
-           with:
-             reporter: github-pr-review
-             fail_level: error
-
-     shellcheck:
-       name: Shell Lint
-       runs-on: ubuntu-latest
-       steps:
-         - name: Checkout Code
-           uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-         - name: Run ShellCheck
-           uses: reviewdog/action-shellcheck@950c9d71535c8c49e5c029c33a438ade63b9009c # v1.35.1
-           with:
-             reporter: github-pr-review
-             fail_level: warning
-
-     yamllint:
-       name: YAML Lint
-       runs-on: ubuntu-latest
-       steps:
-         - name: Checkout Code
-           uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-         - name: Run yamllint
-           uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c # v3.1.1
-           with:
-             config_file: .yamllint.yml
-             strict: false
-
-**For Ansible Collections:**
-
-Complete workflow implementing the :ref:`standards` CI architecture.
-
-.. code-block:: yaml
-
-   ---
-   name: Continuous Integration
-
-   on:
-     push:
-       branches: [main]
-       paths-ignore:
-         - "**.md"
-         - ".github/CODEOWNERS"
-     pull_request:
-       branches: [main]
-     workflow_dispatch:
-
-   concurrency:
-     group: ${{ github.ref }}-${{ github.workflow }}
-     cancel-in-progress: true
-
-   jobs:
-     # Stage 1: Linting (Parallel)
-     ansible-lint:
-       name: Ansible Lint
-       runs-on: ubuntu-latest
-       steps:
-         - name: Checkout Code
-           uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-         - name: Run ansible-lint
-           uses: ansible/ansible-lint@b74fb6f73d234bf92672372cb1c10768e4018d16 # v26.11.0
-
-     yaml-lint:
-       name: YAML Lint
-       runs-on: ubuntu-latest
-       steps:
-         - name: Checkout Code
-           uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-         - name: Run yamllint
-           uses: ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c # v3.1.1
-           with:
-             config_file: .yamllint.yml
-
-     # Stage 2: Sanity Tests (depends on Stage 1)
-     sanity-test:
-       name: Sanity Tests
-       runs-on: ubuntu-latest
-       needs: [ansible-lint, yaml-lint]
-       steps:
-         - name: Checkout Code
-           uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-         - name: Setup Python
-           uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-           with:
-             python-version: "3.11"
-
-         - name: Install ansible-core
-           run: pip install ansible-core
-
-         - name: Run sanity tests
-           run: ansible-test sanity --docker
-
-     # Stage 3: Unit Tests
-     unit-test:
-       name: Unit Tests
-       runs-on: ubuntu-latest
-       needs: [sanity-test]
-       steps:
-         - name: Checkout Code
-           uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-         - name: Setup Python
-           uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-           with:
-             python-version: "3.11"
-
-         - name: Install dependencies
-           run: pip install pytest pytest-cov
-
-         - name: Run pytest
-           run: pytest --cov --cov-report=xml
-
-     # Stage 4: Molecule Tests
-     molecule-test:
-       name: Molecule Test
-       runs-on: ubuntu-latest
-       needs: [unit-test]
-       strategy:
-         matrix:
-           distro: [ubuntu2204, debian12, rockylinux9]
-       steps:
-         - name: Checkout Code
-           uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-         - name: Run Molecule
-           uses: gofrolist/molecule-action@483b9b4d3af747d6612af3f8a56c89f304ca26d8 # v2.9.22
-           with:
-             molecule_command: test
-             molecule_args: --scenario-name ${{ matrix.distro }}
-
-     # Stage 5: Integration Tests
-     integration-test:
-       name: Integration Tests
-       runs-on: ubuntu-latest
-       needs: [molecule-test]
-       steps:
-         - name: Checkout Code
-           uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-         - name: Setup Python
-           uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-           with:
-             python-version: "3.11"
-
-         - name: Install ansible-core
-           run: pip install ansible-core
-
-         - name: Run integration tests
-           run: ansible-test integration --docker
-
-     # Stage 6: Build
-     build:
-       name: Build Collection
-       runs-on: ubuntu-latest
-       needs: [integration-test]
-       steps:
-         - name: Checkout Code
-           uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-         - name: Build collection
-           run: ansible-galaxy collection build
-
-         - name: Upload artifact
-           uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-           with:
-             name: collection
-             path: "*.tar.gz"
-
-**Architecture:** See :ref:`standards` for CI workflow structure diagram.
-
-CodeQL Workflow (nightly-security.yml)
---------------------------------------
-
-Security Scanning
-~~~~~~~~~~~~~~~~~
-
-**Required for all public repositories that contain CodeQL-supported code**
-(see :ref:`codeql-exception` for the exemption and how it is tested).
-
-CodeQL is not a workflow of its own in a project repository: the
-``nightly-security.yml`` caller invokes the shared ``security-codeql.yml``
-alongside the other scans. The reusable analyses one language per call, so a
-repository with several analysable languages calls it once per language:
+Excerpt from ``arillso/ansible.system`` (scenario list shortened):
 
 .. code-block:: yaml
 
    jobs:
-     codeql-python:
-       uses: arillso/.github/.github/workflows/security-codeql.yml@2026-08-09
+     ci:
+       uses: arillso/.github/.github/workflows/ci-ansible-collection.yml@2026-11-20
        with:
-         language: python
+         collection_namespace: arillso
+         collection_name: system
+         python_version: "3.13"
+         enable_unit_tests: true
+         enable_integration_tests: true
 
-     codeql-javascript:
-       uses: arillso/.github/.github/workflows/security-codeql.yml@2026-08-09
+     molecule:
+       uses: arillso/.github/.github/workflows/ci-ansible-molecule.yml@2026-11-20
        with:
-         language: javascript
+         collection_namespace: arillso
+         collection_name: system
+         python_version: "3.13"
+         scenarios: '["access", "firewall", "packages"]'
+         concurrency-suffix: molecule
 
-The caller must also grant ``security-events: write``, otherwise the reusable
-cannot upload its results.
+     molecule-zram:
+       uses: arillso/.github/.github/workflows/ci-ansible-molecule.yml@2026-11-20
+       with:
+         collection_namespace: arillso
+         collection_name: system
+         driver: qemu
+         python_version: "3.13"
+         scenarios: '["zram"]'
+         concurrency-suffix: molecule-zram
 
-The example below shows the analysis steps that workflow performs for the
-language it was called with.
+``ci-ansible-collection.yml`` runs these jobs:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Job
+     - What it runs
+   * - Ansible Lint
+     - ``ansible-lint``
+   * - YAML Lint
+     - ``yamllint .``
+   * - Python Lint
+     - ``ruff check``, ``black --check``, ``isort --check-only`` and
+       ``pylint`` on ``plugins/``
+   * - Markdown Lint
+     - ``markdownlint-cli2`` on ``**/*.md`` (does not fail the run)
+   * - Security Scan
+     - Trivy filesystem scan, SARIF upload to code scanning
+   * - Sanity Tests
+     - ``ansible-test sanity --docker`` for each entry of
+       ``ansible_versions`` (default ``stable-2.18``, ``stable-2.19``,
+       ``stable-2.20``)
+   * - Unit Tests
+     - ``ansible-test units --docker``, only with ``enable_unit_tests: true``
+   * - Integration Tests
+     - ``ansible-test integration --docker``, only with
+       ``enable_integration_tests: true``
+   * - Argument Specs Check
+     - Validates ``meta/argument_specs.yml`` of every role (on by default)
+   * - Build Collection
+     - ``ansible-galaxy collection build`` after the lint and sanity jobs;
+       uploads the tarball as artifact
+
+``ci-ansible-molecule.yml`` runs one Molecule job per scenario:
+
+* ``scenarios_root`` defaults to ``extensions/molecule``; arillso.container
+  and arillso.agent point it at ``roles/<role>/molecule`` instead.
+* ``driver`` is ``docker`` by default. Scenarios that need a real kernel
+  (Docker daemon, K3s, zram, tuning, a stable systemd service for Alloy) use
+  ``driver: qemu`` and run in a KVM guest.
+* ``concurrency-suffix`` keeps the nested call out of the caller's
+  concurrency group; without it GitHub cancels the Molecule run.
+
+Release
+~~~~~~~
+
+``tag.yml`` triggers on tags matching ``[0-9]+.[0-9]+.[0-9]+`` (no ``v``
+prefix) and calls ``release-ansible-collection.yml``:
 
 .. code-block:: yaml
-
-   ---
-   name: Security - CodeQL
-
-   on:
-     workflow_call:
-       inputs:
-         language:
-           description: 'Language to analyze (go, javascript, python, etc.)'
-           required: false
-           type: string
-           default: 'go'
-
-   permissions:
-     security-events: write
-     contents: read
-
-   jobs:
-     analyze:
-       name: Analyze
-       runs-on: ubuntu-latest
-       strategy:
-         fail-fast: false
-         matrix:
-           language: ['${{ inputs.language }}']
-       steps:
-         - name: Checkout repository
-           uses: actions/checkout@<SHA> # v7
-
-         - name: Initialize CodeQL
-           uses: github/codeql-action/init@<SHA> # v4
-           with:
-             languages: ${{ matrix.language }}
-
-         - name: Autobuild
-           uses: github/codeql-action/autobuild@<SHA> # v4
-
-         - name: Perform CodeQL Analysis
-           uses: github/codeql-action/analyze@<SHA> # v4
-           with:
-             category: "/language:${{ matrix.language }}"
-
-**Features:**
-
-* Runs on the caller's schedule (``nightly-security.yml``)
-* One language per call, so callers add a job per analysable language
-* Automatic SARIF upload to GitHub Security
-
-Deploy/Publish Workflow
------------------------
-
-For Docker/Actions (tag.yml)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: yaml
-
-   ---
-   name: Deploy
 
    on:
      push:
        tags:
-         - "v*"  # v1.0.0, v2.1.3, etc.
-
-   permissions:
-     contents: write
-     packages: write
+         - "[0-9]+.[0-9]+.[0-9]+"
 
    jobs:
-     build-and-publish:
-       runs-on: ubuntu-latest
-       steps:
-         - name: Checkout Code
-           uses: actions/checkout@<SHA> # v4
+     release:
+       uses: arillso/.github/.github/workflows/release-ansible-collection.yml@2026-11-20
+       with:
+         collection_namespace: arillso
+         collection_name: system
+       secrets:
+         galaxy_api_key: ${{ secrets.GALAXY_API_KEY }}
 
-         - name: Docker meta
-           id: meta
-           uses: docker/metadata-action@<SHA> # v5
-           with:
-             images: ghcr.io/${{ github.repository }}
-             tags: |
-               type=semver,pattern={{version}}
-               type=semver,pattern={{major}}.{{minor}}
-               type=semver,pattern={{major}}
+The reusable workflow:
 
-         - name: Login to GHCR
-           uses: docker/login-action@<SHA> # v3
-           with:
-             registry: ghcr.io
-             username: ${{ github.actor }}
-             password: ${{ secrets.GITHUB_TOKEN }}
+1. fails if the tag differs from ``version`` in ``galaxy.yml``,
+2. fails if ``CHANGELOG.md`` has no non-empty ``## [X.Y.Z]`` section for the
+   tag,
+3. builds and publishes the collection to Ansible Galaxy
+   (``artis3n/ansible_galaxy_collection``),
+4. creates a GitHub Release whose body is that changelog section.
 
-         - name: Build and push
-           uses: docker/build-push-action@<SHA> # v6
-           with:
-             context: .
-             push: true
-             tags: ${{ steps.meta.outputs.tags }}
-             platforms: linux/amd64,linux/arm64
+Nightly Security
+~~~~~~~~~~~~~~~~
 
-         - name: Create GitHub Release
-           uses: softprops/action-gh-release@<SHA> # v2
-           with:
-             generate_release_notes: true
+``nightly-security.yml`` in the collections calls:
 
-**Features:**
+* ``security-secrets.yml``: Gitleaks, TruffleHog and pattern detection.
+* ``security-code.yml``: CodeQL, languages as JSON array (for example
+  ``'["python"]'``).
+* ``security-config.yml``: Trivy configuration scan; with
+  ``scan-ansible: true`` also ``ansible-lint`` and ``yamllint`` on
+  ``ansible-path``.
+* ``security-sbom.yml``: SBOM of the repository
+  (``artifact-type: filesystem``).
 
-* Triggered by version tags (``v1.0.0``)
-* Multi-platform builds (amd64, arm64)
-* Publishes to GitHub Container Registry
-* Creates GitHub Release with auto-generated notes
+Jobs that upload SARIF results need ``security-events: write`` in the
+caller.
 
-For Ansible Collections (tag.yml)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Go Repositories
+---------------
 
-**Implementation of** :ref:`standards` **publish requirements.**
+``go.ansible`` and ``action.playbook`` call ``ci-go.yml`` on pull request and
+merge. It runs ``go mod download`` and ``go mod verify``, ``go vet ./...``, a
+``gofmt`` check, ``staticcheck``,
+``go test -v -race -coverprofile=coverage.out ./...`` (coverage report as
+artifact) and ``golangci-lint``. The Go version comes from ``go.mod``.
+
+``ci-lint.yml`` adds ``actionlint``, ``shellcheck`` (with
+``enable_shellcheck: true``) and ``yamllint``. ``security-deps.yml`` runs
+GitHub dependency review and a Go dependency audit.
+
+Release tags differ between the two:
+
+* ``go.ansible``: ``v[0-9]+.[0-9]+.[0-9]+`` and pre-releases
+  ``vX.Y.Z-<suffix>``. ``tag.yml`` builds and tests the module, creates the
+  GitHub Release from the matching ``CHANGELOG.md`` section and attaches an
+  SBOM.
+* ``action.playbook``: ``[0-9]+.[0-9]+.[0-9]+`` without prefix.
+  ``tag.yml`` builds the action image, pushes it to
+  ``ghcr.io/arillso/action.playbook`` and creates a GitHub Release.
+
+Container Image
+---------------
+
+``docker.ansible`` (image ``arillso/ansible``) runs its own pipeline in
+``pull-request.yml``, on pull requests and weekly (Wednesday 01:00 UTC). Code
+jobs are skipped when only Markdown or ``LICENSE`` changed.
+
+* Lint: ``ci-lint.yml`` and ``hadolint`` on the ``Dockerfile``.
+* Build the image once, then run against it: container-structure-test,
+  hardening checks and Trivy (fails on fixable ``CRITICAL``/``HIGH``
+  findings not listed in ``.trivyignore``), performance, integration,
+  unit (pytest) and upgrade tests.
+
+``merge.yml`` runs on pushes to ``main`` that touch ``Dockerfile`` or
+``requirements.txt``. It re-runs the pull request and security workflows, then
+builds ``linux/amd64`` and ``linux/arm64`` images, pushes them to Docker Hub
+and ``ghcr.io`` with provenance and SBOM, generates a build-provenance
+attestation and creates a GitHub Release tagged with the build date.
+
+Action Pinning
+--------------
+
+The reusable workflows pin third-party actions to a full commit SHA with the
+version as comment:
 
 .. code-block:: yaml
 
-   ---
-   name: Publish Collection
+   - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-   on:
-     push:
-       tags:
-         - "[0-9]+.[0-9]+.[0-9]+"  # 1.0.0 (NO 'v' prefix per standards)
+Renovate updates SHA and comment together. The ``renovate-base`` preset also
+updates such ``uses:`` lines inside ``.rst`` files, so examples in this guide
+follow the same scheme.
 
-   permissions:
-     contents: write
+Linter Configuration
+--------------------
 
-   jobs:
-     publish:
-       runs-on: ubuntu-latest
-       steps:
-         - name: Checkout Code
-           uses: actions/checkout@<SHA> # v4
+The files below are taken from ``arillso/ansible.system``; the other
+collections use the same set.
 
-         - name: Get version from tag
-           id: get_version
-           run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+.yamllint.yml
+~~~~~~~~~~~~~
 
-         - name: Verify galaxy.yml version
-           run: |
-             VERSION="${{ steps.get_version.outputs.VERSION }}"
-             GALAXY_VERSION=$(grep '^version:' galaxy.yml | awk '{print $2}')
-             if [ "$VERSION" != "$GALAXY_VERSION" ]; then
-               echo "Error: Version mismatch!"
-               exit 1
-             fi
-
-         - name: Check CHANGELOG entry
-           run: |
-             VERSION="${{ steps.get_version.outputs.VERSION }}"
-             if ! grep -q "## \[$VERSION\]" CHANGELOG.md; then
-               echo "Error: No CHANGELOG entry"
-               exit 1
-             fi
-
-         - name: Extract changelog
-           id: changelog
-           run: |
-             VERSION="${{ steps.get_version.outputs.VERSION }}"
-             sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d' > /tmp/changelog.txt
-
-         - name: Build and Publish
-           uses: artis3n/ansible_galaxy_collection@<SHA> # v2
-           with:
-             api_key: ${{ secrets.GALAXY_API_KEY }}
-
-         - name: Create GitHub Release
-           uses: softprops/action-gh-release@<SHA> # v2
-           with:
-             body_path: /tmp/changelog.txt
-
-**Features:**
-
-* Tag format without 'v' prefix (``1.0.0``)
-* Version validation (tag = galaxy.yml)
-* CHANGELOG validation
-* Automatic changelog extraction
-* Publishes to Ansible Galaxy
-* Creates GitHub Release
-
-Linter Configurations
----------------------
-
-YAML Lint (.yamllint.yml)
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-**Standard configuration for all projects:**
+Excerpt:
 
 .. code-block:: yaml
 
    ---
    extends: default
+
    rules:
-     braces:
-       max-spaces-inside: 1
-     new-lines:
-       level: warning
-       type: unix
-     line-length:
-       max: 500
-     comments:
-       min-spaces-from-content: 1
-     truthy:
-       allowed-values: ["true", "false", "on"]
+       line-length:
+           max: 500
+           level: warning
 
-**Key settings:**
+       indentation:
+           spaces: 4
+           indent-sequences: true
+           check-multi-line-strings: false
 
-* Line length: 500 characters (for long URLs)
-* Unix line endings
-* Truthy values: ``true``, ``false``, ``on`` only
+       truthy:
+           allowed-values: ["true", "false"]
+           check-keys: false
 
-Go Lint (.golangci.yml)
-~~~~~~~~~~~~~~~~~~~~~~~
+       document-start:
+           present: true
 
-**Standard configuration for Go projects:**
+       octal-values:
+           forbid-implicit-octal: true
+           forbid-explicit-octal: true
+
+.ansible-lint
+~~~~~~~~~~~~~
+
+.. code-block:: yaml
+
+   ---
+   exclude_paths:
+       - .ansible/
+       - .github/
+       - .venv/
+       - venv/
+
+   skip_list:
+       - galaxy[version-incorrect]
+       - command-instead-of-module
+       - no-handler
+       - package-latest
+
+   warn_list:
+       - name[casing]
+       - yaml[line-length]
+
+   use_default_rules: true
+
+The lefthook pre-commit hook runs ``ansible-lint --profile=production`` on
+staged role, plugin, test and meta files.
+
+.editorconfig
+~~~~~~~~~~~~~
+
+Four spaces, LF line endings, UTF-8, final newline and trimmed trailing
+whitespace for all files; trailing whitespace is kept in Markdown, and
+``Makefile`` uses tabs.
+
+.golangci.yml
+~~~~~~~~~~~~~
+
+From ``arillso/go.ansible``, without the per-linter settings:
 
 .. code-block:: yaml
 
    ---
    version: "2"
+
    linters:
-     default: standard
-     enable:
-       - gocritic
+       enable:
+           - errcheck
+           - govet
+           - staticcheck
+           - gosec
+           - ineffassign
+           - unused
+           - misspell
+           - gocritic
+
    formatters:
-     enable:
-       - gofmt
-       - goimports
+       enable:
+           - gofmt
+           - goimports
 
-**Features:**
+Local Checks
+------------
 
-* Standard linter set
-* ``gocritic`` for advanced checks
-* Auto-formatting with ``gofmt`` and ``goimports``
-
-Ansible Lint (.ansible-lint)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-**For Ansible Collections:**
-
-.. code-block:: yaml
-
-   ---
-   profile: production
-   strict: true
-   offline: false
-
-   skip_list:
-     - yaml[line-length]  # Already covered by yamllint
-     - name[casing]       # Allow flexible task naming
-
-   warn_list:
-     - experimental       # Warn on experimental features
-
-   exclude_paths:
-     - .github/
-     - .ansible/
-     - molecule/
-     - tests/
-
-**Profile levels:**
-
-* ``min`` - Minimal checks
-* ``basic`` - Basic checks
-* ``moderate`` - More comprehensive
-* ``safety`` - Safety-focused
-* ``production`` - Strictest (recommended)
-
-EditorConfig (.editorconfig)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-**Universal editor settings:**
-
-.. code-block:: ini
-
-   root = true
-
-   [*]
-   charset = utf-8
-   end_of_line = lf
-   insert_final_newline = true
-   trim_trailing_whitespace = true
-   indent_style = space
-   indent_size = 4
-
-   [*.{yml,yaml}]
-   indent_size = 4
-
-   [*.md]
-   trim_trailing_whitespace = false
-
-   [Makefile]
-   indent_style = tab
-
-Common Linter Commands
-----------------------
-
-Local Testing
-~~~~~~~~~~~~~
-
-**Before committing, run:**
+Each repository ships a ``Makefile`` and a ``lefthook.yml``. Run
+``lefthook install`` once after cloning. The pre-commit hook runs yamllint,
+markdownlint, actionlint and Gitleaks on staged files, plus the stack's own
+checks (``ansible-lint`` in the collections, ``hadolint`` for the image,
+``gofmt``/``go vet`` or ``golangci-lint`` in the Go repositories). The
+pre-push hook runs a full Gitleaks scan, and ``go test`` in the Go
+repositories.
 
 .. code-block:: bash
 
-   # YAML linting
-   yamllint .
-
-   # Go linting
-   golangci-lint run
-
-   # Ansible linting
-   ansible-lint
-
-   # Shell script linting
-   shellcheck scripts/*.sh
-
-   # Action linting
-   actionlint .github/workflows/*.yml
-
-Install Linters
-~~~~~~~~~~~~~~~
-
-.. code-block:: bash
-
-   # YAML
-   pip install yamllint
-
-   # Go
-   go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-
-   # Ansible
-   pip install ansible-lint
-
-   # Shell
-   brew install shellcheck  # macOS
-   apt install shellcheck   # Ubuntu/Debian
-
-   # GitHub Actions
-   brew install actionlint  # macOS
-   go install github.com/rhysd/actionlint/cmd/actionlint@latest
-
-Pre-commit Hooks
-----------------
-
-Optional but Recommended
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-**Create** ``.pre-commit-config.yaml``:
-
-.. code-block:: yaml
-
-   ---
-   repos:
-     - repo: https://github.com/pre-commit/pre-commit-hooks
-       rev: v5.0.0
-       hooks:
-         - id: trailing-whitespace
-         - id: end-of-file-fixer
-         - id: check-yaml
-         - id: check-merge-conflict
-
-     - repo: https://github.com/adrienverge/yamllint
-       rev: v1.35.1
-       hooks:
-         - id: yamllint
-
-     - repo: https://github.com/ansible/ansible-lint
-       rev: v24.12.2
-       hooks:
-         - id: ansible-lint
-           files: \.(yaml|yml)$
-
-**Install:**
-
-.. code-block:: bash
-
-   pip install pre-commit
-   pre-commit install
-
-**Run manually:**
-
-.. code-block:: bash
-
-   pre-commit run --all-files
-
-GitHub Actions Best Practices
-------------------------------
-
-SHA Pinning
-~~~~~~~~~~~
-
-**Implementation of arillso security standards** (see :ref:`standards`): All actions must be SHA-pinned.
-
-.. code-block:: yaml
-
-   # ✅ Correct - Pinned to SHA with version comment
-   - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-   # ❌ Wrong - Mutable reference
-   - uses: actions/checkout@v4
-   - uses: actions/checkout@main
-
-**Why:**
-
-* Prevents supply chain attacks
-* Ensures immutable versions
-* Renovate manages updates automatically
-
-**How to get SHA:**
-
-.. code-block:: bash
-
-   # Get latest SHA for a specific version
-   gh api repos/actions/checkout/commits/v4 --jq '.sha'
-
-   # Get latest SHA from main branch
-   gh api repos/actions/checkout/commits/main --jq '.sha'
-
-**Renovate handles updates automatically** when configured with ``renovate-actions`` preset.
-
-Caching
-~~~~~~~
-
-**Speed up workflows with caching:**
-
-.. code-block:: yaml
-
-   - name: Setup Go
-     uses: actions/setup-go@<SHA> # v5
-     with:
-       go-version-file: go.mod
-       cache: true  # Automatic Go module caching
-
-   - name: Setup Python
-     uses: actions/setup-python@<SHA> # v5
-     with:
-       python-version: "3.11"
-       cache: "pip"  # Automatic pip caching
-
-Matrix Testing
-~~~~~~~~~~~~~~
-
-**Test across multiple versions:**
-
-.. code-block:: yaml
-
-   jobs:
-     test:
-       strategy:
-         matrix:
-           go-version: [1.21, 1.22, 1.23]
-           os: [ubuntu-latest, macos-latest]
-       runs-on: ${{ matrix.os }}
-       steps:
-         - uses: actions/setup-go@<SHA>
-           with:
-             go-version: ${{ matrix.go-version }}
-
-Concurrency Control
-~~~~~~~~~~~~~~~~~~~
-
-**Prevent wasted CI time:**
-
-.. code-block:: yaml
-
-   concurrency:
-     group: ${{ github.ref }}-${{ github.workflow }}
-     cancel-in-progress: true
-
-**Effect:**
-
-* Cancels outdated workflow runs
-* Saves CI minutes
-* Faster feedback on latest push
-
-Conditional Steps
-~~~~~~~~~~~~~~~~~
-
-**Run steps conditionally:**
-
-.. code-block:: yaml
-
-   - name: Upload coverage
-     if: matrix.go-version == '1.23'
-     uses: codecov/codecov-action@<SHA>
-
-   - name: Run on main only
-     if: github.ref == 'refs/heads/main'
-     run: ./deploy.sh
-
-Path Filters
-~~~~~~~~~~~~
-
-**Skip workflows for doc changes:**
-
-.. code-block:: yaml
-
-   on:
-     push:
-       paths-ignore:
-         - "**.md"
-         - "docs/**"
-         - ".github/CODEOWNERS"
-
-Troubleshooting
----------------
-
-Common Issues
-~~~~~~~~~~~~~
-
-**1. SHA mismatch errors:**
-
-Solution: Update action SHA to latest version
-
-.. code-block:: bash
-
-   # Get latest SHA
-   gh api repos/actions/checkout/commits/main --jq '.sha'
-
-**2. Linter conflicts:**
-
-Solution: Configure linters to avoid overlap
-
-.. code-block:: yaml
-
-   # .ansible-lint
-   skip_list:
-     - yaml[line-length]  # Already in yamllint
-
-**3. Permission errors:**
-
-Solution: Add required permissions
-
-.. code-block:: yaml
-
-   permissions:
-     contents: write
-     packages: write
-     security-events: write
-
-**4. Cache not working:**
-
-Solution: Verify cache key and paths
-
-.. code-block:: yaml
-
-   - uses: actions/cache@<SHA>
-     with:
-       path: ~/.cache/go-build
-       key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-
-Debugging Workflows
-~~~~~~~~~~~~~~~~~~~
-
-**Enable debug logging:**
-
-.. code-block:: bash
-
-   # In repository settings, add secrets:
-   ACTIONS_RUNNER_DEBUG=true
-   ACTIONS_STEP_DEBUG=true
-
-**Add debug steps:**
-
-.. code-block:: yaml
-
-   - name: Debug info
-     run: |
-       echo "Event: ${{ github.event_name }}"
-       echo "Ref: ${{ github.ref }}"
-       echo "SHA: ${{ github.sha }}"
-       env
+   make lint          # collections: ansible-lint, yamllint, ruff/black
+   make test          # collections: pytest; Go: go test
+   make test-molecule # collections: every Molecule scenario
+   make build         # collections: ansible-galaxy collection build
+
+``make test`` in a collection runs ``pytest`` directly; CI runs
+``ansible-test units --docker``. A green local run does not guarantee a green
+CI run.
 
 .. seealso::
 
    * :ref:`standards` - Repository Standards
-   * :ref:`contributing` - Contributing Guidelines
-   * `GitHub Actions Templates <https://github.com/arillso/.github/tree/main/templates/workflows>`_
+   * :ref:`contributing` - Contributing
+   * :ref:`compatibility` - Version Compatibility

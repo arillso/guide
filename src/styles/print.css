@@ -1,0 +1,22 @@
+@media print {
+  .masthead,
+  .site-nav,
+  .pager,
+  .colophon,
+  .code-copy-button,
+  .headerlink {
+    display: none !important;
+  }
+
+  .frame {
+    display: block;
+  }
+
+  .doc {
+    max-width: none;
+  }
+
+  .doc .highlight pre {
+    white-space: pre-wrap;
+  }
+}

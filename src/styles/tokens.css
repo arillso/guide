@@ -1,0 +1,80 @@
+/* Design tokens. Datasheet palette "petrol": pale engineering-green paper (like graph paper),
+   near-black ink, one petrol signal colour (chosen over cream + orange, which
+   read as the Claude brand). Dark values are defined twice: for the system preference (unless the
+   reader forced light) and for an explicit data-theme="dark". */
+:root {
+  --paper: #e7f0ea;
+  --paper-sunk: #d6e4db;
+  --paper-raised: #f1f7f3;
+  --ink: #101618;
+  --ink-soft: #283236;
+  --mute: #535d60;
+  --rule: #101618;
+  --hair: #c3d3c9;
+  --signal: #00645c;
+  --signal-ink: #ffffff;
+  --signal-wash: #d3e6e2;
+  --ok: #2b6a1f;
+  --warn: #80560a;
+  --bad: #b0262e;
+  --focus: #00645c;
+  --mark: #f6d77a;
+
+  --font-text: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --measure: 46rem;
+  --nav-width: 17rem;
+  --masthead-height: 3.5rem;
+  --gutter: 1rem;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f1415;
+    --paper-sunk: #172022;
+    --paper-raised: #1f292b;
+    --ink: #e6ecea;
+    --ink-soft: #c3cdca;
+    --mute: #93a09d;
+    --rule: #e6ecea;
+    --hair: #303c3e;
+    --signal: #3fd2be;
+    --signal-ink: #0f1415;
+    --signal-wash: #12302d;
+    --ok: #8fd46a;
+    --warn: #e9b65a;
+    --bad: #ff7b7f;
+    --focus: #3fd2be;
+    --mark: #6b5310;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #0f1415;
+  --paper-sunk: #172022;
+  --paper-raised: #1f292b;
+  --ink: #e6ecea;
+  --ink-soft: #c3cdca;
+  --mute: #93a09d;
+  --rule: #e6ecea;
+  --hair: #303c3e;
+  --signal: #3fd2be;
+  --signal-ink: #0f1415;
+  --signal-wash: #12302d;
+  --ok: #8fd46a;
+  --warn: #e9b65a;
+  --bad: #ff7b7f;
+  --focus: #3fd2be;
+  --mark: #6b5310;
+  color-scheme: dark;
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --gutter: 2rem;
+  }
+}

@@ -7,7 +7,7 @@
 
 export function initTruncateDescriptions() {
   const elements = document.querySelectorAll(
-    ".wy-breadcrumbs li a, .wy-breadcrumbs li, .breadcrumb-item, .wy-menu-vertical a",
+    ".trail li a, .trail li, .site-nav a, .pager a",
   );
 
   elements.forEach(function (element) {
@@ -25,8 +25,16 @@ export function initTruncateDescriptions() {
         if (parts.length === 2 && parts[1].length > 20) head = parts[0];
       }
 
+      // Inside the contents navigation the collection prefix repeats the
+      // parent entry: "arillso.system.firewall role" -> "firewall role".
+      const label = head !== null ? head : text;
+      if (element.closest(".site-nav")) {
+        const short = label.replace(/^(\s*)arillso\.(system|container|agent)\.(?=\S)/, "$1");
+        if (short !== label) head = short;
+      }
+
       if (head !== null) {
-        element.setAttribute("title", element.textContent.trim());
+        element.setAttribute("title", text.trim());
         node.nodeValue = head.trimEnd();
       }
     });

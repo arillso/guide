@@ -1,45 +1,65 @@
 .. meta::
-  :description: Repository standards and conventions for all arillso projects
+  :description: Repository standards and conventions for arillso projects
 
 .. _standards:
 
 Repository Standards
 ====================
 
-Official standards and conventions for all arillso repositories. All public repositories use **MIT License**.
+Files, workflows and conventions shared by the arillso repositories. The shared
+pieces (reusable workflows, Renovate presets, issue and pull request templates,
+the ruleset template) live in `arillso/.github <https://github.com/arillso/.github>`_.
+All repositories are public and MIT-licensed.
 
 .. contents::
    :local:
    :depth: 2
 
-Core Principles
----------------
-
-1. **Public by default** - All repositories are public with MIT License
-2. **Focus on essentials** - No unnecessary files
-3. **Consistency** - Same structure across similar project types
-4. **Documentation** - Keep it minimal but complete
-5. **Automation** - Use workflows for repetitive tasks
-
 Required Files
 --------------
 
-Every Repository Must Have
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Every Repository
+~~~~~~~~~~~~~~~~
 
-1. **README.md** - Main documentation
-2. **LICENSE** - MIT License with copyright
-3. **.gitignore** - Project-specific ignore rules
-4. **.editorconfig** - Editor consistency
-5. **.github/CODEOWNERS** - Code ownership
-6. **.github/renovate.json** - Dependency updates
-7. **CHANGELOG.md** - Version history (for released projects)
-8. **AGENTS.md** - AI agent instructions
-9. **CLAUDE.md** - Import reference (``@AGENTS.md``)
-10. **REVIEW.md** - Code review rules for the AI review bot
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
 
-Recommended Structure
-~~~~~~~~~~~~~~~~~~~~~
+   * - File
+     - Purpose
+   * - ``README.md``
+     - Short description and quick start
+   * - ``LICENSE``
+     - MIT License
+   * - ``.gitignore``, ``.editorconfig``
+     - Ignore rules, editor settings
+   * - ``.github/CODEOWNERS``
+     - Default owner
+   * - ``.github/renovate.json``
+     - Extends a preset from ``arillso/.github``
+   * - ``CHANGELOG.md``
+     - Version history, for released projects
+   * - ``AGENTS.md``
+     - Instructions for coding agents
+   * - ``CLAUDE.md``
+     - One line: ``@AGENTS.md``
+   * - ``REVIEW.md``
+     - Rules for the AI review workflow (see :ref:`review-md`)
+
+``CONTRIBUTING.md`` is required for Ansible Collections.
+
+Organisation-Wide Defaults
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``arillso/.github`` provides GitHub's default community health files for every
+repository that has no own copy: ``SECURITY.md``, ``CONTRIBUTING.md``,
+``CODE_OF_CONDUCT.md``, ``SUPPORT.md``, ``GOVERNANCE.md``, the issue templates
+(``bug_report.yml``, ``feature_request.yml``, ``documentation.yml``) and
+``pull_request_template.md``. A repository adds its own copy only to override
+them.
+
+Layout
+~~~~~~
 
 .. code-block:: text
 
@@ -49,15 +69,14 @@ Recommended Structure
    │   │   ├── pull-request.yml
    │   │   ├── merge.yml
    │   │   ├── nightly-security.yml
-   │   │   └── tag.yml
-   │   ├── ISSUE_TEMPLATE/
-   │   ├── pull_request_template.md
+   │   │   ├── tag.yml              # only where something is released
+   │   │   └── cleanup.yml          # only where a container registry is used
    │   ├── CODEOWNERS
    │   └── renovate.json
    ├── AGENTS.md
    ├── CLAUDE.md
    ├── CHANGELOG.md
-   ├── CONTRIBUTING.md      # Required for Ansible Collections
+   ├── CONTRIBUTING.md              # Ansible Collections
    ├── LICENSE
    ├── README.md
    ├── REVIEW.md
@@ -65,17 +84,17 @@ Recommended Structure
    ├── .gitignore
    └── [project files]
 
-README.md Structure
--------------------
+README.md
+---------
 
-Minimal Format
-~~~~~~~~~~~~~~
+Keep the README short: title, one or two sentences, quick start, license.
+Collection READMEs additionally list their roles and plugins and may carry CI,
+Galaxy and license badges. Detailed usage belongs on guide.arillso.io, agent
+instructions in ``AGENTS.md``.
 
 .. code-block:: markdown
 
    # Project Name
-
-   [![badges](shields.io/badges)]  # Only for packages/collections
 
    Short description (1-2 sentences).
 
@@ -88,26 +107,6 @@ Minimal Format
    ## License
 
    MIT License
-
-   ## Copyright
-
-   (c) YEAR-YEAR, arillso
-
-Guidelines
-~~~~~~~~~~
-
-**Include:**
-
-* Project badges (only for Ansible Collections and published packages)
-* Brief description
-* Quick start example
-* Link to comprehensive documentation (if applicable)
-
-**Avoid:**
-
-* Long feature lists (except Ansible Collections)
-* Detailed code examples (belongs in AGENTS.md or guide.arillso.io)
-* Verbose descriptions
 
 .. _review-md:
 
@@ -237,7 +236,7 @@ All repositories use **MIT License**:
 
    MIT License
 
-   Copyright (c) YEAR-YEAR arillso
+   Copyright (c) 2025-2026 arillso
 
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal
@@ -276,14 +275,14 @@ Renovate Configuration
 
    {
        "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-       "extends": ["github>arillso/.github:renovate-base#2026-08-08"]
+       "extends": ["github>arillso/.github:renovate-base#2026-11-14"]
    }
 
 Pin the preset reference to a date tag. Without the ``#<date-tag>`` suffix
 Renovate resolves the preset against the default branch of
 ``arillso/.github``, so a change there reaches every repository without a pull
-request and without review. The ``customManager`` in ``renovate-base`` keeps
-the tag current on its own (``automerge: true``).
+request and without review. A ``customManager`` in ``renovate-base`` updates
+the tag; these updates are batched on Monday mornings and automerge.
 
 **Available presets:**
 
@@ -291,11 +290,13 @@ the tag current on its own (``automerge: true``).
 * ``renovate-go`` - Go projects
 * ``renovate-actions`` - GitHub Actions
 * ``renovate-ansible`` - Ansible collections (includes version variable management)
+* ``renovate-alpine`` - Alpine ``apk`` version pins in Dockerfiles
 
 GitHub Rulesets
 ~~~~~~~~~~~~~~~
 
-All repositories must have branch protection via GitHub Rulesets:
+Every repository gets the ruleset from ``templates/github-ruleset.json`` in
+``arillso/.github``. It contains these rules:
 
 * **Deletion protection** - Prevents deletion of ``main`` branch
 * **Non-fast-forward** - Prevents force pushes
@@ -305,10 +306,10 @@ All repositories must have branch protection via GitHub Rulesets:
 
 .. code-block:: bash
 
-   # Create ruleset using GitHub CLI
+   # Run in a clone of arillso/.github
    gh api repos/arillso/<repo-name>/rulesets \
      --method POST \
-     --input .github/templates/github-ruleset.json
+     --input templates/github-ruleset.json
 
 Workflow Standards
 ------------------
@@ -418,190 +419,105 @@ re-evaluated per audit, not granted once.
 GitHub Actions Security
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-**All GitHub Actions must be pinned to SHA digest.**
+Actions are pinned to a full commit SHA with the version as a comment, for
+example ``actions/checkout@<sha> # v7.0.1``. Renovate updates the SHA and the
+comment. See :ref:`cicd`.
 
-See :ref:`cicd` for implementation details and examples.
+Schedules
+~~~~~~~~~
 
-**Why:**
-
-* Prevents supply chain attacks
-* Ensures immutable action versions
-* Renovate manages updates automatically
-
-Schedule Frequency
-~~~~~~~~~~~~~~~~~~
-
-Scheduled security workflows run **daily at 02:00 UTC**.
-
-See :ref:`cicd` for workflow implementation examples.
+``nightly-security.yml`` runs daily at 02:00 UTC (``0 2 * * *``).
+``cleanup.yml`` runs monthly (``0 2 1 * *``).
 
 Ansible Collection Standards
------------------------------
+----------------------------
 
 Required Files
 ~~~~~~~~~~~~~~
 
-All Ansible Collections must include:
+* ``galaxy.yml`` - metadata; dependencies with lower bounds only
+* ``meta/runtime.yml`` - ``requires_ansible`` (``>=2.18.0``), ``action_groups``
+  where modules share settings
+* ``meta/argument_specs.yml`` for every role (a required check in each
+  collection's ``REVIEW.md``)
+* ``CHANGELOG.md``, ``CONTRIBUTING.md``
+* ``Makefile`` with named targets used by CI and developers (``arillso.system``:
+  ``lint``, ``test-unit``, ``test-integration``, ``test-molecule``, ``build``)
+* A Molecule scenario per role. ``arillso.system`` keeps them under
+  ``extensions/molecule/<role>/``; ``arillso.container`` 2.2.0 under
+  ``roles/<role>/molecule/default/``.
 
-* **CONTRIBUTING.md** - Required for all collections
-* **meta/argument_specs.yml** - Required for every role
-* **meta/runtime.yml** - ``requires_ansible``, plus ``action_groups`` where roles share an API target
-* **CHANGELOG.md** - Version history
-* **galaxy.yml** - Collection metadata, dependencies with lower bounds only
-* **extensions/molecule/** - One test scenario per role
-* **Makefile** - Named targets for lint, test, and build, shared by CI and developers
+See :ref:`contributing` for the contribution workflow and :ref:`ansible-roles`
+for role and collection design.
 
-See :ref:`contributing` for the contribution workflow and :ref:`ansible-roles` for how
-roles and collections are designed internally.
+CI
+~~
 
-Testing Philosophy
-~~~~~~~~~~~~~~~~~~
+``pull-request.yml`` and ``merge.yml`` call
+``ci-ansible-collection.yml``. Its jobs run in parallel; only ``build`` waits
+for ``ansible-lint``, ``yaml-lint``, ``python-lint`` and ``sanity-test``.
 
-**All collections must implement three-level testing:**
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
 
-1. **Unit Tests** - Python plugins with pytest
-2. **Molecule Tests** - One scenario per role under ``extensions/molecule/<role>/``,
-   with ``idempotence`` in the test sequence
-3. **Integration Tests** - ansible-test for end-to-end validation
+   * - Job
+     - Runs
+   * - ``ansible-lint``
+     - ``ansible-lint`` (profile ``production`` in ``.ansible-lint``)
+   * - ``yaml-lint``
+     - ``yamllint``
+   * - ``python-lint``
+     - ``ruff``, ``black --check``, ``isort --check-only``, ``pylint`` on ``plugins/``
+   * - ``markdown-lint``
+     - ``markdownlint-cli2``
+   * - ``security-scan``
+     - Trivy filesystem scan, results uploaded as SARIF
+   * - ``sanity-test``
+     - ``ansible-test sanity``
+   * - ``unit-test``
+     - ``ansible-test units --docker`` (input ``enable_unit_tests``)
+   * - ``integration-test``
+     - ``ansible-test integration --docker`` (input ``enable_integration_tests``)
+   * - ``argument-specs``
+     - checks ``meta/argument_specs.yml``
+   * - ``build``
+     - ``ansible-galaxy collection build``
 
-**All tests run from the event callers** (``pull-request.yml``, ``merge.yml``),
-which delegate to the shared CI workflows in ``arillso/.github``.
-
-See :ref:`cicd` for complete CI workflow implementation and :ref:`ansible-roles` for
-scenario layout, driver choice, and what ``verify.yml`` should assert.
-
-CI Workflow Structure
-~~~~~~~~~~~~~~~~~~~~~
-
-**All tests in one file** with dependency chain:
-
-.. mermaid::
-
-   flowchart LR
-       subgraph Stage1["Stage 1: Linting (Parallel)"]
-           AL[ansible-lint]
-           YL[yaml-lint]
-           PL[python-lint]
-           ML[markdown-lint]
-           SS[security-scan]
-       end
-
-       subgraph Stage2["Stage 2: Sanity"]
-           ST[sanity-test]
-       end
-
-       subgraph Stage3["Stage 3: Unit"]
-           UT[unit-test]
-       end
-
-       subgraph Stage4["Stage 4: Molecule"]
-           MOL[molecule-*]
-       end
-
-       subgraph Stage5["Stage 5: Integration"]
-           INT[integration]
-       end
-
-       subgraph Stage6["Stage 6: Build"]
-           BUILD[build]
-       end
-
-       Stage1 --> Stage2
-       Stage2 --> Stage3
-       Stage3 --> Stage4
-       Stage4 --> Stage5
-       Stage5 --> Stage6
-
-       style Stage1 fill:#4285F4,stroke:#4285F4,color:#fff
-       style Stage2 fill:#34A853,stroke:#34A853,color:#fff
-       style Stage3 fill:#FBBC04,stroke:#FBBC04,color:#fff
-       style Stage4 fill:#EA4335,stroke:#EA4335,color:#fff
-       style Stage5 fill:#9C27B0,stroke:#9C27B0,color:#fff
-       style Stage6 fill:#00BCD4,stroke:#00BCD4,color:#fff
-
-**Runtime:** 15-25 minutes total
-
-Linting Standards
-~~~~~~~~~~~~~~~~~
-
-**Use specific linters:**
-
-* ✅ ``ansible-lint`` - Ansible code
-* ✅ ``yamllint`` - YAML files
-* ✅ ``markdownlint`` - Markdown
-* ✅ ``ruff`` or ``black`` - Python
-* ❌ **Super-Linter** - DO NOT USE
+Molecule runs in a separate reusable workflow, ``ci-ansible-molecule.yml``, with
+one matrix entry per scenario. ``arillso.system`` calls it three times: once for
+the Docker-driver scenarios and once each for ``zram`` and ``tuning`` under QEMU.
 
 Release Process
 ~~~~~~~~~~~~~~~
 
-.. danger::
-   **ALWAYS update CHANGELOG.md before releasing!**
-
-**Release checklist:**
-
-1. **Update CHANGELOG.md** (REQUIRED)
-
-   .. code-block:: markdown
-
-      ## [Unreleased]
-
-      ### Added
-      - New feature
-
-      ## [1.0.1] - 2026-01-17
-
-      ### Fixed
-      - Bug fix
-
-2. **Update galaxy.yml version**
-
-   .. code-block:: yaml
-
-      version: "1.0.1"
-
-3. **Create and push tag** (NO 'v' prefix for Ansible)
+1. Add a ``## [x.y.z] - YYYY-MM-DD`` section to ``CHANGELOG.md``
+   (`Keep a Changelog <https://keepachangelog.com/>`_).
+2. Set ``version: x.y.z`` in ``galaxy.yml``.
+3. Tag without a ``v`` prefix and push the tag:
 
    .. code-block:: bash
 
       git tag 1.0.1
       git push origin 1.0.1
 
-4. **Automated workflow triggers**
+``tag.yml`` triggers on tags matching ``[0-9]+.[0-9]+.[0-9]+`` and calls
+``release-ansible-collection.yml``. That workflow fails if the tag differs from
+the ``galaxy.yml`` version or if ``CHANGELOG.md`` has no non-empty
+``## [<version>]`` section, then publishes to Galaxy and creates the GitHub
+Release from that changelog section.
 
-   * ``tag.yml`` publishes to Galaxy
-   * Creates GitHub Release with CHANGELOG
-
-Publish Workflow
-~~~~~~~~~~~~~~~~
-
-**Requirements:**
-
-* Single ``tag.yml`` caller, delegating to ``release-ansible-collection.yml``
-* Tag format without 'v' prefix: ``1.0.0`` (NOT ``v1.0.0``)
-* Validate version matches galaxy.yml
-* Check CHANGELOG entry exists
-* Publish to Galaxy + Create GitHub Release
-
-**Do NOT:**
-
-* ❌ Split releasing across several callers on the same tag event
-* ❌ Use ``release: [published]`` event
-* ❌ Use 'v' prefix in tags (``1.0.0``, not ``v1.0.0``)
-
-See :ref:`cicd` for complete workflow implementation.
+Keep releasing in that one ``tag.yml`` caller; do not split it across several
+callers on the same tag event or trigger on ``release: [published]``.
 
 Documentation
 ~~~~~~~~~~~~~
 
-**Keep documentation DRY:**
-
-1. **Collection README** - Overview + list all roles
-2. **Role README** - Features + Quick Start + link to guide
-3. **argument_specs.yml** - Complete variable documentation
-4. **guide.arillso.io** - Comprehensive documentation
-
-**Role README minimal structure:**
+* Collection README: overview and list of roles and plugins.
+* Role README: short description, features, quick start, link to the role page
+  on guide.arillso.io.
+* ``meta/argument_specs.yml``: the complete variable documentation. The role
+  pages on guide.arillso.io are generated from it.
 
 .. code-block:: markdown
 
@@ -609,21 +525,16 @@ Documentation
 
    Brief description.
 
-   ## Features
-
-   - Feature 1
-   - Feature 2
-
    ## Documentation
 
-   https://guide.arillso.io/collections/arillso/collection/role_role.html
+   https://guide.arillso.io/collections/arillso/<collection>/<role>_role.html
 
    ## Quick Start
 
    ```yaml
    - hosts: servers
      roles:
-       - role: arillso.collection.role_name
+       - role: arillso.<collection>.role_name
    ```
 
    ## License
@@ -633,67 +544,35 @@ Documentation
 Version Variables
 ~~~~~~~~~~~~~~~~~
 
-Use Renovate comments for automatic updates:
+Pinned upstream versions in ``defaults/main.yml`` carry a Renovate comment on
+the line directly above, matched by the regex manager in ``renovate-base``:
 
 .. code-block:: yaml
 
    # renovate: datasource=github-releases depName=k3s-io/k3s
-   k3s_version: "v1.33.3+k3s1"
+   k3s_version: "v1.37.1+k3s1"
 
    # renovate: datasource=github-releases depName=moby/moby
-   docker_version: "27.5.1"
+   docker_version: "28.5.2"
 
-Go Project Standards
---------------------
+Go and Container Projects
+-------------------------
 
-See :ref:`contributing` for complete Go development standards, code style, testing requirements, and best practices.
+See :ref:`contributing` for Go code style and Dockerfile conventions.
 
-Docker/Container Standards
---------------------------
+AGENTS.md
+---------
 
-See :ref:`contributing` for Dockerfile best practices, multi-stage builds, security requirements, and testing procedures.
-
-AI Agent Documentation
-----------------------
-
-CLAUDE.md
-~~~~~~~~~
-
-.. code-block:: markdown
-
-   @AGENTS.md
-
-AGENTS.md Structure
-~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: markdown
-
-   # Project Name
-
-   ## Context
-
-   [What the project does, for AI]
-
-   ## Conventions
-
-   [Code style, patterns]
-
-   ## Structure
-
-   [Important folders/files]
-
-   ## Do
-
-   [Best practices]
-
-   ## Do Not
-
-   [What AI should avoid]
+``CLAUDE.md`` contains only ``@AGENTS.md``. ``AGENTS.md`` has no fixed set of
+headings; existing files use sections such as ``Commands``, ``Conventions``,
+``Traps`` or ``Gotchas``, and ``Further docs``. It holds what an agent cannot
+infer from the code: commands, non-obvious conventions and known traps.
 
 CHANGELOG Format
 ----------------
 
-Required for all released projects. Use `Keep a Changelog <https://keepachangelog.com/>`_ format:
+Required for released projects, in `Keep a Changelog
+<https://keepachangelog.com/>`_ format:
 
 .. code-block:: markdown
 
@@ -706,76 +585,28 @@ Required for all released projects. Use `Keep a Changelog <https://keepachangelo
 
    ## [1.0.0] - 2026-01-17
 
-   ### Added
-   - Feature X
-
    ### Fixed
    - Bug Y
 
-**Sections:** Added, Changed, Deprecated, Removed, Fixed, Security
+Sections: Added, Changed, Deprecated, Removed, Fixed, Security.
 
-Issue Templates
----------------
+Issue and Pull Request Templates
+--------------------------------
 
-Required for Ansible Collections
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The organisation-wide templates in ``arillso/.github`` apply to every
+repository without its own copy:
 
-**All collections need:**
-
-1. **bug_report.yml** - Structured bug reports
-2. **feature_request.yml** - Feature requests
-3. **documentation.yml** - Documentation improvements
-
-**Template should include:**
-
-* Role/component dropdown
-* Required fields with validation
-* Code blocks with syntax highlighting
-* Automatic labels
-* Title prefixes
-
-Pull Request Template
----------------------
-
-Required for Ansible Collections
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-**Template sections:**
-
-1. Description
-2. Type of Change (bug fix, feature, breaking change, docs, etc.)
-3. Related Issue
-4. Which Role(s) Are Affected
-5. Changes Made
-6. Testing Performed
-7. Documentation Updated
-8. Code Quality Checklist
-9. Breaking Changes (if applicable)
-
-What NOT to Include
--------------------
-
-Files to Avoid
-~~~~~~~~~~~~~~
-
-.. list-table::
-   :header-rows: 1
-   :widths: 30 70
-
-   * - File
-     - Reason
-   * - ``docs/`` folder
-     - README usually enough
-   * - ``SECURITY.md``
-     - Only for public packages if needed
-   * - Multiple YAML configs
-     - Keep one ``.yamllint.yml``
+* Issue templates: ``bug_report.yml``, ``feature_request.yml``,
+  ``documentation.yml``.
+* ``pull_request_template.md`` sections: Description, Type of Change, Related
+  Issue, Affected Component(s), Changes Made, Testing Performed, Documentation,
+  Code Quality, Checklist, Screenshots, Additional Notes, Breaking Changes.
 
 .. seealso::
 
-   * :ref:`review-md` - Code review rules consumed by the AI review workflow
-   * :ref:`ansible-roles` - Role and collection design rules
-   * :ref:`contributing` - How to contribute (code style, testing, development)
-   * :ref:`cicd` - CI/CD workflows and linter configurations
-   * :ref:`compatibility` - Version requirements and platform support
-   * `arillso/.github on GitHub <https://github.com/arillso/.github>`_ - shared org standards and reusable workflows
+   * :ref:`review-md` - code review rules consumed by the AI review workflow
+   * :ref:`ansible-roles` - role and collection design rules
+   * :ref:`contributing` - how to contribute
+   * :ref:`cicd` - CI/CD workflows and linter configuration
+   * :ref:`compatibility` - version requirements and platform support
+   * `arillso/.github on GitHub <https://github.com/arillso/.github>`_ - shared standards and reusable workflows
