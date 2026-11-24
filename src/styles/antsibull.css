@@ -150,3 +150,22 @@ body[class*="page-collections-"] .doc {
   background: var(--ink);
   color: var(--paper);
 }
+
+/* Generated role and plugin pages open with a four-paragraph install note
+   and, for roles, a local contents box. Set the note as a compact spec
+   block and drop the contents box when it only lists one entry point, so
+   the parameters start near the top. */
+body[class^="page-collections-"] .doc h1 + .admonition.note {
+  margin: 0 0 1.25rem;
+  padding: 0.5rem 0.75rem 0.4rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+body[class^="page-collections-"] .doc h1 + .admonition.note p {
+  margin: 0 0 0.2rem;
+}
+
+body[class^="page-collections-"] .doc nav.contents.local:has(> ul > li:only-child) {
+  display: none;
+}

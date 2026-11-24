@@ -103,107 +103,107 @@ were added after ``0.5.0`` and are not available with ``@0.5.0``.
      - Delay in seconds between retries (0-3600, default: 30).
    * - ``galaxy_file``
      - no
-     - —
+     -
      - Name of the galaxy file in your workspace.
    * - ``galaxy_force``
      - no
-     - —
+     -
      - Forces the reinstallation of roles or collections from the Galaxy file.
    * - ``galaxy_api_key``
      - no
-     - —
+     -
      - Sets the API key used for authenticating to Ansible Galaxy.
    * - ``galaxy_api_server_url``
      - no
-     - —
+     -
      - Defines the URL of the Ansible Galaxy API server to interact with.
    * - ``galaxy_collections_path``
      - no
-     - —
+     -
      - Sets the path to the directory where Galaxy collections are stored.
    * - ``galaxy_disable_gpg_verify``
      - no
-     - —
+     -
      - Disables GPG signature verification for Ansible Galaxy operations.
    * - ``galaxy_force_with_deps``
      - no
-     - —
+     -
      - Forces the installation of collections with their dependencies from Galaxy.
    * - ``galaxy_ignore_certs``
      - no
-     - —
+     -
      - Ignores SSL certificate validation for Ansible Galaxy requests.
    * - ``galaxy_ignore_signature_status_codes``
      - no
-     - —
+     -
      - Lists HTTP status codes to ignore during Galaxy signature validation.
    * - ``galaxy_keyring``
      - no
-     - —
+     -
      - Specifies the path to the GPG keyring used with Ansible Galaxy.
    * - ``galaxy_offline``
      - no
-     - —
+     -
      - Enables offline mode, preventing any requests to Ansible Galaxy.
    * - ``galaxy_pre``
      - no
-     - —
+     -
      - Allows the installation of pre-release versions from Ansible Galaxy.
    * - ``galaxy_required_valid_signature_count``
      - no
-     - —
+     -
      - Sets the required number of valid GPG signatures for Galaxy content.
    * - ``galaxy_requirements_file``
      - no
-     - —
+     -
      - Defines the path to the Ansible Galaxy requirements file.
    * - ``galaxy_signature``
      - no
-     - —
+     -
      - Specifies a specific GPG signature to verify for Galaxy content.
    * - ``galaxy_timeout``
      - no
-     - —
+     -
      - Sets the timeout in seconds for Ansible Galaxy operations.
    * - ``galaxy_upgrade``
      - no
-     - —
+     -
      - Enables automatic upgrading of Galaxy collections to the latest version.
    * - ``galaxy_no_deps``
      - no
-     - —
+     -
      - Disables automatic resolution of dependencies in Ansible Galaxy.
    * - ``inventory``
      - yes
-     - —
+     -
      - One or more inventory host files. Supports comma-separated ('inv1.yml,inv2.yml') or multiline YAML syntax.
    * - ``playbook``
      - yes
-     - —
+     -
      - One or more playbooks to apply. Supports comma-separated ('play1.yml,play2.yml') or multiline YAML syntax.
    * - ``limit``
      - no
-     - —
+     -
      - Limits the playbook execution to a specific group of hosts.
    * - ``skip_tags``
      - no
-     - —
+     -
      - Only run plays and tasks whose tags do not match these values.
    * - ``start_at_task``
      - no
-     - —
+     -
      - Start the playbook at the task matching this name.
    * - ``tags``
      - no
-     - —
+     -
      - Executes only tasks and plays with specified tags.
    * - ``extra_vars``
      - no
-     - —
+     -
      - Additional variables in key=value format. Supports comma-separated or multiline YAML syntax for multiple values.
    * - ``module_path``
      - no
-     - —
+     -
      - Prepend directories to the module library path. Supports comma-separated or multiline YAML syntax for multiple paths.
    * - ``lint``
      - no
@@ -211,15 +211,15 @@ were added after ``0.5.0`` and are not available with ``@0.5.0``.
      - Run ansible-lint on playbooks before execution.
    * - ``output_file``
      - no
-     - —
+     -
      - Save Ansible stdout to a file (useful for capturing diff output for PR comments).
    * - ``check``
      - no
-     - —
+     -
      - Executes a dry run, showing what changes would be made without making them.
    * - ``diff``
      - no
-     - —
+     -
      - Shows the differences in files and templates when changing them.
    * - ``dry_run``
      - no
@@ -227,167 +227,167 @@ were added after ``0.5.0`` and are not available with ``@0.5.0``.
      - Enables both check and diff mode for a dry run without making changes.
    * - ``flush_cache``
      - no
-     - —
+     -
      - Clears the fact cache for every host in the inventory.
    * - ``force_handlers``
      - no
-     - —
+     -
      - Runs all handlers even if a task fails.
    * - ``list_hosts``
      - no
-     - —
+     -
      - Outputs a list of matching hosts.
    * - ``list_tags``
      - no
-     - —
+     -
      - List all available tags.
    * - ``list_tasks``
      - no
-     - —
+     -
      - List all tasks that would be executed.
    * - ``syntax_check``
      - no
-     - —
+     -
      - Performs a syntax check on the playbook, without executing it.
    * - ``forks``
      - no
-     - —
+     -
      - Defines the number of parallel processes to use during playbook execution (1-1000, default: 5).
    * - ``vault_id``
      - no
-     - —
+     -
      - Specifies the identity to use when accessing an Ansible Vault.
    * - ``vault_password``
      - no
-     - —
+     -
      - Sets the password to use for decrypting an Ansible Vault.
    * - ``verbose``
      - no
-     - —
+     -
      - Sets the verbosity level, ranging from 0 (minimal output) to 4 (maximum verbosity).
    * - ``private_key``
      - no
-     - —
+     -
      - Specifies the SSH private key content for connections. The key is loaded into ssh-agent, making it available to ProxyCommand and bastion host connections. Should be stored in a GitHub Secret.
    * - ``private_key_passphrase``
      - no
-     - —
+     -
      - Passphrase for the SSH private key. If provided, the passphrase is used to unlock the key when adding it to ssh-agent. Should be stored in a GitHub Secret.
    * - ``additional_private_keys``
      - no
-     - —
+     -
      - Additional SSH private keys to load into ssh-agent. Supports multiline YAML syntax for multiple keys. Requires private_key to be set.
    * - ``user``
      - no
-     - —
+     -
      - Defines the username for making connections.
    * - ``connection``
      - no
-     - —
+     -
      - Sets the type of connection to use (e.g., SSH).
    * - ``timeout``
      - no
-     - —
+     -
      - Overrides the default connection timeout in seconds.
    * - ``ssh_common_args``
      - no
-     - —
+     -
      - Specifies common arguments to pass to all SSH-based connection methods (SSH, SCP, SFTP).
    * - ``sftp_extra_args``
      - no
-     - —
+     -
      - Provides extra arguments to pass only to SFTP.
    * - ``scp_extra_args``
      - no
-     - —
+     -
      - Provides extra arguments to pass only to SCP.
    * - ``ssh_extra_args``
      - no
-     - —
+     -
      - Provides extra arguments to pass only to SSH.
    * - ``known_hosts``
      - no
-     - —
+     -
      - SSH known hosts entries for host key verification. Supports multiline YAML syntax.
    * - ``become``
      - no
-     - —
+     -
      - Enables privilege escalation, allowing operations to run as another user.
    * - ``become_method``
      - no
-     - —
+     -
      - Specifies the method to use for privilege escalation (e.g., sudo).
    * - ``become_user``
      - no
-     - —
+     -
      - Sets the user to impersonate when using privilege escalation.
    * - ``config_file``
      - no
-     - —
+     -
      - Path to an ansible.cfg configuration file to use (sets ANSIBLE_CONFIG). *Unreleased (not in 0.5.0).*
    * - ``no_color``
      - no
-     - —
+     -
      - Disables colorized output. *Unreleased (not in 0.5.0).*
    * - ``output_callback``
      - no
-     - —
+     -
      - Sets the stdout callback plugin for Ansible output (e.g. 'yaml', 'json', 'minimal'). *Unreleased (not in 0.5.0).*
    * - ``callbacks_enabled``
      - no
-     - —
+     -
      - Comma-separated list of enabled callback plugins (e.g. 'profile_tasks,timer'). *Unreleased (not in 0.5.0).*
    * - ``strategy_plugin``
      - no
-     - —
+     -
      - Specifies the strategy plugin to use (e.g. 'linear', 'free', 'mitogen_linear'). *Unreleased (not in 0.5.0).*
    * - ``gather_subset``
      - no
-     - —
+     -
      - Limits the scope of gathered facts (e.g. '!all,!min,network'). *Unreleased (not in 0.5.0).*
    * - ``gather_timeout``
      - no
-     - —
+     -
      - Timeout in seconds for gathering facts (0-3600, 0 = ansible default). *Unreleased (not in 0.5.0).*
    * - ``fact_path``
      - no
-     - —
+     -
      - Path to local fact files loaded as host facts. *Unreleased (not in 0.5.0).*
    * - ``fact_caching``
      - no
-     - —
+     -
      - Caching method to use for facts (e.g. 'jsonfile', 'redis', 'memory'). *Unreleased (not in 0.5.0).*
    * - ``fact_caching_timeout``
      - no
-     - —
+     -
      - Timeout in seconds for the fact cache (0 = no expiry). *Unreleased (not in 0.5.0).*
    * - ``poll_interval``
      - no
-     - —
+     -
      - Interval in seconds for polling async tasks (0-3600, 0 = ansible default). *Unreleased (not in 0.5.0).*
    * - ``max_fail_percentage``
      - no
-     - —
+     -
      - Maximum percentage of hosts that can fail before the playbook aborts (0-100). *Unreleased (not in 0.5.0).*
    * - ``any_errors_fatal``
      - no
-     - —
+     -
      - Treats any task error as fatal, aborting the whole play. *Unreleased (not in 0.5.0).*
    * - ``ssh_transfer_method``
      - no
-     - —
+     -
      - Method for file transfer over SSH (e.g. 'scp' or 'sftp'). *Unreleased (not in 0.5.0).*
    * - ``vault_password_file``
      - no
-     - —
+     -
      - Path to a file containing the vault password (alternative to vault_password). *Unreleased (not in 0.5.0).*
    * - ``private_key_file``
      - no
-     - —
+     -
      - Path to a file containing the SSH private key (alternative to private_key). *Unreleased (not in 0.5.0).*
    * - ``temp_dir``
      - no
-     - —
+     -
      - Directory for Ansible temporary files. *Unreleased (not in 0.5.0).*
 
 .. note::

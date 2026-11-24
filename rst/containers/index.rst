@@ -5,7 +5,7 @@
 
 .. _list_of_containers:
 
-Container Index
+Container image
 ===============
 
 Container images maintained by arillso.

@@ -5,6 +5,7 @@ import { initCodeLanguage } from "./features/code-language.js";
 import { initExternalLinks } from "./features/external-links.js";
 import { initThemeToggle } from "./features/theme-toggle.js";
 import { initNavToggle } from "./features/nav-toggle.js";
+import { initNavCurrent } from "./features/nav-current.js";
 
 onReady(() => {
   initTruncateDescriptions();
@@ -13,4 +14,5 @@ onReady(() => {
   initExternalLinks();
   initThemeToggle();
   initNavToggle();
+  initNavCurrent();
 });

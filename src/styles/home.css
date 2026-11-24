@@ -37,14 +37,80 @@
   color: var(--signal);
 }
 
-/* Version and count columns of the collections table. */
+/* Middle columns (version, contents, kind) are data, set in mono. */
 .doc table.index-table td:nth-child(n + 2):nth-last-child(n + 2) {
   font-family: var(--font-mono);
   font-size: 0.875rem;
 }
 
-.doc table.index-table td:nth-child(n + 3):nth-last-child(n + 2) {
-  text-align: right;
+/* Role links are the names written in YAML (arillso.container.docker),
+   so they are set in mono like any other identifier. */
+.doc table.collections-table td:last-child a {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+/* Below 48rem every index table stacks its rows: the entry and its short
+   second column (version, kind) on one line, everything else full width.
+   Side by side, four columns in 358px pushed the roles off-screen and the
+   tools table clipped mid-word. */
+@media (max-width: 47.99rem) {
+  .doc table.index-table,
+  .doc table.index-table tbody,
+  .doc table.index-table td {
+    display: block;
+  }
+
+  .doc table.index-table colgroup {
+    display: none;
+  }
+
+  .doc table.index-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .doc table.index-table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.2rem 1rem;
+    padding: 0.85rem 0;
+    border-top: 1px solid var(--hair);
+  }
+
+  .doc table.index-table tbody tr:first-child {
+    border-top: 2px solid var(--rule);
+  }
+
+  .doc table.index-table td {
+    padding: 0;
+    border: 0;
+  }
+
+  .doc table.index-table td:first-child {
+    white-space: normal;
+  }
+
+  .doc table.index-table td:nth-child(2):not(:last-child) {
+    align-self: baseline;
+  }
+
+  .doc table.index-table td:nth-child(n + 3),
+  .doc table.index-table td:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .doc table.index-table tbody tr:hover > td {
+    background: transparent;
+  }
+}
+
+/* The start page's pager follows its wider column. */
+.page-index .pager {
+  max-width: 60rem;
 }
 
 /* Key figures: a ruled strip of large numbers, datasheet style. */
@@ -84,6 +150,15 @@
   color: var(--ink);
 }
 
+.doc ul.figures a {
+  color: inherit;
+  text-decoration-color: var(--signal);
+}
+
+.doc ul.figures a:hover {
+  color: var(--signal);
+}
+
 @media (min-width: 48rem) {
   .doc ul.figures {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -97,8 +172,9 @@
     padding-left: 0;
   }
 
+  /* Mute, not hairline: the hairline (1.34:1 on paper) all but vanished. */
   .doc ul.figures li + li {
-    border-left: 1px solid var(--hair);
+    border-left: 1px solid var(--mute);
   }
 }
 
@@ -135,7 +211,8 @@
 
 /* Side by side only when the column holds the playbook without scrolling. */
 @media (min-width: 90rem) {
-  .page-index .doc {
+  .page-index .doc,
+  .page-index .pager {
     max-width: 68rem;
   }
 

@@ -58,6 +58,7 @@ animations, emoji icons, card grids, hero buttons, decorative badges.
 | `src/scripts/features/external-links.js`        | `target="_blank"` and `rel` on external links.                                                        |
 | `src/scripts/features/truncate-descriptions.js` | Cuts " – description" tails from navigation, trail and pager labels.                                  |
 | `src/scripts/features/theme-toggle.js`          | Light/dark switch; choice stored in `localStorage` under `arillso-theme`.                             |
+| `src/scripts/features/nav-current.js`           | Scrolls the contents navigation so the current entry is in view.                                      |
 | `src/scripts/features/nav-toggle.js`            | Opens and closes the contents drawer; Escape closes and returns focus.                                |
 
 ## Rules

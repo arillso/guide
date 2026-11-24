@@ -5,8 +5,8 @@
 
 .. _list_of_github:
 
-GitHub Actions Index
-====================
+GitHub Action
+=============
 
 GitHub Actions maintained by arillso.
 

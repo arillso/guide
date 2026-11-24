@@ -109,6 +109,7 @@
 .highlight .kc,
 .highlight .kd,
 .highlight .kn,
+.highlight .kp,
 .highlight .kr,
 .highlight .kt,
 .highlight .nt,
@@ -128,6 +129,11 @@
 .highlight .sx,
 .highlight .sr,
 .highlight .ss,
+.highlight .sa,
+.highlight .sc,
+.highlight .dl,
+.highlight .l,
+.highlight .ld,
 .highlight .l-Scalar-Plain {
   /* Amber, not green: strings must stay apart from petrol keys. */
   color: var(--warn);
@@ -138,6 +144,7 @@
 .highlight .mf,
 .highlight .mh,
 .highlight .mo,
+.highlight .mb,
 .highlight .il,
 .highlight .no,
 .highlight .bp {
@@ -153,7 +160,15 @@
 .highlight .nv,
 .highlight .vi,
 .highlight .vg,
-.highlight .na {
+.highlight .vc,
+.highlight .vm,
+.highlight .nd,
+.highlight .ne,
+.highlight .ni,
+.highlight .nl,
+.highlight .na,
+.highlight .gh,
+.highlight .gu {
   color: var(--ink);
   font-weight: 600;
 }
@@ -162,9 +177,24 @@
 .highlight .o,
 .highlight .p-Indicator,
 .highlight .w,
-.highlight .n {
+.highlight .n,
+.highlight .nx,
+.highlight .py {
   color: var(--ink-soft);
   font-weight: 400;
+}
+
+/* Diff and traceback output. */
+.highlight .gi {
+  color: var(--ok);
+  background: none;
+}
+
+.highlight .gd,
+.highlight .gr,
+.highlight .gt {
+  color: var(--bad);
+  background: none;
 }
 
 .highlight .gp,

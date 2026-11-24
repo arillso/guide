@@ -211,7 +211,7 @@ Switch to ``root`` for the install and back to ``1000:1000`` afterwards:
 
 .. code-block:: dockerfile
 
-   FROM arillso/ansible:2.22.0
+   FROM arillso/ansible:@ARILLSO_ANSIBLE_IMAGE_VERSION@
    USER root
    RUN pip install --no-cache-dir <package>
    USER 1000:1000

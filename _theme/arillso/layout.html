@@ -58,7 +58,9 @@
 {%- block content %}
 <div class="frame">
   <nav id="site-nav" class="site-nav" aria-label="Contents">
-    {{ toctree(collapse=True, maxdepth=4, includehidden=True, titles_only=True) }}
+    {#- Sphinx marks captions role="heading" (level 2 by default), which put
+        about nine headings ahead of the page h1 for screen readers. #}
+    {{ toctree(collapse=True, maxdepth=4, includehidden=True, titles_only=True)|replace(' role="heading"', '') }}
   </nav>
   <main id="content" class="page" tabindex="-1">
     {%- if parents or pagename != root_doc %}
@@ -94,7 +96,7 @@
 {%- block footer %}
 <footer class="colophon">
   <nav aria-label="Footer">
-    <a href="{{ pathto('guide/getting-started/quickstart') }}">Quickstart</a>
+    <a href="{{ pathto('guide/getting-started/quickstart') }}">Quick Start</a>
     <a href="{{ pathto('collections/index') }}">Collections</a>
     <a href="{{ pathto('guide/reference/troubleshooting') }}">Troubleshooting</a>
     <a href="{{ pathto('guide/development/contributing') }}">Contributing</a>

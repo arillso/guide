@@ -5,8 +5,8 @@
 
 .. _list_of_libraries:
 
-Libraries Index
-===============
+Go library
+==========
 
 Libraries maintained by arillso.
 
