@@ -1,0 +1,89 @@
+{
+    "detector": {
+        "ignoreRules": [],
+        "ignoreFiles": [
+            "build/html/_static/pygments.css",
+            "build/html/_static/basic.css",
+            "build/html/_static/antsibull-minimal.css"
+        ],
+        "ignoreValues": [
+            {
+                "rule": "design-system-color",
+                "value": "#1a1a1a",
+                "files": ["build/html/**/*.html"],
+                "createdAt": "2026-11-23T21:28:08.153Z",
+                "reason": "CSS injected by sphinxcontrib-mermaid (fullscreen viewer), not the theme"
+            },
+            {
+                "rule": "design-system-color",
+                "value": "#333",
+                "files": ["build/html/**/*.html"],
+                "createdAt": "2026-11-23T21:28:08.169Z",
+                "reason": "CSS injected by sphinxcontrib-mermaid (fullscreen viewer), not the theme"
+            },
+            {
+                "rule": "design-system-color",
+                "value": "#e0e0e0",
+                "files": ["build/html/**/*.html"],
+                "createdAt": "2026-11-23T21:28:08.186Z",
+                "reason": "CSS injected by sphinxcontrib-mermaid (fullscreen viewer), not the theme"
+            },
+            {
+                "rule": "design-system-color",
+                "value": "rgba(0, 0, 0, 0.3)",
+                "files": ["build/html/**/*.html"],
+                "createdAt": "2026-11-23T21:28:08.200Z",
+                "reason": "CSS injected by sphinxcontrib-mermaid (fullscreen viewer), not the theme"
+            },
+            {
+                "rule": "design-system-color",
+                "value": "rgba(50, 50, 50, 0.95)",
+                "files": ["build/html/**/*.html"],
+                "createdAt": "2026-11-23T21:28:08.217Z",
+                "reason": "CSS injected by sphinxcontrib-mermaid (fullscreen viewer), not the theme"
+            },
+            {
+                "rule": "design-system-color",
+                "value": "rgba(60, 60, 60, 1)",
+                "files": ["build/html/**/*.html"],
+                "createdAt": "2026-11-23T21:28:08.233Z",
+                "reason": "CSS injected by sphinxcontrib-mermaid (fullscreen viewer), not the theme"
+            },
+            {
+                "rule": "design-system-font-size",
+                "value": "14px",
+                "files": ["build/html/**/*.html"],
+                "createdAt": "2026-11-23T21:28:08.252Z",
+                "reason": "CSS injected by sphinxcontrib-mermaid (fullscreen viewer), not the theme"
+            },
+            {
+                "rule": "design-system-font-size",
+                "value": "24px",
+                "files": ["build/html/**/*.html"],
+                "createdAt": "2026-11-23T21:28:08.272Z",
+                "reason": "CSS injected by sphinxcontrib-mermaid (fullscreen viewer), not the theme"
+            },
+            {
+                "rule": "design-system-radius",
+                "value": "4px",
+                "files": ["build/html/**/*.html"],
+                "createdAt": "2026-11-23T21:28:08.289Z",
+                "reason": "CSS injected by sphinxcontrib-mermaid (fullscreen viewer), not the theme"
+            },
+            {
+                "rule": "design-system-radius",
+                "value": "8px",
+                "files": ["build/html/**/*.html"],
+                "createdAt": "2026-11-23T21:28:08.310Z",
+                "reason": "CSS injected by sphinxcontrib-mermaid (fullscreen viewer), not the theme"
+            },
+            {
+                "rule": "design-system-color",
+                "value": "rgb(0, 0, 0)",
+                "files": ["_theme/**"],
+                "createdAt": "2026-11-23T21:28:08.327Z",
+                "reason": "Jinja template scanned without the theme CSS; body colour comes from tokens.css"
+            }
+        ]
+    }
+}
