@@ -164,7 +164,8 @@
 /* ---- contents navigation (toctree) ---- */
 
 /* Without JS the contents list stays a static block above the page; with
-   JS (class set in layout.html) it becomes the drawer behind .nav-toggle. */
+   JS (class set by custom.js, src/scripts/index.js) it becomes the drawer
+   behind .nav-toggle. */
 .site-nav {
   padding: 1rem var(--gutter);
   border-bottom: 1px solid var(--hair);

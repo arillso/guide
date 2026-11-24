@@ -5,6 +5,3 @@ inherit = "basic"
 stylesheets = []
 sidebars = []
 pygments_style = { default = "ansible" }
-
-[options]
-github_url = "https://github.com/arillso"

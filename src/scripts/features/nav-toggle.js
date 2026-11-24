@@ -11,7 +11,7 @@ export function initNavToggle() {
     button.setAttribute("aria-expanded", String(open));
     document.body.style.overflow = open ? "hidden" : "";
     // Content behind the full-screen drawer must not take focus.
-    document.querySelectorAll("#content, .colophon").forEach(function (el) {
+    document.querySelectorAll(".page, .colophon").forEach(function (el) {
       el.inert = open;
     });
   }
